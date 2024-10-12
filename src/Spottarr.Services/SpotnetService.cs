@@ -10,6 +10,7 @@ namespace Spottarr.Services;
 
 internal sealed class SpotnetService : ISpotnetService
 {
+    private const int BatchSize = 1000;
     private readonly ILogger<SpotnetService> _logger;
     private readonly IOptions<UsenetOptions> _usenetOptions;
     private readonly IOptions<SpotnetOptions> _spotnetOptions;
@@ -47,27 +48,33 @@ internal sealed class SpotnetService : ISpotnetService
 
         var group = groupResponse.Group;
         var spots = GetSpots(group, client).ToList();
+
+        foreach (var spot in spots)
+        {
+            Console.WriteLine(spot.NntpHeader.Author);
+        }
         
         client.Quit();
     }
 
-    private IEnumerable<string> GetSpots(NntpGroup group, NntpClient client)
+    private IEnumerable<SpotnetHeader> GetSpots(NntpGroup group, NntpClient client)
     {
-        var batches = GetBatches(group.HighWaterMark - 5000, group.HighWaterMark).ToList();
+        var batches = GetBatches(group.HighWaterMark - 2000, group.HighWaterMark).ToList();
 
         foreach (var batch in batches)
         {
-            var xoverResponse = client.Xover(batch);
-            if(!xoverResponse.Success)
+            var xOverResponse = client.Xover(batch);
+            if(!xOverResponse.Success)
             {
-                _logger.CouldNotRetrieveArticles(batch.From, batch.To, xoverResponse.Code, xoverResponse.Message);
+                _logger.CouldNotRetrieveArticles(batch.From, batch.To, xOverResponse.Code, xOverResponse.Message);
                 continue;
             }
 
-            foreach (var header in xoverResponse.Lines)
+            foreach (var header in xOverResponse.Lines)
             {
                 if (header == null) continue;
-                yield return header;
+                var nntpHeader = NntpHeader.Parse(header);
+                yield return SpotnetHeader.Parse(nntpHeader);
             }
         }
     }
@@ -78,7 +85,7 @@ internal sealed class SpotnetService : ISpotnetService
         for (var i = highWaterMark; i >= lowWaterMark; i--)
         {
             batchCount++;
-            if (batchCount != 1000) continue;
+            if (batchCount != BatchSize) continue;
             
             var range = new NntpArticleRange(highWaterMark - batchCount, highWaterMark);
             highWaterMark -= batchCount;
