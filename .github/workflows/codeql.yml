@@ -18,6 +18,7 @@ on:
 jobs:
   analyze:
     name: Analyze
+    if: ${{ !github.event.repository.private }}
         # Runner size impacts CodeQL analysis time. To learn more, please see:
     #   - https://gh.io/recommended-hardware-resources-for-running-codeql
     #   - https://gh.io/supported-runners-and-hardware-resources
@@ -45,7 +46,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 9.0.x
     
     - name: Initialize CodeQL 
       uses: github/codeql-action/init@v3

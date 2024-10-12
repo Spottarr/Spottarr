@@ -37,10 +37,11 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 9.0.x
     
-    - name: Initialize CodeQL 
+    - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
+      if: ${{ !github.event.repository.private }}
       with:
         languages: ${{ matrix.language }}
         # If you wish to specify custom queries, you can do so here or in a config file.
@@ -58,6 +59,7 @@ jobs:
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
+      if: ${{ !github.event.repository.private }}
       with:
         category: "/language:${{matrix.language}}"
 
