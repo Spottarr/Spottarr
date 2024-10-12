@@ -24,6 +24,6 @@ using var host = Host.CreateDefaultBuilder(args)
     })
     .Build();
 
-var app = host.Services.GetRequiredService<ISpottarrConsole>();
-
+using var scope = host.Services.CreateScope();
+var app = scope.ServiceProvider.GetRequiredService<ISpottarrConsole>();
 await app.RunAsync();
