@@ -7,6 +7,7 @@
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
         <AnalysisLevel>latest</AnalysisLevel>
         <AnalysisMode>All</AnalysisMode>
+        <TargetFramework>net9.0</TargetFramework>
     </PropertyGroup>
     
     <!--
