@@ -13,6 +13,7 @@ public static class ServiceCollectionExtensions
         
         return services
             .AddSingleton<ISpotnetService, SpotnetService>()
-            .Configure<UsenetOptions>(configuration.GetSection(UsenetOptions.Section));
+            .Configure<UsenetOptions>(configuration.GetSection(UsenetOptions.Section))
+            .Configure<SpotnetOptions>(configuration.GetSection(SpotnetOptions.Section));
     }
 }
