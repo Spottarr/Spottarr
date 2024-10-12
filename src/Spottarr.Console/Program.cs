@@ -7,11 +7,11 @@ using Spottarr.Data;
 using Spottarr.Services;
 
 using var host = Host.CreateDefaultBuilder(args)
-    .ConfigureServices(services =>
+    .ConfigureServices((context, services) =>
     {
         services.AddScoped<ISpottarrConsole, SpottarrConsole>();
         services.AddSpottarrData();
-        services.AddSpottarrServices();
+        services.AddSpottarrServices(context.Configuration);
     })
     .ConfigureLogging(logging =>
     {

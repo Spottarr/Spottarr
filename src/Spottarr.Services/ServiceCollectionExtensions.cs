@@ -1,10 +1,18 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Spottarr.Services.Configuration;
 using Spottarr.Services.Contracts;
 
 namespace Spottarr.Services;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddSpottarrServices(this IServiceCollection services) =>
-        services.AddSingleton<ISpotnetService, SpotnetService>();
+    public static IServiceCollection AddSpottarrServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        ArgumentNullException.ThrowIfNull(configuration);
+        
+        return services
+            .AddSingleton<ISpotnetService, SpotnetService>()
+            .Configure<UsenetOptions>(configuration.GetSection(UsenetOptions.Section));
+    }
 }
