@@ -7,6 +7,11 @@ using Spottarr.Data;
 using Spottarr.Services;
 
 using var host = Host.CreateDefaultBuilder(args)
+    .UseDefaultServiceProvider(configure =>
+    {
+        configure.ValidateScopes = true;
+        configure.ValidateOnBuild = true;
+    })
     .ConfigureServices((context, services) =>
     {
         services.AddScoped<ISpottarrConsole, SpottarrConsole>();
