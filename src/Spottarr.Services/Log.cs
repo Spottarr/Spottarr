@@ -13,6 +13,6 @@ public static partial class LoggerExtensions
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Error,
-        Message = "Could not retrieve articles for [{From}-{To}] in '{SpotGroup}': [{Code}] '{Message}'")]
-    public static partial void CouldNotRetrieveArticles(this ILogger logger, long from, long? to, string spotGroup, int code, string message);
+        Message = "Could not retrieve articles for [{From}-{To}]: [{Code}] '{Message}'")]
+    public static partial void CouldNotRetrieveArticles(this ILogger logger, long from, long? to, int code, string message);
 }
