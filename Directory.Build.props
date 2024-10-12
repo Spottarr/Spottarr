@@ -8,6 +8,14 @@
         <AnalysisLevel>latest</AnalysisLevel>
         <AnalysisMode>All</AnalysisMode>
     </PropertyGroup>
+    
+    <!--
+      Automatically add the appsettings file to all entry point projects
+    -->
+    <ItemGroup Condition="$(OutputType) == 'Exe'">
+        <Content Include="$(SolutionDir)appsettings.json" Link="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="$(SolutionDir)appsettings.Development.json" Link="appsettings.Development.json" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
 
     <!--
       Perform a deep clean using `dotnet clean -p:deep=true` to remove obj and bin folders

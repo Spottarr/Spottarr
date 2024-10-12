@@ -9,6 +9,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution", "solution", "{26
 		.gitignore = .gitignore
 		.globalconfig = .globalconfig
 		global.json = global.json
+		appsettings.json = appsettings.json
+		appsettings.Development.json = appsettings.Development.json
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3FB47D67-FB35-492F-AD07-26B98C419F71}"
