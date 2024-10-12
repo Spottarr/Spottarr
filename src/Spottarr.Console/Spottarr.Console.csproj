@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Spottarr.Data\Spottarr.Data.csproj" />
+    <ProjectReference Include="..\Spottarr.Services\Spottarr.Services.csproj" />
   </ItemGroup>
   
 </Project>

@@ -4,12 +4,14 @@ using Microsoft.Extensions.Logging;
 using Spottarr.Console;
 using Spottarr.Console.Contracts;
 using Spottarr.Data;
+using Spottarr.Services;
 
 using var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices(services =>
     {
         services.AddScoped<ISpottarrConsole, SpottarrConsole>();
         services.AddSpottarrData();
+        services.AddSpottarrServices();
     })
     .ConfigureLogging(logging =>
     {
