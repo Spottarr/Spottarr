@@ -8,5 +8,9 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0-rc.*" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0-rc.*" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Spottarr.Data\Spottarr.Data.csproj" />
+  </ItemGroup>
   
 </Project>
