@@ -6,4 +6,5 @@ public class ApplicationSpot : Spot
 {
     public required ICollection<ApplicationPlatform> Platforms { get; init; }
     public required ICollection<ApplicationGenre> Genres { get; init; }
+    public required ICollection<ApplicationType> Types { get; init; }
 }
