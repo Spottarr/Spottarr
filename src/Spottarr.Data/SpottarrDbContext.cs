@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Spottarr.Data.Entities;
 using Spottarr.Data.Entities.Enums;
 
@@ -6,6 +8,8 @@ namespace Spottarr.Data;
 
 public class SpottarrDbContext : DbContext
 {
+    private readonly IHostEnvironment _environment;
+    private readonly ILoggerFactory _loggerFactory;
     private readonly string _dbPath;
     
     public DbSet<Spot> Spots { get; set; }
@@ -14,14 +18,20 @@ public class SpottarrDbContext : DbContext
     public DbSet<GameSpot> Games { get; set; }
     public DbSet<ApplicationSpot> Applications { get; set; }
 
-    public SpottarrDbContext()
+    public SpottarrDbContext(IHostEnvironment environment, ILoggerFactory loggerFactory)
     {
         var path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         _dbPath = Path.Join(path, "spottarr.db");
+        
+        _environment = environment;
+        _loggerFactory = loggerFactory;
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
-        optionsBuilder.UseSqlite($"Data Source={_dbPath}");
+        optionsBuilder.UseSqlite($"Data Source={_dbPath}")
+            .UseLoggerFactory(_loggerFactory)
+            .EnableDetailedErrors(_environment.IsDevelopment())
+            .EnableSensitiveDataLogging(_environment.IsDevelopment());
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
