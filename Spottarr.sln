@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution", "solution", "{26
 		global.json = global.json
 		appsettings.json = appsettings.json
 		appsettings.Development.json = appsettings.Development.json
+		appsettings.Production.json = appsettings.Production.json
 		README.md = README.md
 	EndProjectSection
 EndProject
