@@ -1,4 +1,5 @@
 using System.Data.Common;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spottarr.Data;
@@ -54,10 +55,26 @@ internal sealed class SpotnetService : ISpotnetService
             var spots = ImportBatch(handler, batch, spotnetOptions.RetrieveAfter);
             if (spots.Count == 0) return;
 
+            var newMessageIds = spots
+                .Select(s => s.MessageId)
+                .ToHashSet();
+            
             try
             {
-                await _dbContext.AddRangeAsync(spots);
+                await using var transaction = await _dbContext.Database.BeginTransactionAsync();
+                
+                var existingMessageIds = await _dbContext.Set<Spot>()
+                    .Where(s => newMessageIds.Contains(s.MessageId))
+                    .Select(s => s.MessageId)
+                    .ToHashSetAsync();
+                
+                var newSpots = spots
+                    .Where(s => !existingMessageIds.Contains(s.MessageId));
+                
+                await _dbContext.AddRangeAsync(newSpots);
                 await _dbContext.SaveChangesAsync();
+
+                await transaction.CommitAsync();
             }
             catch (DbException ex)
             {
