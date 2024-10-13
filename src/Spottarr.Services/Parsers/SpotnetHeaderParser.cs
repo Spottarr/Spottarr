@@ -8,10 +8,10 @@ public static partial class SpotnetHeaderParser
 {
     public static SpotnetHeader Parse(NntpHeader header)
     {
-        ArgumentNullException.ThrowIfNull(header);
-
         try
         {
+            ArgumentNullException.ThrowIfNull(header);
+            
             var subjectAndTags = header.Subject.Split('|', 2,
                 StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             var subject = subjectAndTags[0];
@@ -58,7 +58,7 @@ public static partial class SpotnetHeaderParser
         }
         catch(Exception ex)
         {
-            throw new ArgumentException($"Failed to parse Spotnet header: '{header.Author}' '{header.Subject}'", nameof(header), ex);
+            throw new ArgumentException($"Failed to parse Spotnet header: '{header?.Author}' '{header?.Subject}'", nameof(header), ex);
         }
     }
 

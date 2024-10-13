@@ -8,8 +8,16 @@ public static class SpotnetHeaderExtensions
 {
     public static Spot ToSpot(this SpotnetHeader header)
     {
-        ArgumentNullException.ThrowIfNull(header);
-        return header.ToSpot(header.Category);
+        try
+        {
+            ArgumentNullException.ThrowIfNull(header);
+            return header.ToSpot(header.Category);
+        }
+        catch (Exception ex)
+        {
+            throw new ArgumentException("Failed to convert spot header to spot", nameof(header), ex);
+        }
+        
     }
 
     private static Spot ToSpot(this SpotnetHeader header, int category) =>

@@ -7,11 +7,11 @@ public static class NntpHeaderParser
 {
     public static NntpHeader Parse(string header)
     {
-        ArgumentNullException.ThrowIfNull(header);
-
         // TODO: Use response of overview format response to determine fields
         try
         {
+            ArgumentNullException.ThrowIfNull(header);
+            
             // Get the first 8 fields of the header, dispose anything extra
             var fields = header.Split('\t');
 
