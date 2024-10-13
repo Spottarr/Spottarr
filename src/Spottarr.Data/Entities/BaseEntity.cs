@@ -4,6 +4,6 @@ public abstract class BaseEntity
 {
     public int Id { get; set; }
     
-    public DateTimeOffset CreatedAt { get; set; }
-    public DateTimeOffset UpdatedAt { get; set; }
+    public required DateTimeOffset CreatedAt { get; init; }
+    public required DateTimeOffset UpdatedAt { get; set; }
 }
