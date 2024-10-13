@@ -40,6 +40,9 @@ public class SpottarrDbContext : DbContext
         modelBuilder.Entity<Spot>().Property(s => s.Subject).HasMaxLength(256);
         modelBuilder.Entity<Spot>().Property(s => s.Spotter).HasMaxLength(128);
         modelBuilder.Entity<Spot>().Property(s => s.MessageId).HasMaxLength(128);
+        
+        modelBuilder.Entity<Spot>().HasIndex(s => s.MessageId).IsUnique();
+        
         modelBuilder.Entity<Spot>().UseTphMappingStrategy();
         modelBuilder.Entity<Spot>()
             .HasDiscriminator(s => s.Type)
