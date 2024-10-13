@@ -12,7 +12,7 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(configuration);
         
         return services
-            .AddSingleton<ISpotnetService, SpotnetService>()
+            .AddScoped<ISpotnetService, SpotnetService>()
             .Configure<UsenetOptions>(configuration.GetSection(UsenetOptions.Section))
             .Configure<SpotnetOptions>(configuration.GetSection(SpotnetOptions.Section));
     }
