@@ -14,5 +14,5 @@ dotnet_diagnostic.IDE0290.severity = none
 csharp_style_prefer_primary_constructors = false
 resharper_convert_to_primary_constructor_highlighting = none 
 
-# Disable null check error in generated migrations
+# Disable checks in generated migrations
 dotnet_code_quality.CA1062.excluded_symbol_names = N:Spottarr.Data.Migrations

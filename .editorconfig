@@ -1,0 +1,4 @@
+# Disable checks in generated migrations
+[src/Spottarr.Data/Migrations/*.cs]
+# noinspection EditorConfigKeyCorrectness
+dotnet_diagnostic.CA1861.severity = none
