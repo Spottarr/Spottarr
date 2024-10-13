@@ -1,12 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Spottarr.Services.Models.Categories;
+namespace Spottarr.Data.Entities.Enums;
 
 /// <summary>
 /// Subcategory Z
 /// See: https://github.com/spotnet/spotnet/wiki/Category-Codes
 /// </summary>
-public enum SpotnetAudioType
+public enum AudioType
 {
     [Display(Name = "None")]
     None = 0,

@@ -1,12 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Spottarr.Services.Models.Categories;
+namespace Spottarr.Data.Entities.Enums;
 
 /// <summary>
 /// Subcategory A
 /// See: https://github.com/spotnet/spotnet/wiki/Category-Codes
 /// </summary>
-public enum SpotnetGamePlatform
+public enum GamePlatform
 {
     [Display(Name = "None")]
     None = 0,

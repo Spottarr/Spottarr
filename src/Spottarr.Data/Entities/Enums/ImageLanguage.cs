@@ -1,12 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Spottarr.Services.Models.Categories;
+namespace Spottarr.Data.Entities.Enums;
 
 /// <summary>
 /// Subcategory C
 /// See: https://github.com/spotnet/spotnet/wiki/Category-Codes
 /// </summary>
-public enum SpotnetImageLanguage
+public enum ImageLanguage
 {
     [Display(Name = "None")]
     None = 0,
@@ -20,7 +20,7 @@ public enum SpotnetImageLanguage
     EnglishSubtitlesExternal = 4,
     [Display(Name = "English subtitles (baked in) (Movies/Books)")]
     EnglishSubtitlesBakedIn = 5,
-    [Display(Name = "Other")]
+    [Display(Name = "Other"), Obsolete("Deprecated")]
     Other = 6,
     [Display(Name = "Dutch subtitles (configurable) (Movies)")]
     DutchSubtitlesConfigurable = 7,

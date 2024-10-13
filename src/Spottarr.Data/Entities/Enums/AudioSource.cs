@@ -1,12 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Spottarr.Services.Models.Categories;
+namespace Spottarr.Data.Entities.Enums;
 
 /// <summary>
 /// Subcategory B
 /// See: https://github.com/spotnet/spotnet/wiki/Category-Codes
 /// </summary>
-public enum SpotnetAudioSource
+public enum AudioSource
 {
     [Display(Name = "None")]
     None = 0,
@@ -14,7 +14,7 @@ public enum SpotnetAudioSource
     Cd = 1,
     [Display(Name = "Radio")]
     Radio = 2,
-    [Display(Name = "Compilation")]
+    [Display(Name = "Compilation"), Obsolete("Deprecated")]
     Compilation = 3,
     [Display(Name = "DVD")]
     Dvd = 4,

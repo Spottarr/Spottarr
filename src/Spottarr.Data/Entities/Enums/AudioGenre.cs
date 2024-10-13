@@ -1,12 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Spottarr.Services.Models.Categories;
+namespace Spottarr.Data.Entities.Enums;
 
 /// <summary>
 /// Subcategory D
 /// See: https://github.com/spotnet/spotnet/wiki/Category-Codes
 /// </summary>
-public enum SpotnetAudioGenre
+public enum AudioGenre
 {
     [Display(Name = "None")]
     None = 0,
@@ -30,11 +30,11 @@ public enum SpotnetAudioGenre
     Kids = 9,
     [Display(Name = "Classical")]
     Classical = 10,
-    [Display(Name = "Kleinkunst")]
+    [Display(Name = "Kleinkunst"), Obsolete("Deprecated")]
     Kleinkunst = 11,
     [Display(Name = "Hollands")]
     Hollands = 12,
-    [Display(Name = "New Age")]
+    [Display(Name = "New Age"), Obsolete("Deprecated")]
     NewAge = 13,
     [Display(Name = "Pop")]
     Pop = 14,
@@ -44,17 +44,17 @@ public enum SpotnetAudioGenre
     Hiphop = 16,
     [Display(Name = "Reggae")]
     Reggae = 17,
-    [Display(Name = "Religious")]
+    [Display(Name = "Religious"), Obsolete("Deprecated")]
     Religious = 18,
     [Display(Name = "Rock")]
     Rock = 19,
     [Display(Name = "Soundtrack")]
     Soundtrack = 20,
-    [Display(Name = "Other")]
+    [Display(Name = "Other"), Obsolete("Deprecated")]
     Other = 21,
-    [Display(Name = "Hardstyle")]
+    [Display(Name = "Hardstyle"), Obsolete("Deprecated")]
     Hardstyle = 22,
-    [Display(Name = "Asian")]
+    [Display(Name = "Asian"), Obsolete("Deprecated")]
     Asian = 23,
     [Display(Name = "Disco")]
     Disco = 24,
