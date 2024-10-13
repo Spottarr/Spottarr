@@ -9,6 +9,7 @@ public static class NntpHeaderParser
     {
         ArgumentNullException.ThrowIfNull(header);
 
+        // TODO: Use response of overview format response to determine fields
         try
         {
             // Get the first 8 fields of the header, dispose anything extra
