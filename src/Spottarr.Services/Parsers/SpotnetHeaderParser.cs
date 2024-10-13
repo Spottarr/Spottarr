@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 using Spottarr.Services.Models;
 
@@ -5,39 +6,53 @@ namespace Spottarr.Services.Parsers;
 
 public static partial class SpotnetHeaderParser
 {
+    private const string DateFormat = "YYYYDDMM";
+    
     public static SpotnetHeader Parse(NntpHeader header)
     {
         ArgumentNullException.ThrowIfNull(header);
 
-        var subjectAndTags = header.Subject.Split('|', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        var subject = subjectAndTags[0];
-        var tag = subjectAndTags.Length == 2 ? subjectAndTags[1] : string.Empty;
-
-        var regex = SpotnetHeaderRegex();
-        var match = regex.Match(header.Author);
-
-        if (!match.Success)
-            throw new InvalidOperationException($"Invalid Spotnet Author header '{header.Author}'");
-
-        var g = match.Groups;
-
-        return new SpotnetHeader
+        try
         {
-            Subject = subject,
-            Tag = tag,
-            Nickname = g["n"].Value,
-            UserModulus = g["umod"].Value,
-            UserSignature = g["usig"].Value,
-            Category = g["cat"].Value,
-            KeyId = g["kid"].Value,
-            SubCategory = g["scats"].Value,
-            Size = g["size"].Value,
-            Date = g["date"].Value,
-            CustomId = g["cid"].Value,
-            CustomValue = g["cv"].Value,
-            ServerSignature = g["ssig"].Value,
-            NntpHeader = header,
-        };
+            var subjectAndTags = header.Subject.Split('|', 2,
+                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var subject = subjectAndTags[0];
+            var tag = subjectAndTags.Length == 2 ? subjectAndTags[1] : string.Empty;
+
+            var regex = SpotnetHeaderRegex();
+            var match = regex.Match(header.Author);
+
+            if (!match.Success)
+                throw new InvalidOperationException($"Invalid Spotnet Author header '{header.Author}'");
+
+            var g = match.Groups;
+
+            var category = int.Parse(g["cat"].Value, CultureInfo.InvariantCulture);
+            var size = long.Parse(g["size"].Value, CultureInfo.InvariantCulture);
+            var date = DateTimeOffset.ParseExact(DateFormat, g["size"].Value, CultureInfo.InvariantCulture);
+
+            return new SpotnetHeader
+            {
+                Subject = subject,
+                Tag = tag,
+                Nickname = g["n"].Value,
+                UserModulus = g["umod"].Value,
+                UserSignature = g["usig"].Value,
+                Category = category,
+                KeyId = g["kid"].Value,
+                SubCategories = g["scats"].Captures.Select(c => c.Value).ToList(),
+                Size = size,
+                Date = date,
+                CustomId = g["cid"].Value,
+                CustomValue = g["cv"].Value,
+                ServerSignature = g["ssig"].Value,
+                NntpHeader = header,
+            };
+        }
+        catch(Exception ex)
+        {
+            throw new ArgumentException($"Failed to parse Spotnet header: '{header.Author}' '{header.Subject}'", nameof(header), ex);
+        }
     }
 
     /*
