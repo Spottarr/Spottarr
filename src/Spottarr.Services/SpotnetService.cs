@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Spottarr.Services.Configuration;
 using Spottarr.Services.Contracts;
 using Spottarr.Services.Models;
+using Spottarr.Services.Parsers;
 using Usenet.Nntp;
 using Usenet.Nntp.Models;
 
@@ -77,12 +78,12 @@ internal sealed class SpotnetService : ISpotnetService
                 if (header == null)
                     continue;
                 
-                var nntpHeader = NntpHeader.Parse(header);
+                var nntpHeader = NntpHeaderParser.Parse(header);
                 
                 if (nntpHeader.Date < retrieveAfter)
                     yield break;
                 
-                yield return SpotnetHeader.Parse(nntpHeader);
+                yield return SpotnetHeaderParser.Parse(nntpHeader);
             }
         }
     }
