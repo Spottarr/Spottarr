@@ -47,7 +47,7 @@ internal sealed class SpotnetService : ISpotnetService
         }
 
         var group = groupResponse.Group;
-        var spots = GetSpots(group, client).ToList();
+        var spots = GetSpots(group, client, spotnetOptions.RetrieveAfter, spotnetOptions.RetrieveCount).ToList();
 
         foreach (var spot in spots)
         {
@@ -57,9 +57,11 @@ internal sealed class SpotnetService : ISpotnetService
         client.Quit();
     }
 
-    private IEnumerable<SpotnetHeader> GetSpots(NntpGroup group, NntpClient client)
+    private IEnumerable<SpotnetHeader> GetSpots(NntpGroup group, NntpClient client, DateTimeOffset retrieveAfter, int retrieveCount)
     {
-        var batches = GetBatches(group.HighWaterMark - 2000, group.HighWaterMark).ToList();
+        var from = retrieveCount > 0 ? group.HighWaterMark - retrieveCount : group.LowWaterMark;
+        var to = group.HighWaterMark;
+        var batches = GetBatches(from, to).ToList();
 
         foreach (var batch in batches)
         {
@@ -72,8 +74,14 @@ internal sealed class SpotnetService : ISpotnetService
 
             foreach (var header in xOverResponse.Lines)
             {
-                if (header == null) continue;
+                if (header == null)
+                    continue;
+                
                 var nntpHeader = NntpHeader.Parse(header);
+                
+                if (nntpHeader.Date < retrieveAfter)
+                    yield break;
+                
                 yield return SpotnetHeader.Parse(nntpHeader);
             }
         }
