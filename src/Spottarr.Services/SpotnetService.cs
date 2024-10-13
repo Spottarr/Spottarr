@@ -33,35 +33,24 @@ internal sealed class SpotnetService : ISpotnetService
     public async Task Import()
     {
         // Set up Usenet connection
-        using var connection = new NntpConnection();
-        var client = new NntpClient(connection);
-
-        var usenetOptions = _usenetOptions.Value;
-        await client.ConnectAsync(usenetOptions.Hostname, usenetOptions.Port, usenetOptions.UseTls);
-        client.Authenticate(usenetOptions.Username, usenetOptions.Password);
+        using var handler = new NntpClientHandler(_usenetOptions.Value);
+        await handler.ConnectAsync();
 
         var spotnetOptions = _spotnetOptions.Value;
-        var groupResponse = client.Group(spotnetOptions.SpotGroup);
+        var groupResponse = handler.Client.Group(spotnetOptions.SpotGroup);
 
         if (!groupResponse.Success)
         {
             _logger.CouldNotRetrieveSpotGroup(spotnetOptions.SpotGroup, groupResponse.Code, groupResponse.Message);
-            client.Quit();
             return;
         }
 
         var group = groupResponse.Group;
-        var spots = GetSpots(group, client, spotnetOptions.RetrieveAfter, spotnetOptions.RetrieveCount).ToList();
-
-        foreach (var spot in spots)
-        {
-            Console.WriteLine(spot.Subject);
-        }
-
-        client.Quit();
+        var spotHeaders = GetSpotHeaders(group, handler, spotnetOptions.RetrieveAfter, spotnetOptions.RetrieveCount).ToList();
+        
     }
 
-    private IEnumerable<SpotnetHeader> GetSpots(NntpGroup group, NntpClient client, DateTimeOffset retrieveAfter,
+    private IEnumerable<SpotnetHeader> GetSpotHeaders(NntpGroup group, NntpClientHandler handler, DateTimeOffset retrieveAfter,
         int retrieveCount)
     {
         var from = retrieveCount > 0 ? group.HighWaterMark - retrieveCount : group.LowWaterMark;
@@ -70,7 +59,7 @@ internal sealed class SpotnetService : ISpotnetService
 
         foreach (var batch in batches)
         {
-            var xOverResponse = client.Xover(batch);
+            var xOverResponse = handler.Client.Xover(batch);
             if (!xOverResponse.Success)
             {
                 _logger.CouldNotRetrieveArticles(batch.From, batch.To, xOverResponse.Code, xOverResponse.Message);
