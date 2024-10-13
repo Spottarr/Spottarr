@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spottarr.Data", "src\Spotta
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spottarr.Services", "src\Spottarr.Services\Spottarr.Services.csproj", "{5019243F-CE57-4E90-B196-202306D95875}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spottarr.Web", "src\Spottarr.Web\Spottarr.Web.csproj", "{715809CD-27DE-4C07-BD4C-395EB5D5E9C3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,10 +46,15 @@ Global
 		{5019243F-CE57-4E90-B196-202306D95875}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5019243F-CE57-4E90-B196-202306D95875}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5019243F-CE57-4E90-B196-202306D95875}.Release|Any CPU.Build.0 = Release|Any CPU
+		{715809CD-27DE-4C07-BD4C-395EB5D5E9C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{715809CD-27DE-4C07-BD4C-395EB5D5E9C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{715809CD-27DE-4C07-BD4C-395EB5D5E9C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{715809CD-27DE-4C07-BD4C-395EB5D5E9C3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{888CC2BB-2A6E-4A4A-B72A-617D38813B1A} = {3FB47D67-FB35-492F-AD07-26B98C419F71}
 		{74DE4167-FED4-48B0-B13E-98D3A68BBE10} = {3FB47D67-FB35-492F-AD07-26B98C419F71}
 		{5019243F-CE57-4E90-B196-202306D95875} = {3FB47D67-FB35-492F-AD07-26B98C419F71}
+		{715809CD-27DE-4C07-BD4C-395EB5D5E9C3} = {3FB47D67-FB35-492F-AD07-26B98C419F71}
 	EndGlobalSection
 EndGlobal
