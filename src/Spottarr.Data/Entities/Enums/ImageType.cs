@@ -8,16 +8,14 @@ namespace Spottarr.Data.Entities.Enums;
 /// </summary>
 public enum ImageType
 {
-    [Display(Name = "None")]
-    None = 0,
     [Display(Name = "Movie")]
-    Movie = 1,
+    Movie = 0,
     [Display(Name = "Series")]
-    Series = 2,
+    Series = 1,
     [Display(Name = "Book")]
-    Book = 3,
+    Book = 2,
     [Display(Name = "Erotic")]
-    Erotic = 4,
+    Erotic = 3,
     [Display(Name = "Picture")]
-    Picture = 5,
+    Picture = 4,
 }

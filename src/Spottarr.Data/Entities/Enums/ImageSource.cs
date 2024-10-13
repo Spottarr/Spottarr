@@ -8,34 +8,32 @@ namespace Spottarr.Data.Entities.Enums;
 /// </summary>
 public enum ImageSource
 {
-    [Display(Name = "None")]
-    None = 0,
     [Display(Name = "Cam (Movies)")]
-    Cam = 1,
+    Cam = 0,
     [Display(Name = "(S)VCD"), Obsolete("Deprecated")]
-    Svcd = 2,
+    Svcd = 1,
     [Display(Name = "Promo (Movies)")]
-    Promo = 3,
+    Promo = 2,
     [Display(Name = "Retail (Movies/Books)")]
-    Retail = 4,
+    Retail = 3,
     [Display(Name = "TV (Movies)")]
-    Tv = 5,
+    Tv = 4,
     [Display(Name = "Other"), Obsolete("Deprecated")]
-    Other = 6,
+    Other = 5,
     [Display(Name = "Satellite"), Obsolete("Deprecated")]
-    Satellite = 7,
+    Satellite = 6,
     [Display(Name = "R5 (Movies)")]
-    R5 = 8,
+    R5 = 7,
     [Display(Name = "Telecine")]
-    Telecine = 9,
+    Telecine = 8,
     [Display(Name = "Telesync (Movies)")]
-    Telesync = 10,
+    Telesync = 9,
     [Display(Name = "Scan (Books)")]
-    Scan = 11,
+    Scan = 10,
     [Display(Name = "WEB-DL (Movies)")]
-    WebDl = 12,
+    WebDl = 11,
     [Display(Name = "WEBRip (Movies)")]
-    WebRip = 13,
+    WebRip = 12,
     [Display(Name = "HDRip (Movies)")]
-    HdRip = 14,
+    HdRip = 13,
 }

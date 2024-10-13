@@ -8,20 +8,18 @@ namespace Spottarr.Data.Entities.Enums;
 /// </summary>
 public enum AudioSource
 {
-    [Display(Name = "None")]
-    None = 0,
     [Display(Name = "CD")]
-    Cd = 1,
+    Cd = 0,
     [Display(Name = "Radio")]
-    Radio = 2,
+    Radio = 1,
     [Display(Name = "Compilation"), Obsolete("Deprecated")]
-    Compilation = 3,
+    Compilation = 2,
     [Display(Name = "DVD")]
-    Dvd = 4,
+    Dvd = 3,
     [Display(Name = "Other")]
-    Other = 5,
+    Other = 4,
     [Display(Name = "Vinyl")]
-    Vinyl = 6,
+    Vinyl = 5,
     [Display(Name = "Stream")]
-    Stream = 7,
+    Stream = 6,
 }

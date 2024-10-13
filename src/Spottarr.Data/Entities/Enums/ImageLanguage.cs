@@ -8,38 +8,36 @@ namespace Spottarr.Data.Entities.Enums;
 /// </summary>
 public enum ImageLanguage
 {
-    [Display(Name = "None")]
-    None = 0,
     [Display(Name = "No subtitles (Movies)")]
-    NoSubtitles = 1,
+    NoSubtitles = 0,
     [Display(Name = "Dutch subtitles (external) (Movies)")]
-    DutchSubtitlesExternal = 2,
+    DutchSubtitlesExternal = 1,
     [Display(Name = "Dutch subtitles (baked in) (Movies/Books)")]
-    DutchSubtitlesBakedIn = 3,
+    DutchSubtitlesBakedIn = 2,
     [Display(Name = "English subtitles (external) (Movies)")]
-    EnglishSubtitlesExternal = 4,
+    EnglishSubtitlesExternal = 3,
     [Display(Name = "English subtitles (baked in) (Movies/Books)")]
-    EnglishSubtitlesBakedIn = 5,
+    EnglishSubtitlesBakedIn = 4,
     [Display(Name = "Other"), Obsolete("Deprecated")]
-    Other = 6,
+    Other = 5,
     [Display(Name = "Dutch subtitles (configurable) (Movies)")]
-    DutchSubtitlesConfigurable = 7,
+    DutchSubtitlesConfigurable = 6,
     [Display(Name = "English subtitles (configurable) (Movies)")]
-    EnglishSubtitlesConfigurable = 8,
+    EnglishSubtitlesConfigurable = 7,
     [Display(Name = "Unused"), Obsolete("Unused")]
-    Unused1 = 9,
+    Unused1 = 8,
     [Display(Name = "Unused"), Obsolete("Unused")]
-    Unused2 = 10,
+    Unused2 = 9,
     [Display(Name = "English Audio (Movies)")]
-    EnglishAudio = 11,
+    EnglishAudio = 10,
     [Display(Name = "Dutch Audio (Movies)")]
-    DutchAudio = 12,
+    DutchAudio = 11,
     [Display(Name = "German Audio/Written (Movies/Books)")]
-    GermanAudioWritten = 13,
+    GermanAudioWritten = 12,
     [Display(Name = "French Audio/Written (Movies/Books)")]
-    FrenchAudioWritten = 14,
+    FrenchAudioWritten = 13,
     [Display(Name = "Spanish Audio/Written (Movies/Books)")]
-    SpanishAudioWritten = 15,
+    SpanishAudioWritten = 14,
     [Display(Name = "Asian Audio/Written (Movies/Books)")]
-    AsianAudioWritten = 16,
+    AsianAudioWritten = 15,
 }

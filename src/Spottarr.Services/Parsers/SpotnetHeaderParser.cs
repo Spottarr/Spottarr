@@ -33,9 +33,8 @@ public static partial class SpotnetHeaderParser
             // Splits the sub category codes.
             // While the category is not zero-indexed, the sub categories are.
             // For example 27a00b00c07d01z00 has category 2 but subcategories A01,B01,C08,D02,Z01
-            // We add 1 so the documented category code and stored value match
             var subCategories = g["scats"].Captures
-                .Select(c => (char.ToUpperInvariant(c.Value[0]), int.Parse(c.Value[1..3], CultureInfo.InvariantCulture) + 1))
+                .Select(c => (char.ToUpperInvariant(c.Value[0]), int.Parse(c.Value[1..3], CultureInfo.InvariantCulture)))
                 .Where(x => x.Item2 > 0)
                 .ToList();
 

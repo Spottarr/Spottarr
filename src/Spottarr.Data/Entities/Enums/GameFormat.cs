@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Spottarr.Data.Entities.Enums;
 
 /// <summary>
@@ -6,12 +8,18 @@ namespace Spottarr.Data.Entities.Enums;
 /// </summary>
 public enum GameFormat
 {
-    None = 0,
-    Iso = 1,
-    Rip = 2,
-    Retail = 3,
-    Dlc = 4,
-    Unknown1 = 5,
-    Patch = 6,
-    Crack = 7
+    [Display(Name = "ISO")]
+    Iso = 0,
+    [Display(Name = "Rip")]
+    Rip = 1,
+    [Display(Name = "Retail")]
+    Retail = 2,
+    [Display(Name = "DLC")]
+    Dlc = 3,
+    [Display(Name = "Unknown"), Obsolete("Unused")]
+    Unused1 = 4,
+    [Display(Name = "Patch")]
+    Patch = 5,
+    [Display(Name = "Crack")]
+    Crack = 6
 }

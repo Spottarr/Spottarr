@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Spottarr.Data.Entities.Enums;
 
 /// <summary>
@@ -6,6 +8,6 @@ namespace Spottarr.Data.Entities.Enums;
 /// </summary>
 public enum ApplicationType
 {
-    None = 0,
-    Everything = 1,
+    [Display(Name = "Everything")]
+    Everything = 0,
 }

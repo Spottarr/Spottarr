@@ -8,22 +8,20 @@ namespace Spottarr.Data.Entities.Enums;
 /// </summary>
 public enum ApplicationPlatform
 {
-    [Display(Name = "None")]
-    None = 0,
     [Display(Name = "Windows")]
-    Windows = 1,
+    Windows = 0,
     [Display(Name = "Macintosh")]
-    Macintosh = 2,
+    Macintosh = 1,
     [Display(Name = "Linux")]
-    Linux = 3,
+    Linux = 2,
     [Display(Name = "OS/2")]
-    Os2 = 4,
+    Os2 = 3,
     [Display(Name = "Windows Phone")]
-    WindowsPhone = 5,
+    WindowsPhone = 4,
     [Display(Name = "Navigation")]
-    Navigation = 6,
+    Navigation = 5,
     [Display(Name = "iOs")]
-    IOs = 7,
+    IOs = 6,
     [Display(Name = "Android")]
-    Android = 8,
+    Android = 7,
 }

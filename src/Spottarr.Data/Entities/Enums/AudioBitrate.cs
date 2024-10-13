@@ -8,26 +8,24 @@ namespace Spottarr.Data.Entities.Enums;
 /// </summary>
 public enum AudioBitrate
 {
-    [Display(Name = "None")]
-    None = 0,
     [Display(Name = "Variabel")]
-    Variabel = 1,
+    Variable = 0,
     [Display(Name = "< 96kbit")]
-    Below96Kbit = 2,
+    Below96Kbit = 1,
     [Display(Name = "96kbit")]
-    X96Kbit = 3,
+    X96Kbit = 2,
     [Display(Name = "128kbit")]
-    X128Kbit = 4,
+    X128Kbit = 3,
     [Display(Name = "160kbit")]
-    X160Kbit = 5,
+    X160Kbit = 4,
     [Display(Name = "192kbit")]
-    X192Kbit = 6,
+    X192Kbit = 5,
     [Display(Name = "256kbit")]
-    X256Kbit = 7,
+    X256Kbit = 6,
     [Display(Name = "320kbit")]
-    X320Kbit = 8,
+    X320Kbit = 7,
     [Display(Name = "Lossless")]
-    Lossless = 9,
+    Lossless = 8,
     [Display(Name = "Other")]
-    Other = 10,
+    Other = 9,
 }

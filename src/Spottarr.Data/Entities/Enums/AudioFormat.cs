@@ -8,24 +8,22 @@ namespace Spottarr.Data.Entities.Enums;
 /// </summary>
 public enum AudioFormat
 {
-    [Display(Name = "None")]
-    None = 0,
     [Display(Name = "MP3")]
-    Mp3 = 1,
+    Mp3 = 0,
     [Display(Name = "WMA")]
-    Wma = 2,
+    Wma = 1,
     [Display(Name = "WAV")]
-    Wav = 3,
+    Wav = 2,
     [Display(Name = "OGG")]
-    Ogg = 4,
+    Ogg = 3,
     [Display(Name = "EAC")]
-    Eac = 5,
+    Eac = 4,
     [Display(Name = "DTS")]
-    Dts = 6,
+    Dts = 5,
     [Display(Name = "AAC")]
-    Aac = 7,
+    Aac = 6,
     [Display(Name = "APE")]
-    Ape = 8,
+    Ape = 7,
     [Display(Name = "FLAC")]
-    Flac = 9,
+    Flac = 8,
 }

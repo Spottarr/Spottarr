@@ -8,38 +8,36 @@ namespace Spottarr.Data.Entities.Enums;
 /// </summary>
 public enum ImageFormat
 {
-    [Display(Name = "None")]
-    None = 0,
     [Display(Name = "DivX")]
-    DivX = 1,
+    DivX = 0,
     [Display(Name = "WMV")]
-    Wmv = 2,
+    Wmv = 1,
     [Display(Name = "MPG")]
-    Mpg = 3,
+    Mpg = 2,
     [Display(Name = "DVD5")]
-    Dvd5 = 4,
+    Dvd5 = 3,
     [Display(Name = "HD Other"), Obsolete("Deprecated")]
-    HdOther = 5,
+    HdOther = 4,
     [Display(Name = "ePub")]
-    EPub = 6,
+    EPub = 5,
     [Display(Name = "Bluray")]
-    Bluray = 7,
+    Bluray = 6,
     [Display(Name = "HD-DVD"), Obsolete("Deprecated")]
-    HdDvd = 8,
+    HdDvd = 7,
     [Display(Name = "WMV-HD"), Obsolete("Deprecated")]
-    WmvHd = 9,
+    WmvHd = 8,
     [Display(Name = "x264")]
-    X264 = 10,
+    X264 = 9,
     [Display(Name = "DVD9")]
-    Dvd9 = 11,
+    Dvd9 = 10,
     [Display(Name = "PDF (Books)")]
-    Pdf = 12,
+    Pdf = 11,
     [Display(Name = "Bitmap (Picture)")]
-    Bitmap = 13,
+    Bitmap = 12,
     [Display(Name = "Vector (Picture)")]
-    Vector = 14,
+    Vector = 13,
     [Display(Name = "3D (Movie)")]
-    X3D = 15,
+    X3D = 14,
     [Display(Name = "UHD (Movie)")]
-    Uhd = 16,
+    Uhd = 15,
 }

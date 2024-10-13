@@ -8,14 +8,12 @@ namespace Spottarr.Data.Entities.Enums;
 /// </summary>
 public enum AudioType
 {
-    [Display(Name = "None")]
-    None = 0,
     [Display(Name = "Album")]
-    Album = 1,
+    Album = 0,
     [Display(Name = "Live Set")]
-    LiveSet = 2,
+    LiveSet = 1,
     [Display(Name = "Podcast")]
-    Podcast = 3,
+    Podcast = 2,
     [Display(Name = "Audiobook")]
-    Audiobook = 4,
+    Audiobook = 3,
 }
