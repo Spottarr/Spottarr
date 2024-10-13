@@ -11,7 +11,7 @@ public class SpotnetHeader
     public required string UserSignature { get; init; }
     public required int Category { get; init; }
     public required string KeyId { get; init; }
-    public required IReadOnlyList<string> SubCategories { get; init; }
+    public required IReadOnlyList<(char Type, int Code)> SubCategories { get; init; }
     public required long Size { get; init; }
     public required DateTimeOffset Date { get; init; }
     public required string CustomId { get; init; }

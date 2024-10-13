@@ -6,8 +6,6 @@ namespace Spottarr.Services.Parsers;
 
 public static partial class SpotnetHeaderParser
 {
-    private const string DateFormat = "YYYYDDMM";
-    
     public static SpotnetHeader Parse(NntpHeader header)
     {
         ArgumentNullException.ThrowIfNull(header);
@@ -29,7 +27,17 @@ public static partial class SpotnetHeaderParser
 
             var category = int.Parse(g["cat"].Value, CultureInfo.InvariantCulture);
             var size = long.Parse(g["size"].Value, CultureInfo.InvariantCulture);
-            var date = DateTimeOffset.ParseExact(DateFormat, g["size"].Value, CultureInfo.InvariantCulture);
+            var unixTime = long.Parse(g["date"].Value, CultureInfo.InvariantCulture);
+            var date = DateTimeOffset.FromUnixTimeSeconds(unixTime);
+
+            // Splits the sub category codes.
+            // While the category is not zero-indexed, the sub categories are.
+            // For example 27a00b00c07d01z00 has category 2 but subcategories A01,B01,C08,D02,Z01
+            // We add 1 so the documented category code and stored value match
+            var subCategories = g["scats"].Captures
+                .Select(c => (char.ToUpperInvariant(c.Value[0]), int.Parse(c.Value[1..3], CultureInfo.InvariantCulture) + 1))
+                .Where(x => x.Item2 > 0)
+                .ToList();
 
             return new SpotnetHeader
             {
@@ -40,7 +48,7 @@ public static partial class SpotnetHeaderParser
                 UserSignature = g["usig"].Value,
                 Category = category,
                 KeyId = g["kid"].Value,
-                SubCategories = g["scats"].Captures.Select(c => c.Value).ToList(),
+                SubCategories = subCategories,
                 Size = size,
                 Date = date,
                 CustomId = g["cid"].Value,
@@ -62,6 +70,6 @@ public static partial class SpotnetHeaderParser
     */
 
     [GeneratedRegex(
-        @"(?<n>.+) <(((?<umod>[\-0-z=]+)\.(?<usig>[\-0-z=]+))|(?<nosig>.+))@(?<cat>[0-9]{1})(?<kid>[0-9]{1})(?<scats>([abcdz][0-9]{2})*)\.(?<size>\d+)\.(?<x>\d+)\.(?<date>\d+)\.(?<cid>.+)\.(?<cv>.+)\.(?<ssig>[\-0-z=]+)>")]
+        @"(?<n>.+) <(((?<umod>[\-0-z=]+)\.(?<usig>[\-0-z=]+))|(?<nosig>.+))@(?<cat>[0-9]{1})(?<kid>[0-9]{1})((?<scats>[abcdz][0-9]{2})*)\.(?<size>\d+)\.(?<x>\d+)\.(?<date>\d+)\.(?<cid>.+)\.(?<cv>.+)\.(?<ssig>[\-0-z=]+)>")]
     private static partial Regex SpotnetHeaderRegex();
 }
