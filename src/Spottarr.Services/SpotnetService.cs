@@ -51,7 +51,7 @@ internal sealed class SpotnetService : ISpotnetService
 
         foreach (var spot in spots)
         {
-            Console.WriteLine(spot.NntpHeader.Author);
+            Console.WriteLine(spot.Subject);
         }
         
         client.Quit();

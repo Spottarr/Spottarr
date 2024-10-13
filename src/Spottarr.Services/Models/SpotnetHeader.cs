@@ -4,12 +4,14 @@ namespace Spottarr.Services.Models;
 
 public partial class SpotnetHeader
 {
-    private SpotnetHeader(string nickName, string publicKey, string userSignature, string category, string keyId,
-        string subCategory, string size, string random, string date, string customId, string customValue,
-        string signature, NntpHeader nntpHeader)
+    private SpotnetHeader(string subject, string tag, string nickname, string userModulus,
+        string userSignature, string category, string keyId, string subCategory, string size, string random,
+        string date, string customId, string customValue, string serverSignature, NntpHeader nntpHeader)
     {
-        NickName = nickName;
-        PublicKey = publicKey;
+        Subject = subject;
+        Tag = tag;
+        Nickname = nickname;
+        UserModulus = userModulus;
         UserSignature = userSignature;
         Category = category;
         KeyId = keyId;
@@ -19,12 +21,14 @@ public partial class SpotnetHeader
         Date = date;
         CustomId = customId;
         CustomValue = customValue;
-        Signature = signature;
+        ServerSignature = serverSignature;
         NntpHeader = nntpHeader;
     }
 
-    public string NickName { get; }
-    public string PublicKey { get; }
+    public string Subject { get; }
+    public string Tag { get; }
+    public string Nickname { get; }
+    public string UserModulus { get; }
     public string UserSignature { get; }
     public string Category { get; }
     public string KeyId { get; }
@@ -34,13 +38,16 @@ public partial class SpotnetHeader
     public string Date { get; }
     public string CustomId { get; }
     public string CustomValue { get; }
-    public string Signature { get; }
+    public string ServerSignature { get; }
     public NntpHeader NntpHeader { get; }
 
     public static SpotnetHeader Parse(NntpHeader header)
     {
         ArgumentNullException.ThrowIfNull(header);
 
+        var subjectAndTags = header.Subject.Split('|', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var subject = subjectAndTags[0];
+        var tag = subjectAndTags.Length == 2 ? subjectAndTags[1] : string.Empty;
 
         var regex = SpotnetHeaderRegex();
         var match = regex.Match(header.Author);
@@ -50,7 +57,7 @@ public partial class SpotnetHeader
 
         var g = match.Groups;
 
-        return new SpotnetHeader(g["n"].Value, g["umod"].Value, g["usig"].Value, g["cat"].Value, g["kid"].Value,
+        return new SpotnetHeader(subject, tag, g["n"].Value, g["umod"].Value, g["usig"].Value, g["cat"].Value, g["kid"].Value,
             g["scats"].Value, g["size"].Value, g["x"].Value, g["date"].Value, g["sid"].Value, g["cv"].Value,
             g["ssig"].Value, header);
     }
@@ -58,9 +65,7 @@ public partial class SpotnetHeader
     /*
      The Spotnet author header has the following format:
      [Nickname] <[USER-MODULUS].[USER-SIGNATURE]@[CAT][KEY-ID][SUBCATS].[SIZE].[DEPRECATED].[DATE].[CUSTOM-ID].[CUSTOM-VALUE].[SERVER-SIGNATURE]>
-     See: 
-     https://github.com/spotnet/spotnet/wiki/Spot-Header-format#message-id
-     https://github.com/spotweb/spotweb/blob/develop/lib/services/Format/Services_Format_CParsing.php#L238
+     See: https://github.com/spotnet/spotnet/wiki/Spot-Header-format#message-id
     */
 
     [GeneratedRegex(
