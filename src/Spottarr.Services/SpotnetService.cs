@@ -94,18 +94,17 @@ internal sealed class SpotnetService : ISpotnetService
 
     private static IEnumerable<NntpArticleRange> GetBatches(long lowWaterMark, long highWaterMark)
     {
-        var batchCount = 0;
-        for (var i = highWaterMark; i >= lowWaterMark; i--)
+        var batchEnd = highWaterMark;
+        while (batchEnd >= lowWaterMark)
         {
-            batchCount++;
-            if (batchCount != BatchSize) continue;
+            var batchStart = Math.Max(lowWaterMark, batchEnd - (BatchSize - 1));
+            
+            // Make sure that the final batch is inclusive
+            if (batchStart - 1 == lowWaterMark) batchStart = lowWaterMark;
 
-            var range = new NntpArticleRange(highWaterMark - batchCount, highWaterMark);
-            highWaterMark -= batchCount;
-            batchCount = 0;
-            yield return range;
+            yield return new NntpArticleRange(batchStart, batchEnd);
+            
+            batchEnd = batchStart - 1;
         }
-
-        yield return new NntpArticleRange(highWaterMark - batchCount, highWaterMark);
     }
 }
