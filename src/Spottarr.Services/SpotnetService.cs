@@ -1,11 +1,13 @@
+using System.Data.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spottarr.Data;
+using Spottarr.Data.Entities;
 using Spottarr.Services.Configuration;
 using Spottarr.Services.Contracts;
-using Spottarr.Services.Models;
+using Spottarr.Services.Extensions;
+using Spottarr.Services.Nntp;
 using Spottarr.Services.Parsers;
-using Usenet.Nntp;
 using Usenet.Nntp.Models;
 
 namespace Spottarr.Services;
@@ -32,7 +34,6 @@ internal sealed class SpotnetService : ISpotnetService
 
     public async Task Import()
     {
-        // Set up Usenet connection
         using var handler = new NntpClientHandler(_usenetOptions.Value);
         await handler.ConnectAsync();
 
@@ -46,50 +47,72 @@ internal sealed class SpotnetService : ISpotnetService
         }
 
         var group = groupResponse.Group;
-        var spotHeaders = GetSpotHeaders(group, handler, spotnetOptions.RetrieveAfter, spotnetOptions.RetrieveCount).ToList();
+        var batches = GetBatches(group.LowWaterMark, group.HighWaterMark, spotnetOptions.RetrieveCount).ToList();
+        
+        foreach (var batch in batches)
+        {
+            var spots = ImportBatch(handler, batch, spotnetOptions.RetrieveAfter);
+            if (spots.Count == 0) return;
+
+            try
+            {
+                await _dbContext.AddRangeAsync(spots);
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (DbException ex)
+            {
+                _logger.FailedToSaveSpotBatch(ex);
+            }
+        }
         
     }
 
-    private IEnumerable<SpotnetHeader> GetSpotHeaders(NntpGroup group, NntpClientHandler handler, DateTimeOffset retrieveAfter,
-        int retrieveCount)
+    private List<Spot> ImportBatch(NntpClientHandler handler, NntpArticleRange batch, DateTimeOffset retrieveAfter)
     {
-        var from = retrieveCount > 0 ? group.HighWaterMark - retrieveCount : group.LowWaterMark;
-        var to = group.HighWaterMark;
-        var batches = GetBatches(from, to).ToList();
-
-        foreach (var batch in batches)
+        var results = new List<Spot>();
+        var xOverResponse = handler.Client.Xover(batch);
+        if (!xOverResponse.Success)
         {
-            var xOverResponse = handler.Client.Xover(batch);
-            if (!xOverResponse.Success)
-            {
-                _logger.CouldNotRetrieveArticles(batch.From, batch.To, xOverResponse.Code, xOverResponse.Message);
-                continue;
-            }
+            _logger.CouldNotRetrieveArticles(batch.From, batch.To, xOverResponse.Code, xOverResponse.Message);
+            return results;
+        }
 
-            foreach (var header in xOverResponse.Lines)
+        foreach (var header in xOverResponse.Lines)
+        {
+            try
             {
-                if (header == null)
-                    continue;
-
                 var nntpHeader = NntpHeaderParser.Parse(header);
 
                 if (nntpHeader.Date < retrieveAfter)
-                    yield break;
+                {
+                    _logger.ReachedRetrieveAfter(retrieveAfter);
+                    return results;
+                }
+                
+                var spotnetHeader = SpotnetHeaderParser.Parse(nntpHeader);
 
-                yield return SpotnetHeaderParser.Parse(nntpHeader);
+                results.Add(spotnetHeader.ToSpot());
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.FailedToParseSpotHeader(ex);
             }
         }
+
+        return results;
     }
 
-    private static IEnumerable<NntpArticleRange> GetBatches(long lowWaterMark, long highWaterMark)
+    private static IEnumerable<NntpArticleRange> GetBatches(long lowWaterMark, long highWaterMark, int retrieveCount)
     {
+        var start = retrieveCount > 0 ? highWaterMark - retrieveCount : lowWaterMark;
         var batchEnd = highWaterMark;
-        while (batchEnd >= lowWaterMark)
+        
+        while (batchEnd >= start)
         {
-            var batchStart = Math.Max(lowWaterMark, batchEnd - (BatchSize - 1));
+            var batchStart = Math.Max(start, batchEnd - (BatchSize - 1));
             
             // Make sure that the final batch is inclusive
-            if (batchStart - 1 == lowWaterMark) batchStart = lowWaterMark;
+            if (batchStart - 1 == start) batchStart = start;
 
             yield return new NntpArticleRange(batchStart, batchEnd);
             
