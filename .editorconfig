@@ -3,5 +3,5 @@
 dotnet_diagnostic.CA1861.severity = none
 
 # Disable checks for controller classes
-[src/Spottarr.Web/Controllers/*.cs]
+[src/Spottarr.Web/**/*.cs]
 dotnet_diagnostic.CA1515.severity = none
