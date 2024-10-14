@@ -8,12 +8,19 @@ builder.Host.UseDefaultServiceProvider(configure =>
     configure.ValidateOnBuild = true;
 });
 
+builder.Services.AddControllers();
+builder.Services.AddOpenApi();
+
 builder.Services.AddSpottarrData();
 builder.Services.AddSpottarrServices(builder.Configuration);
+
 builder.Logging.AddConsole();
 
 var app = builder.Build();
 
-app.MapGet("/", () => "Hello World!");
+app.MapOpenApi();
+app.UseHttpsRedirection();
+app.UseAuthorization();
+app.MapControllers();
 
-app.Run();
+await app.RunAsync();
