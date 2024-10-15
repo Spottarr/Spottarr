@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Scalar.AspNetCore;
 using Spottarr.Data;
 using Spottarr.Services;
@@ -11,8 +10,7 @@ builder.Host.UseDefaultServiceProvider(configure =>
     configure.ValidateOnBuild = true;
 });
 
-builder.Services.AddControllers(a => a.OutputFormatters.Add(new XmlSerializerOutputFormatter()))
-    .AddXmlSerializerFormatters();
+builder.Services.AddControllers().AddXmlSerializerFormatters();
 builder.Services.AddOpenApi();
 builder.Services.Configure<RouteOptions>(options =>
 {
@@ -28,6 +26,7 @@ builder.Logging.AddConsole();
 var app = builder.Build();
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseAuthorization();
 
 app.MapOpenApi();
