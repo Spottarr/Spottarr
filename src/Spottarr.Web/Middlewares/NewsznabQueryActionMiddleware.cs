@@ -20,16 +20,21 @@ internal sealed class NewsznabQueryActionMiddleware
         ArgumentNullException.ThrowIfNull(context);
         
         var path = context.Request.Path;
-    
-        if (!path.StartsWithSegments($"/{NewznabController.Name}", StringComparison.OrdinalIgnoreCase))
-            await _next.Invoke(context);
-    
-        var query = new WriteableQueryCollection(context.Request.Query);
-    
-        if (!query.TryGetValue(NewznabController.ActionParameter, out var action))
-            await _next.Invoke(context);
 
-        query.Remove(NewznabController.ActionParameter);
+        if (!path.StartsWithSegments($"/{NewznabController.Name}", StringComparison.OrdinalIgnoreCase))
+        {
+            await _next.Invoke(context);
+            return;
+        }
+
+        var query = new WriteableQueryCollection(context.Request.Query);
+
+        if (!query.Remove(NewznabController.ActionParameter, out var action))
+        {
+            await _next.Invoke(context);
+            return;
+        }
+
         context.Request.Query = query;
         context.Request.Path = path.Add($"/{action}");
 
