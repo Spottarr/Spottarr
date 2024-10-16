@@ -10,6 +10,7 @@ using Spottarr.Services.Contracts;
 using Spottarr.Services.Helpers;
 using Spottarr.Services.Nntp;
 using Spottarr.Services.Parsers;
+using Usenet.Exceptions;
 using Usenet.Nntp.Models;
 
 namespace Spottarr.Services;
@@ -49,28 +50,45 @@ internal sealed class SpotnetService : ISpotnetService
         }
 
         var group = groupResponse.Group;
-        var batches = GetBatches(group.LowWaterMark, group.HighWaterMark, spotnetOptions.RetrieveCount).ToList();
+        var headerBatches = GetXoverBatches(group.LowWaterMark, group.HighWaterMark, spotnetOptions.RetrieveCount).ToList();
 
         var retrieveAfterUtc = spotnetOptions.RetrieveAfter.UtcDateTime;
         var existing = await _dbContext.Spots
             .Where(s => s.CreatedAt >= retrieveAfterUtc)
             .Select(s => s.MessageId)
             .ToHashSetAsync();
-        
+
         var context = new SpotImportResult(existing);
         
-        foreach (var batch in batches)
+        // Fetch and parse headers
+        foreach (var headerBatch in headerBatches)
         {
-            var done = ImportBatch(context, handler, batch, spotnetOptions.RetrieveAfter);
+            var done = ParseHeaderBatch(context, handler, headerBatch, spotnetOptions.RetrieveAfter);
             if (done) break;
+        }
+
+        // Fetch full article
+        foreach (var spot in context.Spots)
+        {
+            try
+            {
+                var articleResponse = handler.Client.Head(new NntpMessageId(spot.MessageId));
+                if (!articleResponse.Success) continue;
+
+                spot.Description = string.Join('\n', articleResponse.Article.Body);
+            }
+            catch (NntpException ex)
+            {
+                _logger.FailedToSaveSpots(ex);
+            }
         }
 
         try
         {
-            await _dbContext.BulkInsertOrUpdateAsync(context.ImageSpots, ConfigureBulkInsert);
-            await _dbContext.BulkInsertOrUpdateAsync(context.AudioSpots, ConfigureBulkInsert);
-            await _dbContext.BulkInsertOrUpdateAsync(context.GameSpots, ConfigureBulkInsert);
-            await _dbContext.BulkInsertOrUpdateAsync(context.ApplicationSpots, ConfigureBulkInsert);
+            await _dbContext.BulkInsertOrUpdateAsync(context.ImageSpots, ConfigureBulkUpsert);
+            await _dbContext.BulkInsertOrUpdateAsync(context.AudioSpots, ConfigureBulkUpsert);
+            await _dbContext.BulkInsertOrUpdateAsync(context.GameSpots, ConfigureBulkUpsert);
+            await _dbContext.BulkInsertOrUpdateAsync(context.ApplicationSpots, ConfigureBulkUpsert);
         }
         catch (DbException ex)
         {
@@ -78,13 +96,13 @@ internal sealed class SpotnetService : ISpotnetService
         }
     }
 
-    private void ConfigureBulkInsert(BulkConfig config)
+    private void ConfigureBulkUpsert(BulkConfig config)
     {
         config.UpdateByProperties = [nameof(Spot.MessageId)];
-        config.PropertiesToIncludeOnUpdate = [ string.Empty ];
+        config.PropertiesToIncludeOnUpdate = [nameof(Spot.Description)];
     }
 
-    private bool ImportBatch(SpotImportResult context, NntpClientHandler handler, NntpArticleRange batch,
+    private bool ParseHeaderBatch(SpotImportResult context, NntpClientHandler handler, NntpArticleRange batch,
         DateTimeOffset retrieveAfter)
     {
         var xOverResponse = handler.Client.Xover(batch);
@@ -109,6 +127,7 @@ internal sealed class SpotnetService : ISpotnetService
                 var spotnetHeader = SpotnetHeaderParser.Parse(nntpHeader);
 
                 var spot = spotnetHeader.ToSpot();
+                
                 context.AddSpot(spot);
             }
             catch (ArgumentException ex)
@@ -120,7 +139,7 @@ internal sealed class SpotnetService : ISpotnetService
         return false;
     }
 
-    private static IEnumerable<NntpArticleRange> GetBatches(long lowWaterMark, long highWaterMark, int retrieveCount)
+    private static IEnumerable<NntpArticleRange> GetXoverBatches(long lowWaterMark, long highWaterMark, int retrieveCount)
     {
         var start = retrieveCount > 0 ? highWaterMark - retrieveCount : lowWaterMark;
         var batchEnd = highWaterMark;

@@ -1,21 +1,25 @@
+using Spottarr.Data;
 using Spottarr.Data.Entities;
 
 namespace Spottarr.Services.Helpers;
 
 internal sealed class SpotImportResult
 {
-    private readonly HashSet<string> _messageIds;
+    private readonly HashSet<string> _existingMessageIds;
+    public List<Spot> Spots { get; } = [];
     public List<ImageSpot> ImageSpots { get; } = [];
     public List<AudioSpot> AudioSpots { get; } = [];
     public List<GameSpot> GameSpots { get; } = [];
     public List<ApplicationSpot> ApplicationSpots { get; } = [];
 
-    public SpotImportResult(HashSet<string> messageIds) => _messageIds = messageIds;
+    public SpotImportResult(HashSet<string> existingMessageIds) => _existingMessageIds = existingMessageIds;
 
     public void AddSpot(Spot spot)
     {
         // Deduplicate on message ID
-        if (!_messageIds.Add(spot.MessageId)) return;
+        if (!_existingMessageIds.Add(spot.MessageId)) return;
+
+        Spots.Add(spot);
 
         Action action = spot switch
         {
