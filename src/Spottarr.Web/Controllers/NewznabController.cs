@@ -147,10 +147,7 @@ public sealed class NewznabController : ControllerBase
         var uriBuilder = new UriBuilder(Request.Scheme, Request.Host.Host, Request.Host.Port ?? -1);
 
         var spots = await _dbContext.Spots.Take(100).ToListAsync();
-        
-        var items = spots.Select(s => new SyndicationItem(s.Subject, s.Subject, uriBuilder.Uri, s.MessageId, s.UpdatedAt)
-            .AddNewznabAttribute("category", "5000")
-            .AddNewznabAttribute("subs", "dutch,english")).ToList();
+        var items = spots.Select(s => s.ToSyndicationItem(uriBuilder.Uri)).ToList();
 
         var feed = new SyndicationFeed("Spottarr Index", "Spottarr Index API", uriBuilder.Uri, items)
             .AddNewznabNamespace();
