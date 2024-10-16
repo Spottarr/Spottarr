@@ -3,6 +3,7 @@ using System.Xml.Serialization;
 
 namespace Spottarr.Web.Modals.Newznab;
 
+[XmlRoot("caps")]
 public class Capabilities
 {
     [XmlElement("server")] public required ServerInfo ServerInfo { get; init; }

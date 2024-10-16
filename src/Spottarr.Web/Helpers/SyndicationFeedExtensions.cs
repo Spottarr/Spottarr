@@ -15,11 +15,37 @@ internal static class SyndicationFeedExtensions
 
         return item;
     }
+    
+    public static SyndicationItem AddNewznabNzbUrl(this SyndicationItem item, Uri url, long bytes)
+    {
+        item.Links.Add(new SyndicationLink(url)
+        {
+            MediaType = "application/x-nzb",
+            Length = bytes
+        });
+        
+        return item;
+    }
+    
+    public static SyndicationItem AddCategory(this SyndicationItem item, string name)
+    {
+        item.Categories.Add(new SyndicationCategory(name));
+        
+        return item;
+    }
 
     public static SyndicationFeed AddNewznabNamespace(this SyndicationFeed feed)
     {
         feed.AttributeExtensions.Add(new XmlQualifiedName("newznab", XNamespace.Xmlns.NamespaceName),
             Namespace.NamespaceName);
+
+        return feed;
+    }
+    
+    public static SyndicationFeed AddNewznabResponseInfo(this SyndicationFeed feed, int offset, int total)
+    {
+        feed.ElementExtensions.Add(new XElement(Namespace.GetName("response"), new XAttribute("offset", offset),
+            new XAttribute("total", total)));
 
         return feed;
     }

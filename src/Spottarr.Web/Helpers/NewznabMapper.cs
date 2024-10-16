@@ -13,7 +13,11 @@ internal static class NewznabMapper
     /// </summary>
     public static SyndicationItem ToSyndicationItem(this Spot spot, Uri baseUri)
     {
-        var item = MapSpot(spot, baseUri);
+        var item = MapSpot(spot, baseUri)
+            .AddCategory("test123")
+            .AddNewznabNzbUrl(new Uri("https://www.test.com/test.nzb"), spot.Bytes);
+
+        item.PublishDate = spot.SpottedAt;
         
         return spot switch
         {

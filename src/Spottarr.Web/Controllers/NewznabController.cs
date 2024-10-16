@@ -142,16 +142,22 @@ public sealed class NewznabController : ControllerBase
     [HttpGet("book")]
     [HttpGet("pc")]
     [Produces("application/rss+xml")]
-    public async Task<ActionResult> Search(bool dl = true)
+    public async Task<ActionResult> Search(bool dl = false, int p = 0)
     {
         var uriBuilder = new UriBuilder(Request.Scheme, Request.Host.Host, Request.Host.Port ?? -1);
 
-        var spots = await _dbContext.Spots.Take(100).ToListAsync();
+        const int pageSize = 1;
+        var offset = p * pageSize;
+        var spots = await _dbContext.Spots.Skip(offset).Take(pageSize).ToListAsync();
+        
         var items = spots.Select(s => s.ToSyndicationItem(uriBuilder.Uri)).ToList();
 
         var feed = new SyndicationFeed("Spottarr Index", "Spottarr Index API", uriBuilder.Uri, items)
-            .AddNewznabNamespace();
-
+            .AddNewznabNamespace()
+            .AddNewznabResponseInfo(offset, pageSize);
+        
+        feed.Links.Add(new SyndicationLink(uriBuilder.Uri));
+        
         return File(NewznabRssSerializer.Serialize(feed), dl ? "application/rss+xml": "text/xml");
     }
 }

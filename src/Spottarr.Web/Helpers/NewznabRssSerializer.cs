@@ -8,9 +8,9 @@ internal static class NewznabRssSerializer
 {
     private static readonly XmlWriterSettings XmlWriterSettings = new()
     {
-        Encoding = Encoding.UTF8,
+        // Disable BOM, it breaks parsing by other ARRs
+        Encoding = new UTF8Encoding(false),
         NewLineHandling = NewLineHandling.Entitize,
-        NewLineOnAttributes = true,
         Indent = true,
         Async = true,
     };
