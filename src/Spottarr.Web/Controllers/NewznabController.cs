@@ -1,5 +1,7 @@
 using System.ServiceModel.Syndication;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Spottarr.Data;
 using Spottarr.Services.Contracts;
 using Spottarr.Web.Helpers;
 using Spottarr.Web.Modals.Newznab;
@@ -13,13 +15,15 @@ public sealed class NewznabController : ControllerBase
     public const string Name = "newznab";
     public const string ActionParameter = "t";
     
-    private readonly IHostEnvironment _hostEnvironment;
     private readonly IApplicationVersionService _applicationVersionService;
+    private readonly IHostEnvironment _hostEnvironment;
+    private readonly SpottarrDbContext _dbContext;
     
-    public NewznabController(IApplicationVersionService applicationVersionService, IHostEnvironment hostEnvironment)
+    public NewznabController(IApplicationVersionService applicationVersionService, IHostEnvironment hostEnvironment, SpottarrDbContext dbContext)
     {
-        _hostEnvironment = hostEnvironment;
         _applicationVersionService = applicationVersionService;
+        _hostEnvironment = hostEnvironment;
+        _dbContext = dbContext;
     }
     
     [HttpGet("caps")]
@@ -138,17 +142,18 @@ public sealed class NewznabController : ControllerBase
     [HttpGet("book")]
     [HttpGet("pc")]
     [Produces("application/rss+xml")]
-    public ActionResult Search(bool dl = true)
+    public async Task<ActionResult> Search(bool dl = true)
     {
         var uriBuilder = new UriBuilder(Request.Scheme, Request.Host.Host, Request.Host.Port ?? -1);
-        var feed = new SyndicationFeed("Spottarr Index", "Spottarr Index API", uriBuilder.Uri)
-        {
-            Items = new List<SyndicationItem>
-            {
-                new("test 1", "test 1", uriBuilder.Uri, "1", DateTimeOffset.Now),
-                new("test 2", "test 2", uriBuilder.Uri, "2", DateTimeOffset.Now),
-            }
-        };
+
+        var spots = await _dbContext.Spots.Take(100).ToListAsync();
+        
+        var items = spots.Select(s => new SyndicationItem(s.Subject, s.Subject, uriBuilder.Uri, s.MessageId, s.UpdatedAt)
+            .AddNewznabAttribute("category", "5000")
+            .AddNewznabAttribute("subs", "dutch,english")).ToList();
+
+        var feed = new SyndicationFeed("Spottarr Index", "Spottarr Index API", uriBuilder.Uri, items)
+            .AddNewznabNamespace();
 
         return File(NewznabRssSerializer.Serialize(feed), dl ? "application/rss+xml": "text/xml");
     }
