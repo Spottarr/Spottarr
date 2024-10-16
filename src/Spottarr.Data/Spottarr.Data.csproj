@@ -4,6 +4,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="EFCore.BulkExtensions.Sqlite" Version="8.1.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0-rc.*" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.0-rc.*" />
   </ItemGroup>

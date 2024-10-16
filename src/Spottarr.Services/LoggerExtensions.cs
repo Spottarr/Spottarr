@@ -18,8 +18,8 @@ public static partial class LoggerExtensions
 
     [LoggerMessage(
         Level = LogLevel.Error,
-        Message = "Failed to save spot batch")]
-    public static partial void FailedToSaveSpotBatch(this ILogger logger, Exception exception);
+        Message = "Failed to save spots")]
+    public static partial void FailedToSaveSpots(this ILogger logger, Exception exception);
 
     [LoggerMessage(
         Level = LogLevel.Error,

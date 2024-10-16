@@ -1,4 +1,5 @@
 using System.Data.Common;
+using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -6,7 +7,7 @@ using Spottarr.Data;
 using Spottarr.Data.Entities;
 using Spottarr.Services.Configuration;
 using Spottarr.Services.Contracts;
-using Spottarr.Services.Extensions;
+using Spottarr.Services.Helpers;
 using Spottarr.Services.Nntp;
 using Spottarr.Services.Parsers;
 using Usenet.Nntp.Models;
@@ -49,49 +50,48 @@ internal sealed class SpotnetService : ISpotnetService
 
         var group = groupResponse.Group;
         var batches = GetBatches(group.LowWaterMark, group.HighWaterMark, spotnetOptions.RetrieveCount).ToList();
+
+        var retrieveAfterUtc = spotnetOptions.RetrieveAfter.UtcDateTime;
+        var existing = await _dbContext.Spots
+            .Where(s => s.CreatedAt >= retrieveAfterUtc)
+            .Select(s => s.MessageId)
+            .ToHashSetAsync();
+        
+        var context = new SpotImportResult(existing);
         
         foreach (var batch in batches)
         {
-            var spots = ImportBatch(handler, batch, spotnetOptions.RetrieveAfter);
-            if (spots.Count == 0) return;
-
-            var newMessageIds = spots
-                .Select(s => s.MessageId)
-                .ToHashSet();
-            
-            try
-            {
-                await using var transaction = await _dbContext.Database.BeginTransactionAsync();
-                
-                var existingMessageIds = await _dbContext.Set<Spot>()
-                    .Where(s => newMessageIds.Contains(s.MessageId))
-                    .Select(s => s.MessageId)
-                    .ToHashSetAsync();
-                
-                var newSpots = spots
-                    .Where(s => !existingMessageIds.Contains(s.MessageId));
-                
-                await _dbContext.AddRangeAsync(newSpots);
-                await _dbContext.SaveChangesAsync();
-
-                await transaction.CommitAsync();
-            }
-            catch (DbException ex)
-            {
-                _logger.FailedToSaveSpotBatch(ex);
-            }
+            var done = ImportBatch(context, handler, batch, spotnetOptions.RetrieveAfter);
+            if (done) break;
         }
-        
+
+        try
+        {
+            await _dbContext.BulkInsertOrUpdateAsync(context.ImageSpots, ConfigureBulkInsert);
+            await _dbContext.BulkInsertOrUpdateAsync(context.AudioSpots, ConfigureBulkInsert);
+            await _dbContext.BulkInsertOrUpdateAsync(context.GameSpots, ConfigureBulkInsert);
+            await _dbContext.BulkInsertOrUpdateAsync(context.ApplicationSpots, ConfigureBulkInsert);
+        }
+        catch (DbException ex)
+        {
+            _logger.FailedToSaveSpots(ex);
+        }
     }
 
-    private List<Spot> ImportBatch(NntpClientHandler handler, NntpArticleRange batch, DateTimeOffset retrieveAfter)
+    private void ConfigureBulkInsert(BulkConfig config)
     {
-        var results = new List<Spot>();
+        config.UpdateByProperties = [nameof(Spot.MessageId)];
+        config.PropertiesToIncludeOnUpdate = [ string.Empty ];
+    }
+
+    private bool ImportBatch(SpotImportResult context, NntpClientHandler handler, NntpArticleRange batch,
+        DateTimeOffset retrieveAfter)
+    {
         var xOverResponse = handler.Client.Xover(batch);
         if (!xOverResponse.Success)
         {
             _logger.CouldNotRetrieveArticles(batch.From, batch.To, xOverResponse.Code, xOverResponse.Message);
-            return results;
+            return true;
         }
 
         foreach (var header in xOverResponse.Lines)
@@ -103,12 +103,13 @@ internal sealed class SpotnetService : ISpotnetService
                 if (nntpHeader.Date < retrieveAfter)
                 {
                     _logger.ReachedRetrieveAfter(retrieveAfter);
-                    return results;
+                    return true;
                 }
                 
                 var spotnetHeader = SpotnetHeaderParser.Parse(nntpHeader);
 
-                results.Add(spotnetHeader.ToSpot());
+                var spot = spotnetHeader.ToSpot();
+                context.AddSpot(spot);
             }
             catch (ArgumentException ex)
             {
@@ -116,7 +117,7 @@ internal sealed class SpotnetService : ISpotnetService
             }
         }
 
-        return results;
+        return false;
     }
 
     private static IEnumerable<NntpArticleRange> GetBatches(long lowWaterMark, long highWaterMark, int retrieveCount)
