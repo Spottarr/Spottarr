@@ -146,7 +146,7 @@ public sealed class NewznabController : ControllerBase
     {
         var uriBuilder = new UriBuilder(Request.Scheme, Request.Host.Host, Request.Host.Port ?? -1);
 
-        const int pageSize = 1;
+        const int pageSize = 25;
         var offset = p * pageSize;
         var spots = await _dbContext.Spots.Skip(offset).Take(pageSize).ToListAsync();
         
