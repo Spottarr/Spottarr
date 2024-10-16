@@ -27,9 +27,9 @@ public static class NntpHeaderParser
             {
                 ArticleNumber = articleNumber,
                 Subject = fields[1],
-                Author = fields[2][1..^1],
+                Author = fields[2],
                 Date = date,
-                MessageId = fields[4],
+                MessageId = fields[4][1..^1],
                 References = fields[5],
                 Bytes = bytes,
                 Lines = lines
