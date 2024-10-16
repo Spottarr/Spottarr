@@ -2,7 +2,7 @@ using Spottarr.Data.Entities;
 using Spottarr.Data.Entities.Enums;
 using Spottarr.Services.Models;
 
-namespace Spottarr.Services.Extensions;
+namespace Spottarr.Services.Helpers;
 
 public static class SpotnetHeaderExtensions
 {
@@ -47,10 +47,10 @@ public static class SpotnetHeaderExtensions
             ImageLanguages = languages,
             ImageGenres = genres,
             ImageTypes = types,
-            SpottedAt = header.Date,
+            SpottedAt = header.Date.UtcDateTime,
             Type = SpotType.Image,
-            CreatedAt = now,
-            UpdatedAt = now,
+            CreatedAt = now.UtcDateTime,
+            UpdatedAt = now.UtcDateTime,
         };
     }
 
@@ -111,10 +111,10 @@ public static class SpotnetHeaderExtensions
             AudioBitrates = bitrates,
             AudioGenres = genres,
             AudioTypes = types,
-            SpottedAt = header.Date,
+            SpottedAt = header.Date.UtcDateTime,
             Type = SpotType.Audio,
-            CreatedAt = now,
-            UpdatedAt = now,
+            CreatedAt = now.UtcDateTime,
+            UpdatedAt = now.UtcDateTime,
         };
     }
 
@@ -174,10 +174,10 @@ public static class SpotnetHeaderExtensions
             GameFormats = formats,
             GameGenres = genres,
             GameTypes = types,
-            SpottedAt = header.Date,
+            SpottedAt = header.Date.UtcDateTime,
             Type = SpotType.Game,
-            CreatedAt = now,
-            UpdatedAt = now,
+            CreatedAt = now.UtcDateTime,
+            UpdatedAt = now.UtcDateTime,
         };
     }
 
@@ -231,10 +231,10 @@ public static class SpotnetHeaderExtensions
             ApplicationPlatforms = platforms,
             ApplicationGenres = genres,
             ApplicationTypes = types,
-            SpottedAt = header.Date,
+            SpottedAt = header.Date.UtcDateTime,
             Type = SpotType.Application,
-            CreatedAt = now,
-            UpdatedAt = now,
+            CreatedAt = now.UtcDateTime,
+            UpdatedAt = now.UtcDateTime,
         };
     }
 

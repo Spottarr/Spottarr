@@ -13,5 +13,5 @@ public abstract class Spot : BaseEntity
     
     public SpotType Type { get; set; }
     
-    public required DateTimeOffset SpottedAt { get; set; }
+    public required DateTime SpottedAt { get; set; }
 }
