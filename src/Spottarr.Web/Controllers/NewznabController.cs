@@ -1,5 +1,9 @@
+using System.ServiceModel.Syndication;
+using System.Text;
+using System.Xml;
 using Microsoft.AspNetCore.Mvc;
 using Spottarr.Services.Contracts;
+using Spottarr.Web.Helpers;
 using Spottarr.Web.Modals.Newznab;
 
 namespace Spottarr.Web.Controllers;
@@ -135,8 +139,19 @@ public sealed class NewznabController : ControllerBase
     [HttpGet("music")]
     [HttpGet("book")]
     [HttpGet("pc")]
+    [Produces("application/rss+xml")]
     public ActionResult Search()
     {
-        return Ok("search");
+        var uriBuilder = new UriBuilder(Request.Scheme, Request.Host.Host, Request.Host.Port ?? -1);
+        var feed = new SyndicationFeed("Spottarr Index", "Spottarr Index API", uriBuilder.Uri)
+        {
+            Items = new List<SyndicationItem>
+            {
+                new("test 1", "test 1", uriBuilder.Uri, "1", DateTimeOffset.Now),
+                new("test 2", "test 2", uriBuilder.Uri, "2", DateTimeOffset.Now),
+            }
+        };
+
+        return new RssFeedResult(feed);
     }
 }

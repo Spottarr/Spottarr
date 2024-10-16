@@ -8,8 +8,9 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0-rc.*" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0-rc.*" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0-rc.*" />
-    <PackageReference Include="Microsoft.XmlSerializer.Generator" Version="9.0.0-rc.2.*" />
+    <PackageReference Include="Microsoft.XmlSerializer.Generator" Version="9.0.0-rc.*" />
     <PackageReference Include="Scalar.AspNetCore" Version="1.2.9" />
+    <PackageReference Include="System.ServiceModel.Syndication" Version="9.0.0-rc.*" />
   </ItemGroup>
 
   <ItemGroup>
