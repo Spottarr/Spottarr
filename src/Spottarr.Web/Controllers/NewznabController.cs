@@ -156,8 +156,6 @@ public sealed class NewznabController : ControllerBase
             .AddNewznabNamespace()
             .AddNewznabResponseInfo(offset, pageSize);
         
-        feed.Links.Add(new SyndicationLink(uriBuilder.Uri));
-        
         return File(NewznabRssSerializer.Serialize(feed), dl ? "application/rss+xml": "text/xml");
     }
 }

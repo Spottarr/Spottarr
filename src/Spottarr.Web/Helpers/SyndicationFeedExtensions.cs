@@ -18,12 +18,7 @@ internal static class SyndicationFeedExtensions
     
     public static SyndicationItem AddNewznabNzbUrl(this SyndicationItem item, Uri url, long bytes)
     {
-        item.Links.Add(new SyndicationLink(url)
-        {
-            MediaType = "application/x-nzb",
-            Length = bytes
-        });
-        
+        item.Links.Add(SyndicationLink.CreateMediaEnclosureLink(url, "application/x-nzb", bytes));
         return item;
     }
     
