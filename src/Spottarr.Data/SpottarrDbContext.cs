@@ -38,6 +38,7 @@ public class SpottarrDbContext : DbContext
         ArgumentNullException.ThrowIfNull(modelBuilder);
         
         modelBuilder.Entity<Spot>().Property(s => s.Subject).HasMaxLength(256);
+        modelBuilder.Entity<Spot>().Property(s => s.Description);
         modelBuilder.Entity<Spot>().Property(s => s.Spotter).HasMaxLength(128);
         modelBuilder.Entity<Spot>().Property(s => s.MessageId).HasMaxLength(128);
         
