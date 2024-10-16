@@ -138,7 +138,7 @@ public sealed class NewznabController : ControllerBase
     [HttpGet("book")]
     [HttpGet("pc")]
     [Produces("application/rss+xml")]
-    public ActionResult Search()
+    public ActionResult Search(bool dl = true)
     {
         var uriBuilder = new UriBuilder(Request.Scheme, Request.Host.Host, Request.Host.Port ?? -1);
         var feed = new SyndicationFeed("Spottarr Index", "Spottarr Index API", uriBuilder.Uri)
@@ -150,6 +150,6 @@ public sealed class NewznabController : ControllerBase
             }
         };
 
-        return new RssFeedResult(feed);
+        return File(NewznabRssSerializer.Serialize(feed), dl ? "application/rss+xml": "text/xml");
     }
 }
