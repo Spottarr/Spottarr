@@ -9,7 +9,7 @@ using Spottarr.Web.Modals.Newznab;
 namespace Spottarr.Web.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("[controller]/api")]
 public sealed class NewznabController : ControllerBase
 {
     public const string Name = "newznab";
