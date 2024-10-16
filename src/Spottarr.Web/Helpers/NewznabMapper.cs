@@ -54,7 +54,7 @@ internal static class NewznabMapper
     /// An image spot can have multiple types, e.g. Erotic AND Series
     /// </summary>
     private static SyndicationItem MapImageSpot(ImageSpot spot, SyndicationItem item) =>
-        spot.Types.Aggregate(item, (current, type) => MapImageSpotType(type, spot, current));
+        spot.ImageTypes.Aggregate(item, (current, type) => MapImageSpotType(type, spot, current));
 
     private static SyndicationItem MapImageSpotType(ImageType type, ImageSpot spot, SyndicationItem item) =>
         type switch
@@ -75,13 +75,13 @@ internal static class NewznabMapper
             .AddNewznabAttribute("rageid", "TBD")
             .AddNewznabAttribute("tvtitle", "TBD")
             .AddNewznabAttribute("tvairdate", "TBD")
-            .AddNewznabAttribute("video", string.Join(',', spot.Formats.Select(Enum.GetName)))
+            .AddNewznabAttribute("video", string.Join(',', spot.ImageFormats.Select(Enum.GetName)))
             .AddNewznabAttribute("audio", "TBD")
             .AddNewznabAttribute("resolution", "TBD")
             .AddNewznabAttribute("framerate", "TBD")
-            .AddNewznabAttribute("language", string.Join(',', spot.Languages.Select(Enum.GetName)))
-            .AddNewznabAttribute("subs", string.Join(',', spot.Languages.Select(Enum.GetName)))
-            .AddNewznabAttribute("genre", string.Join(',', spot.Genres.Select(Enum.GetName)))
+            .AddNewznabAttribute("language", string.Join(',', spot.ImageLanguages.Select(Enum.GetName)))
+            .AddNewznabAttribute("subs", string.Join(',', spot.ImageLanguages.Select(Enum.GetName)))
+            .AddNewznabAttribute("genre", string.Join(',', spot.ImageGenres.Select(Enum.GetName)))
             .AddNewznabAttribute("coverurl", "TBD")
             .AddNewznabAttribute("backdropcoverurl", "TBD");
 
@@ -89,12 +89,12 @@ internal static class NewznabMapper
     /// Adds newznab attributes for movies category
     /// </summary>
     private static SyndicationItem MapMovieSpot(ImageSpot spot, SyndicationItem item) =>
-        item.AddNewznabAttribute("video", string.Join(',', spot.Formats.Select(Enum.GetName)))
+        item.AddNewznabAttribute("video", string.Join(',', spot.ImageFormats.Select(Enum.GetName)))
             .AddNewznabAttribute("audio", "TBD")
             .AddNewznabAttribute("resolution", "TBD")
             .AddNewznabAttribute("framerate", "TBD")
-            .AddNewznabAttribute("language", string.Join(',', spot.Languages.Select(Enum.GetName)))
-            .AddNewznabAttribute("subs", string.Join(',', spot.Languages.Select(Enum.GetName)))
+            .AddNewznabAttribute("language", string.Join(',', spot.ImageLanguages.Select(Enum.GetName)))
+            .AddNewznabAttribute("subs", string.Join(',', spot.ImageLanguages.Select(Enum.GetName)))
             .AddNewznabAttribute("imdb", "TBD")
             .AddNewznabAttribute("imdbscore", "TBD")
             .AddNewznabAttribute("imdbtitle", "TBD")
@@ -103,7 +103,7 @@ internal static class NewznabMapper
             .AddNewznabAttribute("imdbyear", "TBD")
             .AddNewznabAttribute("imdbdirector", "TBD")
             .AddNewznabAttribute("imdbactors", "TBD")
-            .AddNewznabAttribute("genre", string.Join(',', spot.Genres.Select(Enum.GetName)))
+            .AddNewznabAttribute("genre", string.Join(',', spot.ImageGenres.Select(Enum.GetName)))
             .AddNewznabAttribute("coverurl", "TBD")
             .AddNewznabAttribute("backdropcoverurl", "TBD")
             .AddNewznabAttribute("review", "TBD");
@@ -113,13 +113,13 @@ internal static class NewznabMapper
     /// </summary>
     /// <returns></returns>
     private static SyndicationItem MapEroticSpot(ImageSpot spot, SyndicationItem item) =>
-        item.AddNewznabAttribute("video", string.Join(',', spot.Formats.Select(Enum.GetName)))
+        item.AddNewznabAttribute("video", string.Join(',', spot.ImageFormats.Select(Enum.GetName)))
             .AddNewznabAttribute("audio", "TBD")
             .AddNewznabAttribute("resolution", "TBD")
             .AddNewznabAttribute("framerate", "TBD")
-            .AddNewznabAttribute("language", string.Join(',', spot.Languages.Select(Enum.GetName)))
-            .AddNewznabAttribute("subs", string.Join(',', spot.Languages.Select(Enum.GetName)))
-            .AddNewznabAttribute("genre", string.Join(',', spot.Genres.Select(Enum.GetName)))
+            .AddNewznabAttribute("language", string.Join(',', spot.ImageLanguages.Select(Enum.GetName)))
+            .AddNewznabAttribute("subs", string.Join(',', spot.ImageLanguages.Select(Enum.GetName)))
+            .AddNewznabAttribute("genre", string.Join(',', spot.ImageGenres.Select(Enum.GetName)))
             .AddNewznabAttribute("coverurl", "TBD")
             .AddNewznabAttribute("backdropcoverurl", "TBD");
 
@@ -140,7 +140,7 @@ internal static class NewznabMapper
     /// </summary>
     private static SyndicationItem MapAudioSpot(this AudioSpot spot, SyndicationItem item)
     {
-        return item.AddNewznabAttribute("audio", string.Join(',', spot.Formats.Select(Enum.GetName)))
+        return item.AddNewznabAttribute("audio", string.Join(',', spot.AudioFormats.Select(Enum.GetName)))
             .AddNewznabAttribute("language", "TBD")
 
             .AddNewznabAttribute("artist", "TBD")

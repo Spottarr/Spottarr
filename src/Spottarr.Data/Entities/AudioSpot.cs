@@ -4,9 +4,9 @@ namespace Spottarr.Data.Entities;
 
 public class AudioSpot : Spot
 {
-    public required ICollection<AudioType> Types { get; init; }
-    public required ICollection<AudioFormat> Formats { get; init; }
-    public required ICollection<AudioSource> Sources { get; init; }
-    public required ICollection<AudioBitrate> Bitrates { get; init; }
-    public required ICollection<AudioGenre> Genres { get; init; }
+    public required ICollection<AudioType> AudioTypes { get; init; }
+    public required ICollection<AudioFormat> AudioFormats { get; init; }
+    public required ICollection<AudioSource> AudioSources { get; init; }
+    public required ICollection<AudioBitrate> AudioBitrates { get; init; }
+    public required ICollection<AudioGenre> AudioGenres { get; init; }
 }

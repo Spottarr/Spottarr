@@ -4,8 +4,8 @@ namespace Spottarr.Data.Entities;
 
 public class GameSpot : Spot
 {
-    public required ICollection<GamePlatform> Platforms { get; init; }
-    public required ICollection<GameFormat> Formats { get; init; }
-    public required ICollection<GameGenre> Genres { get; init; }
-    public required ICollection<GameType> Types { get; init; }
+    public required ICollection<GamePlatform> GamePlatforms { get; init; }
+    public required ICollection<GameFormat> GameFormats { get; init; }
+    public required ICollection<GameGenre> GameGenres { get; init; }
+    public required ICollection<GameType> GameTypes { get; init; }
 }
