@@ -33,7 +33,7 @@ internal static class NewznabMapper
     /// Adds attributes valid for all categories
     /// </summary>
     private static SyndicationItem MapSpot(Spot spot, Uri baseUri) =>
-        new SyndicationItem(spot.Subject, spot.Subject, baseUri, spot.MessageId, spot.UpdatedAt)
+        new SyndicationItem(spot.Subject, spot.Description, baseUri, spot.MessageId, spot.UpdatedAt)
             .AddNewznabAttribute("size", spot.Bytes.ToString(CultureInfo.InvariantCulture))
             .AddNewznabAttribute("category", "x")
             .AddNewznabAttribute("guid", spot.MessageId)

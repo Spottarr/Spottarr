@@ -148,7 +148,7 @@ public sealed class NewznabController : ControllerBase
 
         const int pageSize = 25;
         var offset = p * pageSize;
-        var spots = await _dbContext.Spots.Skip(offset).Take(pageSize).ToListAsync();
+        var spots = await _dbContext.Spots.Skip(offset).Take(pageSize).OrderByDescending(s => s.SpottedAt).ToListAsync();
         
         var items = spots.Select(s => s.ToSyndicationItem(uriBuilder.Uri)).ToList();
 
