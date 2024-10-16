@@ -1,6 +1,4 @@
 using System.ServiceModel.Syndication;
-using System.Text;
-using System.Xml;
 using Microsoft.AspNetCore.Mvc;
 using Spottarr.Services.Contracts;
 using Spottarr.Web.Helpers;
