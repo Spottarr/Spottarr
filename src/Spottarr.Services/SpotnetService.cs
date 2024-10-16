@@ -72,7 +72,7 @@ internal sealed class SpotnetService : ISpotnetService
         {
             try
             {
-                var articleResponse = handler.Client.Head(new NntpMessageId(spot.MessageId));
+                var articleResponse = handler.Client.Article(new NntpMessageId(spot.MessageId));
                 if (!articleResponse.Success) continue;
 
                 spot.Description = string.Join('\n', articleResponse.Article.Body);
