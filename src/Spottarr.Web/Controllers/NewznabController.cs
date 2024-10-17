@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Spottarr.Data;
 using Spottarr.Services.Contracts;
-using Spottarr.Web.Helpers;
-using Spottarr.Web.Modals.Newznab;
+using Spottarr.Web.Newznab;
+using Spottarr.Web.Newznab.Models;
 
 namespace Spottarr.Web.Controllers;
 

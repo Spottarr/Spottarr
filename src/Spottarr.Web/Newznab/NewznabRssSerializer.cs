@@ -2,7 +2,7 @@ using System.ServiceModel.Syndication;
 using System.Text;
 using System.Xml;
 
-namespace Spottarr.Web.Helpers;
+namespace Spottarr.Web.Newznab;
 
 internal static class NewznabRssSerializer
 {

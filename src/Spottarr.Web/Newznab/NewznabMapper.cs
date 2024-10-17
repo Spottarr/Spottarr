@@ -3,7 +3,7 @@ using System.ServiceModel.Syndication;
 using Spottarr.Data.Entities;
 using Spottarr.Data.Entities.Enums;
 
-namespace Spottarr.Web.Helpers;
+namespace Spottarr.Web.Newznab;
 
 internal static class NewznabMapper
 {

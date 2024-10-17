@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Xml.Serialization;
 
-namespace Spottarr.Web.Modals.Newznab;
+namespace Spottarr.Web.Newznab.Models;
 
 [XmlRoot("caps")]
 public class Capabilities

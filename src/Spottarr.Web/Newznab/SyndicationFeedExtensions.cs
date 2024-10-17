@@ -2,7 +2,7 @@ using System.ServiceModel.Syndication;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace Spottarr.Web.Helpers;
+namespace Spottarr.Web.Newznab;
 
 internal static class SyndicationFeedExtensions
 {
