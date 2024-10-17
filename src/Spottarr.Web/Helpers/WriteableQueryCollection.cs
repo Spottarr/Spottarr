@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Primitives;
 
-namespace Spottarr.Web;
+namespace Spottarr.Web.Helpers;
 
 internal sealed class WriteableQueryCollection : Dictionary<string, StringValues>, IQueryCollection
 {

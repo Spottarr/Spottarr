@@ -1,4 +1,5 @@
 using Spottarr.Web.Controllers;
+using Spottarr.Web.Helpers;
 
 namespace Spottarr.Web.Middlewares;
 

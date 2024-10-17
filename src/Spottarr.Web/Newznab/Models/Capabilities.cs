@@ -4,7 +4,7 @@ using System.Xml.Serialization;
 namespace Spottarr.Web.Newznab.Models;
 
 [XmlRoot("caps")]
-public class Capabilities
+public sealed class Capabilities
 {
     [XmlElement("server")] public required ServerInfo ServerInfo { get; init; }
     [XmlElement("limits")] public required Limits Limits { get; init; }

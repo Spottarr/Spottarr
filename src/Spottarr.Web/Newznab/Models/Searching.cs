@@ -2,7 +2,7 @@ using System.Xml.Serialization;
 
 namespace Spottarr.Web.Newznab.Models;
 
-public class Searching
+public sealed class Searching
 {
     [XmlElement("search")] public required Search Search { get; init; }
     [XmlElement("tv-search")] public required Search TvSearch { get; init; }

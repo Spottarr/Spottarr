@@ -2,7 +2,7 @@ using System.Xml.Serialization;
 
 namespace Spottarr.Web.Newznab.Models;
 
-public class ServerInfo
+public sealed class ServerInfo
 {
     [XmlAttribute("version")] public required string Version { get; init; }
     [XmlAttribute("title")] public required string Title { get; init; }

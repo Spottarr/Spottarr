@@ -10,7 +10,7 @@ namespace Spottarr.Web.Controllers;
 
 [ApiController]
 [Route("[controller]/api")]
-public sealed class NewznabController : ControllerBase
+public sealed class NewznabController : Controller
 {
     public const string Name = "newznab";
     public const string ActionParameter = "t";
