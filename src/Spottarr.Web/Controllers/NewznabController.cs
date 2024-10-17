@@ -1,8 +1,10 @@
+using System.Net.Mime;
 using System.ServiceModel.Syndication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Spottarr.Data;
 using Spottarr.Services.Contracts;
+using Spottarr.Web.Helpers;
 using Spottarr.Web.Newznab;
 using Spottarr.Web.Newznab.Models;
 
@@ -14,6 +16,7 @@ public sealed class NewznabController : Controller
 {
     public const string Name = "newznab";
     public const string ActionParameter = "t";
+    private const int DefaultPageSize = 100;
     
     private readonly IApplicationVersionService _applicationVersionService;
     private readonly IHostEnvironment _hostEnvironment;
@@ -141,21 +144,32 @@ public sealed class NewznabController : Controller
     [HttpGet("music")]
     [HttpGet("book")]
     [HttpGet("pc")]
-    [Produces("application/rss+xml")]
-    public async Task<ActionResult> Search(bool dl = false, int p = 0)
+    [Produces(MediaTypeNames.Text.Xml)]
+    public async Task<ActionResult> Search(string? q, int limit = DefaultPageSize, int offset = 0,
+        [FromQuery,ModelBinder<CommaSeparatedEnumBinder>] CategoryCode[]? cat = null)
     {
         var uriBuilder = new UriBuilder(Request.Scheme, Request.Host.Host, Request.Host.Port ?? -1);
+        
+        var categories = cat ?? [];
+        var pageSize = Math.Clamp(limit, 0, DefaultPageSize);
+        var pageNumber = offset;
+        var spotQuery = _dbContext.Spots.AsQueryable();
+            
+        if(q != null)
+            spotQuery = spotQuery.Where(s => s.Subject.Contains(q) || (s.Description != null && s.Description.Contains(q)));
 
-        const int pageSize = 25;
-        var offset = p * pageSize;
-        var spots = await _dbContext.Spots.Skip(offset).Take(pageSize).OrderByDescending(s => s.SpottedAt).ToListAsync();
+        var spots = await spotQuery
+            .OrderByDescending(s => s.SpottedAt)
+            .Skip(pageNumber * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
         
         var items = spots.Select(s => s.ToSyndicationItem(uriBuilder.Uri)).ToList();
 
         var feed = new SyndicationFeed("Spottarr Index", "Spottarr Index API", uriBuilder.Uri, items)
             .AddNewznabNamespace()
-            .AddNewznabResponseInfo(offset, pageSize);
+            .AddNewznabResponseInfo(pageNumber, pageSize);
         
-        return File(NewznabRssSerializer.Serialize(feed), dl ? "application/rss+xml": "text/xml");
+        return File(NewznabRssSerializer.Serialize(feed), MediaTypeNames.Text.Xml);
     }
 }
