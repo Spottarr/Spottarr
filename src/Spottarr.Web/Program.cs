@@ -21,8 +21,6 @@ builder.Services.Configure<RouteOptions>(options =>
 builder.Services.AddSpottarrData();
 builder.Services.AddSpottarrServices(builder.Configuration);
 
-builder.Logging.AddConsole();
-
 var app = builder.Build();
 
 app.UseHttpsRedirection();

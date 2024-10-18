@@ -6,12 +6,17 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.0-rc.*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.0-rc.*" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.0-rc.*" />
     <PackageReference Include="Usenet" Version="3.1.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Spottarr.Data\Spottarr.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Newznab\" />
   </ItemGroup>
   
 </Project>

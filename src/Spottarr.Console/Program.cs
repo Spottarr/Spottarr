@@ -18,10 +18,6 @@ using var host = Host.CreateDefaultBuilder(args)
         services.AddSpottarrData();
         services.AddSpottarrServices(context.Configuration);
     })
-    .ConfigureLogging(logging =>
-    {
-        logging.AddConsole();
-    })
     .Build();
 
 using var scope = host.Services.CreateScope();
