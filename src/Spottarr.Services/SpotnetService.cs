@@ -159,9 +159,9 @@ internal sealed class SpotnetService : ISpotnetService
                 
                 context.AddSpot(spot);
             }
-            catch (ArgumentException ex)
+            catch (BadHeaderFormatException ex)
             {
-                _logger.FailedToParseSpotHeader(ex);
+                _logger.FailedToParseSpotHeader(ex.Header);
             }
         }
 

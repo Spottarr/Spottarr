@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Spottarr.Services.Parsers;
 
 namespace Spottarr.Services;
 
@@ -13,8 +14,8 @@ public static partial class LoggerExtensions
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to save spots.")]
     public static partial void FailedToSaveSpots(this ILogger logger, Exception exception);
 
-    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to parse spot header.")]
-    public static partial void FailedToParseSpotHeader(this ILogger logger, Exception exception);
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Failed to parse spot header: [{Header}].'")]
+    public static partial void FailedToParseSpotHeader(this ILogger logger, string header);
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Spot import started at {DateTime}.")]
     public static partial void SpotImportStarted(this ILogger logger, DateTimeOffset dateTime);

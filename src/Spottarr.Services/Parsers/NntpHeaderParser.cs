@@ -3,15 +3,13 @@ using Spottarr.Services.Models;
 
 namespace Spottarr.Services.Parsers;
 
-public static class NntpHeaderParser
+internal static class NntpHeaderParser
 {
     public static NntpHeader Parse(string header)
     {
         // TODO: Use response of overview format response to determine fields
         try
         {
-            ArgumentNullException.ThrowIfNull(header);
-            
             // Get the first 8 fields of the header, dispose anything extra
             var fields = header.Split('\t');
 
@@ -38,7 +36,7 @@ public static class NntpHeaderParser
         }
         catch(Exception ex)
         {
-            throw new ArgumentException($"Failed to parse Nntp header: {header}", nameof(header), ex);
+            throw new BadHeaderFormatException(header, ex);
         }
     }
 }
