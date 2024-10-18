@@ -37,21 +37,33 @@ internal sealed class SpotnetService : ISpotnetService
 
     public async Task Import()
     {
-        using var handler = new NntpClientHandler(_usenetOptions.Value);
-        await handler.ConnectAsync();
+        _logger.SpotImportStarted(DateTimeOffset.Now);
+        
+        var usenetOptions = _usenetOptions.Value;
+        
+        using var nntpClientPool = new NntpClientPool(usenetOptions.Hostname, usenetOptions.Port, usenetOptions.UseTls,
+            usenetOptions.Username, usenetOptions.Password, usenetOptions.MaxConnections);
 
         var spotnetOptions = _spotnetOptions.Value;
-        var groupResponse = handler.Client.Group(spotnetOptions.SpotGroup);
-
+        
+        // Get a client from the pool
+        var client = await nntpClientPool.BorrowClient();
+        
+        // Switch to the configured usenet group and verify that it exists.
+        var groupResponse = client.Group(spotnetOptions.SpotGroup);
         if (!groupResponse.Success)
         {
             _logger.CouldNotRetrieveSpotGroup(spotnetOptions.SpotGroup, groupResponse.Code, groupResponse.Message);
             return;
         }
-
         var group = groupResponse.Group;
+        
+        // Prepare XOVER commands spanning the range of the newest message to the oldest message,
+        // limited by the maximum number of messages to retrieve
         var headerBatches = GetXoverBatches(group.LowWaterMark, group.HighWaterMark, spotnetOptions.RetrieveCount).ToList();
 
+        // Get the message IDs of any existing records added after the retrieve after dates.
+        // This prevents fetching the message headers and body twice
         var retrieveAfterUtc = spotnetOptions.RetrieveAfter.UtcDateTime;
         var existing = await _dbContext.Spots
             .Where(s => s.CreatedAt >= retrieveAfterUtc)
@@ -60,29 +72,44 @@ internal sealed class SpotnetService : ISpotnetService
 
         var context = new SpotImportResult(existing);
         
-        // Fetch and parse headers
+        // Execute the prepared XOVER commands, stop when we reach a message created before the retrieve after date.
         foreach (var headerBatch in headerBatches)
         {
-            var done = ParseHeaderBatch(context, handler, headerBatch, spotnetOptions.RetrieveAfter);
+            var done = ParseHeaderBatch(context, client, headerBatch, spotnetOptions.RetrieveAfter);
             if (done) break;
         }
+        
+        // Return the client to the pool
+        nntpClientPool.ReturnClient(client);
 
-        // Fetch full article
-        foreach (var spot in context.Spots)
+        // Fetch the article headers and body, we will do this in parallel to speed up the process
+        // Limit the number of jobs we run in parallel to the maximum number of connections to prevent
+        // waiting for a connection to become available in the pool
+        var parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = usenetOptions.MaxConnections };
+        var batches = context.Spots.Chunk(BatchSize).ToList();
+        await Parallel.ForEachAsync(batches, parallelOptions, async (batch, ct) =>
         {
-            try
+            var client = await nntpClientPool.BorrowClient();
+            foreach(var spot in batch)
             {
-                var articleResponse = handler.Client.Article(new NntpMessageId(spot.MessageId));
-                if (!articleResponse.Success) continue;
+                try
+                {
+                    var articleResponse = client.Article(new NntpMessageId(spot.MessageId));
+                    if (!articleResponse.Success) continue;
 
-                spot.Description = string.Join('\n', articleResponse.Article.Body);
+                    spot.Description = string.Join('\n', articleResponse.Article.Body);
+                }
+                catch (NntpException ex)
+                {
+                    _logger.FailedToSaveSpots(ex);
+                }
             }
-            catch (NntpException ex)
-            {
-                _logger.FailedToSaveSpots(ex);
-            }
-        }
-
+            nntpClientPool.ReturnClient(client);
+        });
+        
+        // Save the fetched articles in bulk.
+        // We have to do this per article type because EfCore.BulkExtensions does not support a single insert
+        // for table-per-hierarchy setups.
         try
         {
             await _dbContext.BulkInsertOrUpdateAsync(context.ImageSpots, ConfigureBulkUpsert);
@@ -94,6 +121,8 @@ internal sealed class SpotnetService : ISpotnetService
         {
             _logger.FailedToSaveSpots(ex);
         }
+        
+        _logger.SpotImportFinished(DateTimeOffset.Now, context.Spots.Count);
     }
 
     private void ConfigureBulkUpsert(BulkConfig config)
@@ -102,10 +131,10 @@ internal sealed class SpotnetService : ISpotnetService
         config.PropertiesToIncludeOnUpdate = [nameof(Spot.Description)];
     }
 
-    private bool ParseHeaderBatch(SpotImportResult context, NntpClientHandler handler, NntpArticleRange batch,
+    private bool ParseHeaderBatch(SpotImportResult context, NntpClientWrapper client, NntpArticleRange batch,
         DateTimeOffset retrieveAfter)
     {
-        var xOverResponse = handler.Client.Xover(batch);
+        var xOverResponse = client.Xover(batch);
         if (!xOverResponse.Success)
         {
             _logger.CouldNotRetrieveArticles(batch.From, batch.To, xOverResponse.Code, xOverResponse.Message);
