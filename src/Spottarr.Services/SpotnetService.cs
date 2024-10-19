@@ -66,7 +66,7 @@ internal sealed class SpotnetService : ISpotnetService
         // This prevents fetching the message headers and body twice
         var retrieveAfterUtc = spotnetOptions.RetrieveAfter.UtcDateTime;
         var existing = await _dbContext.Spots
-            .Where(s => s.CreatedAt >= retrieveAfterUtc && s.Description != null)
+            .Where(s => s.CreatedAt >= retrieveAfterUtc)
             .Select(s => s.MessageId)
             .ToHashSetAsync();
 
@@ -94,10 +94,10 @@ internal sealed class SpotnetService : ISpotnetService
         // for table-per-hierarchy setups.
         try
         {
-            await _dbContext.BulkInsertOrUpdateAsync(context.ImageSpots, ConfigureBulkUpsert);
-            await _dbContext.BulkInsertOrUpdateAsync(context.AudioSpots, ConfigureBulkUpsert);
-            await _dbContext.BulkInsertOrUpdateAsync(context.GameSpots, ConfigureBulkUpsert);
-            await _dbContext.BulkInsertOrUpdateAsync(context.ApplicationSpots, ConfigureBulkUpsert);
+            await BulkInsertOrUpdateSpot(context.ImageSpots);
+            await BulkInsertOrUpdateSpot(context.AudioSpots);
+            await BulkInsertOrUpdateSpot(context.GameSpots);
+            await BulkInsertOrUpdateSpot(context.ApplicationSpots);
         }
         catch (DbException ex)
         {
@@ -105,53 +105,6 @@ internal sealed class SpotnetService : ISpotnetService
         }
         
         _logger.SpotImportFinished(DateTimeOffset.Now, context.Spots.Count);
-    }
-
-    private async Task GetSpotDetails(NntpClientPool nntpClientPool, Spot spot)
-    {
-        var client = await nntpClientPool.BorrowClient();
-
-        try
-        {
-            // Fetch the article headers which contains the full spot detail in XML format
-            var articleResponse = client.Head(new NntpMessageId(spot.MessageId));
-            if (!articleResponse.Success)
-            {
-                _logger.CouldNotRetrieveArticle(spot.MessageId, articleResponse.Code, articleResponse.Message);
-                return;
-            }
-
-            var headers = articleResponse.Article.Headers;
-            if (!headers.TryGetValue(Spotnet.HeaderName, out var spotnetXmlValues) || spotnetXmlValues == null)
-            {
-                _logger.ArticleIsMissingSpotXmlHeader(spot.MessageId);
-                return;
-            }
-
-            var spotnetXml = string.Concat(spotnetXmlValues);
-            var spotDetails = SpotnetXmlParser.Parse(spotnetXml);
-
-            spot.Description = spotDetails.Posting.Description;
-
-        }
-        catch (BadSpotFormatException ex)
-        {
-            _logger.ArticleContainsInvalidSpotXmlHeader(spot.MessageId, ex.Xml);
-        }
-        catch (NntpException ex)
-        {
-            _logger.CouldNotRetrieveArticle(ex, spot.MessageId);
-        }
-        finally
-        {
-            nntpClientPool.ReturnClient(client);
-        }
-    }
-
-    private void ConfigureBulkUpsert(BulkConfig config)
-    {
-        config.UpdateByProperties = [nameof(Spot.MessageId)];
-        config.PropertiesToIncludeOnUpdate = [nameof(Spot.Description)];
     }
 
     private bool ParseHeaderBatch(SpotImportResult context, NntpClientWrapper client, NntpArticleRange batch,
@@ -210,4 +163,70 @@ internal sealed class SpotnetService : ISpotnetService
             batchEnd = batchStart - 1;
         }
     }
+    
+    private async Task GetSpotDetails(NntpClientPool nntpClientPool, Spot spot)
+    {
+        var client = await nntpClientPool.BorrowClient();
+
+        try
+        {
+            // Fetch the article headers which contains the full spot detail in XML format
+            var articleResponse = client.Article(new NntpMessageId("lDnMqoAdF6ISVbwZgSOrn@spot.net"));
+            if (!articleResponse.Success)
+            {
+                _logger.CouldNotRetrieveArticle(spot.MessageId, articleResponse.Code, articleResponse.Message);
+                return;
+            }
+
+            var article = articleResponse.Article;
+            if (!article.Headers.TryGetValue(Spotnet.HeaderName, out var spotnetXmlValues) || spotnetXmlValues == null)
+            {
+                // No spot XML header, fall back to plaintext body
+                spot.FtsSpot!.Description = string.Concat(article.Body);
+                _logger.ArticleIsMissingSpotXmlHeader(spot.MessageId);
+                return;
+            }
+
+            var spotnetXml = string.Concat(spotnetXmlValues);
+            var spotDetails = SpotnetXmlParser.Parse(spotnetXml);
+
+            spot.FtsSpot!.Description = spotDetails.Posting.Description;
+
+        }
+        catch (BadSpotFormatException ex)
+        {
+            _logger.ArticleContainsInvalidSpotXmlHeader(spot.MessageId, ex.Xml);
+        }
+        catch (NntpException ex)
+        {
+            _logger.CouldNotRetrieveArticle(ex, spot.MessageId);
+        }
+        finally
+        {
+            nntpClientPool.ReturnClient(client);
+        }
+    }
+    
+    private async Task BulkInsertOrUpdateSpot<TSpot>(IEnumerable<TSpot> spots) where TSpot : Spot
+    {
+        using var transaction = await _dbContext.Database.BeginTransactionAsync();
+
+        await _dbContext.BulkInsertAsync(spots, c =>
+        {
+            //c.UpdateByProperties = [nameof(Spot.MessageId)];
+            //c.PropertiesToIncludeOnUpdate = [];
+            c.SetOutputIdentity = true;
+        });
+
+        var ftsSpots = spots.Select(s =>
+        {
+            s.FtsSpot!.RowId = s.Id;
+            return s.FtsSpot;
+        }).ToList();
+
+        await _dbContext.BulkInsertAsync(ftsSpots);
+        
+        await transaction.CommitAsync();
+    }
+    
 }

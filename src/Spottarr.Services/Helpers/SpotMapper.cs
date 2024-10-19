@@ -36,6 +36,10 @@ internal static class SpotnetHeaderExtensions
 
         return new ImageSpot
         {
+            FtsSpot = new FtsSpot()
+            {
+                Title = header.Subject,
+            },
             Subject = header.Subject,
             Spotter = header.Nickname,
             Bytes = header.Size,
@@ -100,6 +104,10 @@ internal static class SpotnetHeaderExtensions
 
         return new AudioSpot
         {
+            FtsSpot = new FtsSpot()
+            {
+                Title = header.Subject,
+            },
             Subject = header.Subject,
             Spotter = header.Nickname,
             Bytes = header.Size,
@@ -164,6 +172,10 @@ internal static class SpotnetHeaderExtensions
 
         return new GameSpot
         {
+            FtsSpot = new FtsSpot()
+            {
+                Title = header.Subject,
+            },
             Subject = header.Subject,
             Spotter = header.Nickname,
             Bytes = header.Size,
@@ -222,6 +234,10 @@ internal static class SpotnetHeaderExtensions
 
         return new ApplicationSpot
         {
+            FtsSpot = new FtsSpot()
+            {
+                Title = header.Subject,
+            },
             Subject = header.Subject,
             Spotter = header.Nickname,
             Bytes = header.Size,
