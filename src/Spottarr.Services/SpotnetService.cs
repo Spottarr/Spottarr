@@ -66,7 +66,7 @@ internal sealed class SpotnetService : ISpotnetService
         // This prevents fetching the message headers and body twice
         var retrieveAfterUtc = spotnetOptions.RetrieveAfter.UtcDateTime;
         var existing = await _dbContext.Spots
-            .Where(s => s.CreatedAt >= retrieveAfterUtc)
+            .Where(s => s.CreatedAt >= retrieveAfterUtc && s.Description != null)
             .Select(s => s.MessageId)
             .ToHashSetAsync();
 
