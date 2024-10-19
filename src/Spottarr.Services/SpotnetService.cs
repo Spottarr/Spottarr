@@ -82,52 +82,12 @@ internal sealed class SpotnetService : ISpotnetService
         // Return the client to the pool
         nntpClientPool.ReturnClient(client);
 
-        // Fetch the article headers and body, we will do this in parallel to speed up the process
+        // Fetch the article headers, we will do this in parallel to speed up the process
         // Limit the number of jobs we run in parallel to the maximum number of connections to prevent
         // waiting for a connection to become available in the pool
         var parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = usenetOptions.MaxConnections };
-        var batches = context.Spots.Chunk(BatchSize).ToList();
-        await Parallel.ForEachAsync(batches, parallelOptions, async (batch, ct) =>
-        {
-            var client = await nntpClientPool.BorrowClient();
-            
-            foreach(var spot in batch)
-            {
-                try
-                {
-                    // Fetch the article headers which contains the full spot detail in XML format
-                    var articleResponse = client.Head(new NntpMessageId(spot.MessageId));
-                    if (!articleResponse.Success)
-                    {
-                        _logger.CouldNotRetrieveArticle(spot.MessageId, articleResponse.Code, articleResponse.Message);
-                        continue;
-                    }
-
-                    var headers = articleResponse.Article.Headers;
-                    if (!headers.TryGetValue(Spotnet.HeaderName, out var spotnetXmlValues) || spotnetXmlValues == null)
-                    {
-                        _logger.ArticleIsMissingSpotXmlHeader(spot.MessageId);
-                        continue;
-                    }
-
-                    var spotnetXml = string.Concat(spotnetXmlValues);
-                    var spotDetails = SpotnetXmlParser.Parse(spotnetXml);
-
-                    spot.Description = spotDetails.Posting.Description;
-
-                }
-                catch (BadSpotFormatException ex)
-                {
-                    _logger.ArticleContainsInvalidSpotXmlHeader(spot.MessageId, ex.Xml);
-                }
-                catch (NntpException ex)
-                {
-                    _logger.CouldNotRetrieveArticle(ex, spot.MessageId);
-                }
-            }
-
-            nntpClientPool.ReturnClient(client);
-        });
+        //var batches = context.Spots.Chunk(BatchSize).ToList();
+        await Parallel.ForEachAsync(context.Spots, parallelOptions, async (spot, ct) => await GetSpotDetails(nntpClientPool, spot));
         
         // Save the fetched articles in bulk.
         // We have to do this per article type because EfCore.BulkExtensions does not support a single insert
@@ -145,6 +105,47 @@ internal sealed class SpotnetService : ISpotnetService
         }
         
         _logger.SpotImportFinished(DateTimeOffset.Now, context.Spots.Count);
+    }
+
+    private async Task GetSpotDetails(NntpClientPool nntpClientPool, Spot spot)
+    {
+        var client = await nntpClientPool.BorrowClient();
+
+        try
+        {
+            // Fetch the article headers which contains the full spot detail in XML format
+            var articleResponse = client.Head(new NntpMessageId(spot.MessageId));
+            if (!articleResponse.Success)
+            {
+                _logger.CouldNotRetrieveArticle(spot.MessageId, articleResponse.Code, articleResponse.Message);
+                return;
+            }
+
+            var headers = articleResponse.Article.Headers;
+            if (!headers.TryGetValue(Spotnet.HeaderName, out var spotnetXmlValues) || spotnetXmlValues == null)
+            {
+                _logger.ArticleIsMissingSpotXmlHeader(spot.MessageId);
+                return;
+            }
+
+            var spotnetXml = string.Concat(spotnetXmlValues);
+            var spotDetails = SpotnetXmlParser.Parse(spotnetXml);
+
+            spot.Description = spotDetails.Posting.Description;
+
+        }
+        catch (BadSpotFormatException ex)
+        {
+            _logger.ArticleContainsInvalidSpotXmlHeader(spot.MessageId, ex.Xml);
+        }
+        catch (NntpException ex)
+        {
+            _logger.CouldNotRetrieveArticle(ex, spot.MessageId);
+        }
+        finally
+        {
+            nntpClientPool.ReturnClient(client);
+        }
     }
 
     private void ConfigureBulkUpsert(BulkConfig config)
