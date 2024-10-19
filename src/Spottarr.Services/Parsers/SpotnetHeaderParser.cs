@@ -1,6 +1,6 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Spottarr.Services.Models;
+using Spottarr.Services.Nntp;
 
 namespace Spottarr.Services.Parsers;
 
