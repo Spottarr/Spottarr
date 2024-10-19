@@ -49,6 +49,7 @@ internal class NntpClientPool : IDisposable
     
     public void ReturnClient(NntpClientWrapper client)
     {
+        client.ResetCounters();
         ObjectDisposedException.ThrowIf(_disposed, this);
 
         _availableClients.Add(client);
