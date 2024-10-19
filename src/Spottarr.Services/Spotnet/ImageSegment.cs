@@ -2,7 +2,7 @@ using System.Xml.Serialization;
 
 namespace Spottarr.Services.Nntp;
 
-internal sealed class Image
+public sealed class ImageSegment
 {
     [XmlElement(ElementName = "Segment")] public required string Segment { get; init; }
 

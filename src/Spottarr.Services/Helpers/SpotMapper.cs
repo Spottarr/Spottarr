@@ -4,13 +4,12 @@ using Spottarr.Services.Nntp;
 
 namespace Spottarr.Services.Helpers;
 
-public static class SpotnetHeaderExtensions
+internal static class SpotnetHeaderExtensions
 {
     public static Spot ToSpot(this SpotHeader header)
     {
         try
         {
-            ArgumentNullException.ThrowIfNull(header);
             return header.ToSpot(header.Category);
         }
         catch (Exception ex)

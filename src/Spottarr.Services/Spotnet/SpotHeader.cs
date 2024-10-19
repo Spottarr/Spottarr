@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 
 namespace Spottarr.Services.Nntp;
 
-public class SpotHeader
+internal sealed class SpotHeader
 {
     public required string Subject { get; init; }
     public required string Tag { get; init; }
