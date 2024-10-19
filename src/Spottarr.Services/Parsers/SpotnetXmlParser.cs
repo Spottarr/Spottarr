@@ -10,6 +10,8 @@ internal class SpotnetXmlParser
     private static readonly XmlReaderSettings XmlREaderSettings = new()
     {
         Async = true,
+        // Spot XML headers often contain invalid characters
+        CheckCharacters = false
     };
     
     public static Spotnet Parse(string xml)
@@ -30,25 +32,5 @@ internal class SpotnetXmlParser
         if (result == null) throw new BadSpotFormatException(xml);
 
         return result;
-    }
-}
-
-public class BadSpotFormatException : Exception
-{
-    public string Xml { get; }
-    
-    public BadSpotFormatException() : base("Spot XML is not in the correct format")
-    {
-        Xml = string.Empty;
-    }
-    
-    public BadSpotFormatException(string xml) : base("Spot XML is not in the correct format")
-    {
-        Xml = xml;
-    }
-
-    public BadSpotFormatException(string xml, Exception innerException) : base("Spot XML is not in the correct format", innerException)
-    {
-        Xml = xml;
     }
 }
