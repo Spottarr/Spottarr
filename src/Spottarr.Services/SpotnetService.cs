@@ -116,14 +116,7 @@ internal sealed class SpotnetService : ISpotnetService
                         continue;
                     }
 
-                    // The Usenet NuGet package returns headers values as a HashSet, which means they lose their order
-                    // In most cases a message will only contain 2 items, so make sure the one starting with <Spotnet> is seen as the first
-                    // This is not a good solution and will break for more than 2 items.
-                    // TODO: Fork and fix issues in Usenet package.
-                    if (spotnetXmlValues.Count > 2) continue;
-
-                    var orderedSpotnetXmlValues = spotnetXmlValues.OrderByDescending(s => s.StartsWith("<Spotnet>", StringComparison.Ordinal));
-                    var spotnetXml = string.Join(string.Empty, orderedSpotnetXmlValues);
+                    var spotnetXml = string.Concat(spotnetXmlValues);
                     var spotDetails = SpotnetXmlParser.Parse(spotnetXml);
 
                 }
