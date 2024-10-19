@@ -90,12 +90,6 @@ internal sealed class SpotnetService : ISpotnetService
         await Parallel.ForEachAsync(batches, parallelOptions, async (batch, ct) =>
         {
             var client = await nntpClientPool.BorrowClient();
-            var response = client.Group(group.Name);
-            if (!response.Success)
-            {
-                _logger.CouldNotRetrieveSpotGroup(group.Name, response.Code, response.Message);
-                return;
-            }
             
             foreach(var spot in batch)
             {
