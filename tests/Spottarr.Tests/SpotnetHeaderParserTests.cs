@@ -1,4 +1,4 @@
-﻿using Spottarr.Services.Models;
+﻿using Spottarr.Services.Nntp;
 using Spottarr.Services.Parsers;
 
 namespace Spottarr.Tests;

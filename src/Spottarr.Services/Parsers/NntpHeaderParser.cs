@@ -1,5 +1,5 @@
 using System.Globalization;
-using Spottarr.Services.Models;
+using Spottarr.Services.Nntp;
 
 namespace Spottarr.Services.Parsers;
 

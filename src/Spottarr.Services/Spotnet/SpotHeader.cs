@@ -1,8 +1,8 @@
 using System.Text.RegularExpressions;
 
-namespace Spottarr.Services.Models;
+namespace Spottarr.Services.Nntp;
 
-public class SpotnetHeader
+public class SpotHeader
 {
     public required string Subject { get; init; }
     public required string Tag { get; init; }

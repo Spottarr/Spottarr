@@ -1,7 +1,7 @@
 using System.Globalization;
 using Spottarr.Services.Parsers;
 
-namespace Spottarr.Services.Models;
+namespace Spottarr.Services.Nntp;
 
 public class NntpHeader
 {

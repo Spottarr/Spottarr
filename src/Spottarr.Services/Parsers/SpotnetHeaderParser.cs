@@ -6,7 +6,7 @@ namespace Spottarr.Services.Parsers;
 
 internal static partial class SpotnetHeaderParser
 {
-    public static SpotnetHeader Parse(NntpHeader header)
+    public static SpotHeader Parse(NntpHeader header)
     {
         try
         {
@@ -36,7 +36,7 @@ internal static partial class SpotnetHeaderParser
                 .Where(x => x.Item2 > 0)
                 .ToList();
 
-            return new SpotnetHeader
+            return new SpotHeader
             {
                 Subject = subject,
                 Tag = tag,

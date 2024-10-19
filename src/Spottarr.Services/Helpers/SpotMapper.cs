@@ -1,12 +1,12 @@
 using Spottarr.Data.Entities;
 using Spottarr.Data.Entities.Enums;
-using Spottarr.Services.Models;
+using Spottarr.Services.Nntp;
 
 namespace Spottarr.Services.Helpers;
 
 public static class SpotnetHeaderExtensions
 {
-    public static Spot ToSpot(this SpotnetHeader header)
+    public static Spot ToSpot(this SpotHeader header)
     {
         try
         {
@@ -20,7 +20,7 @@ public static class SpotnetHeaderExtensions
         
     }
 
-    private static Spot ToSpot(this SpotnetHeader header, int category) =>
+    private static Spot ToSpot(this SpotHeader header, int category) =>
         header.Category switch
         {
             1 => header.ToImageSpot(),
@@ -30,7 +30,7 @@ public static class SpotnetHeaderExtensions
             _ => throw new ArgumentOutOfRangeException(nameof(category), category, null)
         };
 
-    private static ImageSpot ToImageSpot(this SpotnetHeader header)
+    private static ImageSpot ToImageSpot(this SpotHeader header)
     {
         var (formats, sources, languages, genres, types) = MapImageSubCategories(header.SubCategories);
         var now = DateTimeOffset.Now;
@@ -94,7 +94,7 @@ public static class SpotnetHeaderExtensions
         return (formats, sources, languages, genres, types);
     }
 
-    private static AudioSpot ToAudioSpot(this SpotnetHeader header)
+    private static AudioSpot ToAudioSpot(this SpotHeader header)
     {
         var (formats, sources, bitrates, genres, types) = MapAudioSubCategories(header.SubCategories);
         var now = DateTimeOffset.Now;
@@ -158,7 +158,7 @@ public static class SpotnetHeaderExtensions
         return (formats, sources, bitrates, genres, types);
     }
 
-    private static GameSpot ToGameSpot(this SpotnetHeader header)
+    private static GameSpot ToGameSpot(this SpotHeader header)
     {
         var (platforms, formats, genres, types) = MapGameSubCategories(header.SubCategories);
         var now = DateTimeOffset.Now;
@@ -216,7 +216,7 @@ public static class SpotnetHeaderExtensions
         return (platforms, formats, genres, types);
     }
 
-    private static ApplicationSpot ToApplicationSpot(this SpotnetHeader header)
+    private static ApplicationSpot ToApplicationSpot(this SpotHeader header)
     {
         var (platforms, genres, types) = MapApplicationSubCategories(header.SubCategories);
         var now = DateTimeOffset.Now;
