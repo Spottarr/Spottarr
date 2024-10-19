@@ -90,20 +90,53 @@ internal sealed class SpotnetService : ISpotnetService
         await Parallel.ForEachAsync(batches, parallelOptions, async (batch, ct) =>
         {
             var client = await nntpClientPool.BorrowClient();
+            var response = client.Group(group.Name);
+            if (!response.Success)
+            {
+                _logger.CouldNotRetrieveSpotGroup(group.Name, response.Code, response.Message);
+                return;
+            }
+            
             foreach(var spot in batch)
             {
                 try
                 {
-                    var articleResponse = client.Article(new NntpMessageId(spot.MessageId));
-                    if (!articleResponse.Success) continue;
+                    // Fetch the article headers which contains the full spot detail in XML format
+                    var articleResponse = client.Head(new NntpMessageId(spot.MessageId));
+                    if (!articleResponse.Success)
+                    {
+                        _logger.CouldNotRetrieveArticle(spot.MessageId, articleResponse.Code, articleResponse.Message);
+                        continue;
+                    }
 
-                    spot.Description = string.Join('\n', articleResponse.Article.Body);
+                    var headers = articleResponse.Article.Headers;
+                    if (!headers.TryGetValue(Spotnet.HeaderName, out var spotnetXmlValues) || spotnetXmlValues == null)
+                    {
+                        _logger.ArticleIsMissingSpotXmlHeader(spot.MessageId);
+                        continue;
+                    }
+
+                    // The Usenet NuGet package returns headers values as a HashSet, which means they lose their order
+                    // In most cases a message will only contain 2 items, so make sure the one starting with <Spotnet> is seen as the first
+                    // This is not a good solution and will break for more than 2 items.
+                    // TODO: Fork and fix issues in Usenet package.
+                    if (spotnetXmlValues.Count > 2) continue;
+
+                    var orderedSpotnetXmlValues = spotnetXmlValues.OrderByDescending(s => s.StartsWith("<Spotnet>", StringComparison.Ordinal));
+                    var spotnetXml = string.Join(string.Empty, orderedSpotnetXmlValues);
+                    var spotDetails = SpotnetXmlParser.Parse(spotnetXml);
+
+                }
+                catch (BadSpotFormatException ex)
+                {
+                    _logger.ArticleContainsInvalidSpotXmlHeader(spot.MessageId, ex.Xml);
                 }
                 catch (NntpException ex)
                 {
-                    _logger.FailedToSaveSpots(ex);
+                    _logger.CouldNotRetrieveArticle(ex, spot.MessageId);
                 }
             }
+
             nntpClientPool.ReturnClient(client);
         });
         
@@ -137,10 +170,11 @@ internal sealed class SpotnetService : ISpotnetService
         var xOverResponse = client.Xover(batch);
         if (!xOverResponse.Success)
         {
-            _logger.CouldNotRetrieveArticles(batch.From, batch.To, xOverResponse.Code, xOverResponse.Message);
+            _logger.CouldNotRetrieveArticleHeaders(batch.From, batch.To, xOverResponse.Code, xOverResponse.Message);
             return true;
         }
 
+        var done = false;
         foreach (var header in xOverResponse.Lines)
         {
             try
