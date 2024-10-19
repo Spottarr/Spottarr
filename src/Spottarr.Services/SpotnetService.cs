@@ -119,6 +119,8 @@ internal sealed class SpotnetService : ISpotnetService
                     var spotnetXml = string.Concat(spotnetXmlValues);
                     var spotDetails = SpotnetXmlParser.Parse(spotnetXml);
 
+                    spot.Description = spotDetails.Posting.Description;
+
                 }
                 catch (BadSpotFormatException ex)
                 {
