@@ -16,7 +16,7 @@ public sealed class Posting
 
     [XmlElement(ElementName = "Image")] public required ImageSegment Image { get; init; }
 
-    [XmlElement(ElementName = "Size")] public int Size { get; init; }
+    [XmlElement(ElementName = "Size")] public long Size { get; init; }
 
     [XmlElement(ElementName = "Category")] public required Category Category { get; init; }
 
