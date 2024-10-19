@@ -183,8 +183,9 @@ internal sealed class SpotnetService : ISpotnetService
 
                 if (nntpHeader.Date < retrieveAfter)
                 {
+                    // Even when we hit the retrieve after date, we have to keep reading the response, so the buffer is empty
+                    done = true;
                     _logger.ReachedRetrieveAfter(retrieveAfter);
-                    return true;
                 }
                 
                 var spotnetHeader = SpotnetHeaderParser.Parse(nntpHeader);
@@ -199,7 +200,7 @@ internal sealed class SpotnetService : ISpotnetService
             }
         }
 
-        return false;
+        return done;
     }
 
     private static IEnumerable<NntpArticleRange> GetXoverBatches(long lowWaterMark, long highWaterMark, int retrieveCount)
