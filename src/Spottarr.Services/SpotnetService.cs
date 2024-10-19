@@ -17,7 +17,7 @@ namespace Spottarr.Services;
 
 internal sealed class SpotnetService : ISpotnetService
 {
-    private const int BatchSize = 1000;
+    private const int XoverBatchSize = 1000;
     private readonly ILogger<SpotnetService> _logger;
     private readonly IOptions<UsenetOptions> _usenetOptions;
     private readonly IOptions<SpotnetOptions> _spotnetOptions;
@@ -200,7 +200,7 @@ internal sealed class SpotnetService : ISpotnetService
         
         while (batchEnd >= start)
         {
-            var batchStart = Math.Max(start, batchEnd - (BatchSize - 1));
+            var batchStart = Math.Max(start, batchEnd - (XoverBatchSize - 1));
             
             // Make sure that the final batch is inclusive
             if (batchStart - 1 == start) batchStart = start;
