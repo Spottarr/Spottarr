@@ -5,7 +5,10 @@ using Spottarr.Services.Contracts;
 
 namespace Spottarr.Services;
 
-internal sealed class SpotIndexingService : ISpotIndexingService
+/// <summary>
+/// Extracts useful attributes from spots and cleans up their title and description
+/// </summary>
+internal sealed partial class SpotIndexingService : ISpotIndexingService
 {
     private readonly ILogger<SpotIndexingService> _logger;
     private readonly SpottarrDbContext _dbContext;

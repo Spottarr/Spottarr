@@ -16,6 +16,9 @@ using Usenet.Nntp.Models;
 
 namespace Spottarr.Services;
 
+/// <summary>
+/// Imports spot headers and articles from spotnet usenet groups
+/// </summary>
 internal sealed class SpotImportService : ISpotImportService
 {
     private const int XoverBatchSize = 1000;
