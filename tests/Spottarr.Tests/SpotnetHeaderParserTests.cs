@@ -12,7 +12,7 @@ public class SpotnetHeaderParserTests
             "BeAware <ys2GY-pPgAmyOVPpnUAG5wVj0AK6o0-saMWIsfCmLX4FCg834PdODIE9OhNSwQQ3XR.qoJvSsrXXhL65SUp8zhvdH-pzqhuzVFUpP1FgDqQhIsGJDN01j7yGNsJeOuLslCTL@spot.net>";
         var nntpHeader = PrepareNntpHeader(spotnetHeader);
 
-        Assert.Throws<ArgumentException>(() => SpotnetHeaderParser.Parse(nntpHeader));
+        Assert.Throws<BadHeaderFormatException>(() => SpotnetHeaderParser.Parse(nntpHeader));
     }
 
     [Fact]
