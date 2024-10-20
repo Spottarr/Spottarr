@@ -44,9 +44,9 @@ public class SpotSearchService : ISpotSearchService
         
         var totalCount = await query.CountAsync();
         var spots = await query
+            .OrderByDescending(s => s.SpottedAt)
             .Skip(filter.Offset)
             .Take(filter.Limit)
-            .OrderByDescending(s => s.SpottedAt)
             .ToListAsync();
         
         return new SpotSearchResponse()
