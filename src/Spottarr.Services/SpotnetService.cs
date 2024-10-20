@@ -195,6 +195,7 @@ internal sealed class SpotnetService : ISpotnetService
             if (!headers.TryGetValue(Spotnet.HeaderName, out var spotnetXmlValues) || spotnetXmlValues == null)
             {
                 // No spot XML header, fall back to plaintext body
+                spot.Description = body;
                 spot.FtsSpot!.Description = body;
                 _logger.ArticleIsMissingSpotXmlHeader(spot.MessageId);
                 return;
@@ -203,6 +204,7 @@ internal sealed class SpotnetService : ISpotnetService
             var spotnetXml = string.Concat(spotnetXmlValues);
             var spotDetails = SpotnetXmlParser.Parse(spotnetXml);
 
+            spot.Description = spotDetails.Posting.Description;
             spot.FtsSpot!.Description = spotDetails.Posting.Description;
 
         }
