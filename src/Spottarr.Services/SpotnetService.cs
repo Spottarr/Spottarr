@@ -48,7 +48,7 @@ internal sealed class SpotnetService : ISpotnetService
         
         // Get a client from the pool
         var client = await nntpClientPool.BorrowClient();
-        
+
         // Switch to the configured usenet group and verify that it exists.
         var groupResponse = client.Group(spotnetOptions.SpotGroup);
         if (!groupResponse.Success)
@@ -166,12 +166,13 @@ internal sealed class SpotnetService : ISpotnetService
     
     private async Task GetSpotDetails(NntpClientPool nntpClientPool, Spot spot)
     {
-        var client = await nntpClientPool.BorrowClient();
-
+        NntpClientWrapper? client = null;
         try
         {
+            client = await nntpClientPool.BorrowClient();
+            
             // Fetch the article headers which contains the full spot detail in XML format
-            var articleResponse = client.Article(new NntpMessageId("lDnMqoAdF6ISVbwZgSOrn@spot.net"));
+            var articleResponse = client.Article(new NntpMessageId(spot.MessageId));
             if (!articleResponse.Success)
             {
                 _logger.CouldNotRetrieveArticle(spot.MessageId, articleResponse.Code, articleResponse.Message);
@@ -179,10 +180,16 @@ internal sealed class SpotnetService : ISpotnetService
             }
 
             var article = articleResponse.Article;
-            if (!article.Headers.TryGetValue(Spotnet.HeaderName, out var spotnetXmlValues) || spotnetXmlValues == null)
+
+            // Header and body values are lazy enumerables, we need to enumerate them to clear the read buffer on the usenet client.
+            // Usenet headers are not cases sensitive, but the Usenet library assumes they are.
+            var headers = article.Headers.ToDictionary(h => h.Key, h => string.Concat(h.Value), StringComparer.OrdinalIgnoreCase);
+            var body = string.Concat(article.Body);
+            
+            if (!headers.TryGetValue(Spotnet.HeaderName, out var spotnetXmlValues) || spotnetXmlValues == null)
             {
                 // No spot XML header, fall back to plaintext body
-                spot.FtsSpot!.Description = string.Concat(article.Body);
+                spot.FtsSpot!.Description = body;
                 _logger.ArticleIsMissingSpotXmlHeader(spot.MessageId);
                 return;
             }
@@ -203,7 +210,7 @@ internal sealed class SpotnetService : ISpotnetService
         }
         finally
         {
-            nntpClientPool.ReturnClient(client);
+            if(client != null) nntpClientPool.ReturnClient(client);
         }
     }
     
