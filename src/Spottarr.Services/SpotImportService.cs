@@ -96,7 +96,11 @@ internal sealed class SpotImportService : ISpotImportService
         // Save the fetched articles in bulk.
         try
         {
-            await BulkInsertOrUpdateSpot(context.Spots);
+            await _dbContext.BulkInsertAsync(context.Spots, c =>
+            {
+                c.UpdateByProperties = [nameof(Spot.MessageId)];
+                c.PropertiesToIncludeOnUpdate = [];
+            });
         }
         catch (DbException ex)
         {
@@ -195,7 +199,6 @@ internal sealed class SpotImportService : ISpotImportService
             {
                 // No spot XML header, fall back to plaintext body
                 spot.Description = body;
-                spot.FtsSpot!.Description = body;
                 _logger.ArticleIsMissingSpotXmlHeader(spot.MessageId);
                 return;
             }
@@ -204,8 +207,6 @@ internal sealed class SpotImportService : ISpotImportService
             var spotDetails = SpotnetXmlParser.Parse(spotnetXml);
 
             spot.Description = spotDetails.Posting.Description;
-            spot.FtsSpot!.Description = spotDetails.Posting.Description;
-
         }
         catch (BadSpotFormatException ex)
         {
@@ -220,26 +221,4 @@ internal sealed class SpotImportService : ISpotImportService
             if(client != null) nntpClientPool.ReturnClient(client);
         }
     }
-    
-    private async Task BulkInsertOrUpdateSpot<TSpot>(IEnumerable<TSpot> spots) where TSpot : Spot
-    {
-        using var transaction = await _dbContext.Database.BeginTransactionAsync();
-
-        await _dbContext.BulkInsertAsync(spots, c =>
-        {
-            c.UpdateByProperties = [nameof(Spot.MessageId)];
-            c.SetOutputIdentity = true;
-        });
-
-        var ftsSpots = spots.Select(s =>
-        {
-            s.FtsSpot!.RowId = s.Id;
-            return s.FtsSpot;
-        }).ToList();
-
-        await _dbContext.BulkInsertAsync(ftsSpots);
-        
-        await transaction.CommitAsync();
-    }
-    
 }

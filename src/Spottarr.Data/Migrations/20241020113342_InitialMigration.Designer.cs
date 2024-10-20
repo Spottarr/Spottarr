@@ -11,8 +11,8 @@ using Spottarr.Data;
 namespace Spottarr.Data.Migrations
 {
     [DbContext(typeof(SpottarrDbContext))]
-    [Migration("20241020071120_RenameSubjectToTitle")]
-    partial class RenameSubjectToTitle
+    [Migration("20241020113342_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,6 +26,7 @@ namespace Spottarr.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Match")
@@ -50,58 +51,6 @@ namespace Spottarr.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<long>("Bytes")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("MessageId")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("TEXT");
-
-                    b.Property<long>("MessageNumber")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("SpottedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Spotter")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MessageId")
-                        .IsUnique();
-
-                    b.ToTable("Spots");
-
-                    b.HasDiscriminator<int>("Type");
-
-                    b.UseTphMappingStrategy();
-                });
-
-            modelBuilder.Entity("Spottarr.Data.Entities.ApplicationSpot", b =>
-                {
-                    b.HasBaseType("Spottarr.Data.Entities.Spot");
-
                     b.PrimitiveCollection<string>("ApplicationGenres")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -113,13 +62,6 @@ namespace Spottarr.Data.Migrations
                     b.PrimitiveCollection<string>("ApplicationTypes")
                         .IsRequired()
                         .HasColumnType("TEXT");
-
-                    b.HasDiscriminator().HasValue(3);
-                });
-
-            modelBuilder.Entity("Spottarr.Data.Entities.AudioSpot", b =>
-                {
-                    b.HasBaseType("Spottarr.Data.Entities.Spot");
 
                     b.PrimitiveCollection<string>("AudioBitrates")
                         .IsRequired()
@@ -141,12 +83,18 @@ namespace Spottarr.Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.HasDiscriminator().HasValue(1);
-                });
+                    b.Property<long>("Bytes")
+                        .HasColumnType("INTEGER");
 
-            modelBuilder.Entity("Spottarr.Data.Entities.GameSpot", b =>
-                {
-                    b.HasBaseType("Spottarr.Data.Entities.Spot");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.PrimitiveCollection<string>("Episodes")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.PrimitiveCollection<string>("GameFormats")
                         .IsRequired()
@@ -163,13 +111,6 @@ namespace Spottarr.Data.Migrations
                     b.PrimitiveCollection<string>("GameTypes")
                         .IsRequired()
                         .HasColumnType("TEXT");
-
-                    b.HasDiscriminator().HasValue(2);
-                });
-
-            modelBuilder.Entity("Spottarr.Data.Entities.ImageSpot", b =>
-                {
-                    b.HasBaseType("Spottarr.Data.Entities.Spot");
 
                     b.PrimitiveCollection<string>("ImageFormats")
                         .IsRequired()
@@ -191,7 +132,50 @@ namespace Spottarr.Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.HasDiscriminator().HasValue(0);
+                    b.Property<DateTime?>("IndexedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("MessageId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("MessageNumber")
+                        .HasColumnType("INTEGER");
+
+                    b.PrimitiveCollection<string>("Seasons")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("SpottedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Spotter")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.PrimitiveCollection<string>("Years")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MessageId")
+                        .IsUnique();
+
+                    b.ToTable("Spots");
                 });
 
             modelBuilder.Entity("Spottarr.Data.Entities.FtsSpot", b =>

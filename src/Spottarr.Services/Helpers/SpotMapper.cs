@@ -20,12 +20,8 @@ internal static class SpotnetHeaderExtensions
         
         return new Spot
         {
-            FtsSpot = new FtsSpot()
-            {
-                Title = header.Subject,
-                Description = null,
-            },
             Title = header.Subject,
+            Description = null,
             Spotter = header.Nickname,
             Bytes = header.Size,
             MessageNumber = header.NntpHeader.ArticleNumber,

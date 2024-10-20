@@ -31,7 +31,7 @@ public class Spot : BaseEntity
     public ICollection<int> Years { get; init; } = [];
     public ICollection<int> Seasons { get; init; } = [];
     public ICollection<int> Episodes { get; init; } = [];
-    public FtsSpot? FtsSpot { get; set; }
+    public FtsSpot? FtsSpot { get; init; }
     public required DateTime SpottedAt { get; set; }
     public DateTime? IndexedAt { get; set; }
 }

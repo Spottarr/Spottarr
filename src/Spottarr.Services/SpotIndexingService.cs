@@ -31,13 +31,14 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
             .ToListAsync();
 
         var now = DateTimeOffset.Now;
+        var fullTextIndexSpots = new List<FtsSpot>();
         
         foreach (var spot in unindexedSpots)
         {
             var title = spot.Title;
             
             // Replace BB tags
-            var description = spot.Description?
+            var description = (spot.Description ?? string.Empty)
                 .Replace("[br]", "\n", StringComparison.OrdinalIgnoreCase);
             
             // Clean up title
@@ -53,10 +54,20 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
             var (years, episodes, seasons) = YearEpisodeSeasonParser.Parse(titleAndDescription);
 
             spot.Title = title;
+            spot.Description = description;
             spot.Years.Replace(years);
             spot.Seasons.Replace(seasons);
             spot.Episodes.Replace(episodes);
             spot.IndexedAt = now.UtcDateTime;
+
+            var ftsSpot = new FtsSpot()
+            {
+                RowId = spot.Id,
+                Title = title,
+                Description = description
+            };
+            
+            fullTextIndexSpots.Add(ftsSpot);
         }
 
         await _dbContext.BulkUpdateAsync(unindexedSpots, c =>
@@ -64,16 +75,17 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
             c.PropertiesToIncludeOnUpdate =
             [
                 nameof(Spot.Title),
+                nameof(Spot.Description),
                 nameof(Spot.Years),
                 nameof(Spot.Seasons),
                 nameof(Spot.Episodes),
                 nameof(Spot.IndexedAt),
             ];
         });
+
+        await _dbContext.BulkInsertAsync(fullTextIndexSpots);
     }
     
     [GeneratedRegex(@"(?<=\w)\.(?=\w)")]
     private static partial Regex CleanTitleRegex();
-    
-    
 }
