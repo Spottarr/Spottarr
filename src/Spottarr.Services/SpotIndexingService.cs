@@ -7,6 +7,7 @@ using Spottarr.Data;
 using Spottarr.Data.Entities;
 using Spottarr.Services.Contracts;
 using Spottarr.Services.Helpers;
+using Spottarr.Services.Newznab;
 using Spottarr.Services.Parsers;
 
 namespace Spottarr.Services;
@@ -53,11 +54,14 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
             // We store all values found to make it easier to search for them
             var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(titleAndDescription);
 
+            var newznabCategories = NewznabCategoryMapper.Map(spot);
+            
             spot.Title = title;
             spot.Description = description;
             spot.Years.Replace(years);
             spot.Seasons.Replace(seasons);
             spot.Episodes.Replace(episodes);
+            spot.NewznabCategories.Replace(newznabCategories);
             spot.IndexedAt = now.UtcDateTime;
 
             var ftsSpot = new FtsSpot()
@@ -79,6 +83,7 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
                 nameof(Spot.Years),
                 nameof(Spot.Seasons),
                 nameof(Spot.Episodes),
+                nameof(Spot.NewznabCategories),
                 nameof(Spot.IndexedAt),
             ];
         });
