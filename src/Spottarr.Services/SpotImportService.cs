@@ -96,11 +96,22 @@ internal sealed class SpotImportService : ISpotImportService
         // Save the fetched articles in bulk.
         try
         {
-            await _dbContext.BulkInsertOrUpdateAsync(context.Spots, c =>
+            await _dbContext.Database.BeginTransactionAsync();
+            await _dbContext.BulkInsertAsync(context.Spots, c =>
             {
-                c.UpdateByProperties = [nameof(Spot.MessageId)];
-                c.PropertiesToIncludeOnUpdate = [];
+                c.SetOutputIdentity = true;
             });
+
+            var nzbFiles = new List<NzbFile>();
+            foreach (var spot in context.Spots)
+            {
+                if (spot.NzbFile == null) continue;
+                spot.NzbFile.SpotId = spot.Id;
+                nzbFiles.Add(spot.NzbFile);
+            }
+            
+            await _dbContext.BulkInsertAsync(nzbFiles);
+            await _dbContext.Database.CommitTransactionAsync();
         }
         catch (DbException ex)
         {
@@ -179,23 +190,24 @@ internal sealed class SpotImportService : ISpotImportService
         try
         {
             client = await nntpClientPool.BorrowClient();
-            
+
             // Fetch the article headers which contains the full spot detail in XML format
-            var articleResponse = client.Article(new NntpMessageId(spot.MessageId));
-            if (!articleResponse.Success)
+            var spotArticleResponse = client.Article(new NntpMessageId(spot.MessageId));
+            if (!spotArticleResponse.Success)
             {
-                _logger.CouldNotRetrieveArticle(spot.MessageId, articleResponse.Code, articleResponse.Message);
+                _logger.CouldNotRetrieveArticle(spot.MessageId, spotArticleResponse.Code, spotArticleResponse.Message);
                 return;
             }
 
-            var article = articleResponse.Article;
+            var spotArticle = spotArticleResponse.Article;
 
-            // Header and body values are lazy enumerables, we need to enumerate them to clear the read buffer on the usenet client.
+            // Header and body values are enumerable and lazy, we need to enumerate them to clear the read buffer on the usenet client.
             // Usenet headers are not cases sensitive, but the Usenet library assumes they are.
-            var headers = article.Headers.ToDictionary(h => h.Key, h => string.Concat(h.Value), StringComparer.OrdinalIgnoreCase);
-            var body = string.Concat(article.Body);
-            
-            if (!headers.TryGetValue(SpotnetXml.HeaderName, out var spotnetXmlValues) || spotnetXmlValues == null)
+            var headers = spotArticle.Headers.ToDictionary(h => h.Key, h => string.Concat(h.Value),
+                StringComparer.OrdinalIgnoreCase);
+            var body = string.Concat(spotArticle.Body);
+
+            if (!headers.TryGetValue(SpotnetXml.HeaderName, out var spotnetXmlValues))
             {
                 // No spot XML header, fall back to plaintext body
                 spot.Description = body;
@@ -206,11 +218,29 @@ internal sealed class SpotImportService : ISpotImportService
             var spotnetXml = string.Concat(spotnetXmlValues);
             var spotDetails = SpotnetXmlParser.Parse(spotnetXml);
 
+            // Fetch the article headers which contains the NZB payload
+            var nzbMessageId = spotDetails.Posting.Nzb.Segment;
+            var nzbArticleResponse = client.Article(new NntpMessageId(nzbMessageId));
+            if (!nzbArticleResponse.Success)
+            {
+                _logger.CouldNotRetrieveArticle(spot.MessageId, nzbArticleResponse.Code, nzbArticleResponse.Message);
+                return;
+            }
+
+            var nzbData = string.Concat(nzbArticleResponse.Article.Body);
+            var nzbFile = await NzbArticleParser.Parse(nzbMessageId, nzbData);
+
+            spot.NzbFile = nzbFile;
+
             spot.Description = spotDetails.Posting.Description;
         }
         catch (BadSpotFormatException ex)
         {
             _logger.ArticleContainsInvalidSpotXmlHeader(spot.MessageId, ex.Xml);
+        }
+        catch (InvalidDataException ex)
+        {
+            _logger.CouldNotRetrieveArticle(ex, spot.MessageId);
         }
         catch (NntpException ex)
         {

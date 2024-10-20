@@ -1,6 +1,5 @@
-using Spottarr.Data;
+using System.Collections.Concurrent;
 using Spottarr.Data.Entities;
-using Spottarr.Services.Nntp;
 using Spottarr.Services.Spotnet;
 
 namespace Spottarr.Services.Helpers;
