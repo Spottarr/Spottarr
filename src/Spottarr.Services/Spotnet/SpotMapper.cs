@@ -1,12 +1,23 @@
 using Spottarr.Data.Entities;
 using Spottarr.Data.Entities.Enums;
-using Spottarr.Services.Nntp;
+using Spottarr.Services.Parsers;
 
 namespace Spottarr.Services.Spotnet;
 
 internal static class SpotnetHeaderExtensions
 {
-    public static Spot ToSpot(this SpotHeader header) => MapSpotHeader(header);
+    public static Spot ToSpot(this SpotHeader header)
+    {
+        try
+        {
+            return MapSpotHeader(header);
+        }
+        catch (Exception ex)
+        {
+            throw new BadHeaderFormatException(header.NntpHeader.Subject, ex);
+        }
+        
+    }
 
     private static Spot MapSpotHeader(SpotHeader header)
     {
