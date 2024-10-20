@@ -13,6 +13,7 @@ public class SpottarrDbContext : DbContext
     private readonly string _dbPath;
 
     public DbSet<Spot> Spots { get; set; }
+    public DbSet<FtsSpot> FtsSpots { get; set; }
 
     public SpottarrDbContext(IHostEnvironment environment, ILoggerFactory loggerFactory)
     {
