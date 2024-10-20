@@ -13,6 +13,7 @@ public class SpottarrDbContext : DbContext
     private readonly string _dbPath;
 
     public DbSet<Spot> Spots { get; set; }
+    public DbSet<Spot> NzbFiles { get; set; }
     public DbSet<FtsSpot> FtsSpots { get; set; }
 
     public SpottarrDbContext(IHostEnvironment environment, ILoggerFactory loggerFactory)
@@ -34,12 +35,25 @@ public class SpottarrDbContext : DbContext
     {
         ArgumentNullException.ThrowIfNull(modelBuilder);
 
-        modelBuilder.Entity<Spot>().Property(s => s.Title).HasMaxLength(256);
-        modelBuilder.Entity<Spot>().Property(s => s.Description);
-        modelBuilder.Entity<Spot>().Property(s => s.Spotter).HasMaxLength(128);
-        modelBuilder.Entity<Spot>().Property(s => s.MessageId).HasMaxLength(128);
-        modelBuilder.Entity<Spot>().HasIndex(s => s.MessageId).IsUnique();
-
+        modelBuilder.Entity<Spot>(x =>
+        {
+            x.ToTable("Spots");
+            x.Property(s => s.Title).HasMaxLength(256);
+            x.Property(s => s.Spotter).HasMaxLength(128);
+            x.Property(s => s.MessageId).HasMaxLength(128);
+            x.HasIndex(s => s.MessageId).IsUnique();
+        });
+        
+        modelBuilder.Entity<NzbFile>(x =>
+        {
+            x.ToTable("NzbFiles");
+            x.Property(s => s.MessageId).HasMaxLength(128);
+            x.HasIndex(s => s.MessageId).IsUnique();
+            x.HasOne(s => s.Spot)
+                .WithOne(s => s.NzbFile)
+                .HasForeignKey<NzbFile>(s => s.SpotId);
+        });
+        
         modelBuilder.Entity<FtsSpot>(x =>
         {
             // Pluralize, since we won't be adding a DbSet for it
