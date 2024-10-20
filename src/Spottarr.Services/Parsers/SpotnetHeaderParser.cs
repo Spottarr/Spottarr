@@ -6,6 +6,13 @@ namespace Spottarr.Services.Parsers;
 
 internal static partial class SpotnetHeaderParser
 {
+    private static readonly string[] DeleteModerationCommands =
+    {
+        "delete",
+        "dispose",
+        "remove"
+    };
+    
     public static SpotHeader Parse(NntpHeader header)
     {
         try
@@ -14,6 +21,10 @@ internal static partial class SpotnetHeaderParser
                 StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             var subject = subjectAndTags[0];
             var tag = subjectAndTags.Length == 2 ? subjectAndTags[1] : string.Empty;
+
+            var command = DeleteModerationCommands.Any(c => subject.StartsWith(c, StringComparison.OrdinalIgnoreCase))
+                ? ModerationCommand.Delete
+                : ModerationCommand.None;
 
             var regex = SpotnetHeaderRegex();
             var match = regex.Match(header.Author);
@@ -46,6 +57,7 @@ internal static partial class SpotnetHeaderParser
                 UserSignature = g["usig"].Value,
                 Category = category,
                 KeyId = keyId,
+                Command = command,
                 SubCategories = subCategories,
                 Size = size,
                 Date = date,

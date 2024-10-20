@@ -1,5 +1,6 @@
 using Spottarr.Data;
 using Spottarr.Data.Entities;
+using Spottarr.Services.Nntp;
 
 namespace Spottarr.Services.Helpers;
 
@@ -11,6 +12,7 @@ internal sealed class SpotImportResult
     public List<AudioSpot> AudioSpots { get; } = [];
     public List<GameSpot> GameSpots { get; } = [];
     public List<ApplicationSpot> ApplicationSpots { get; } = [];
+    public HashSet<string> DeletedSpots { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     public SpotImportResult(HashSet<string> existingMessageIds) => _existingMessageIds = existingMessageIds;
 
@@ -32,4 +34,6 @@ internal sealed class SpotImportResult
         
         action.Invoke();
     }
+
+    public void AddDeletion(SpotHeader spotnetHeader) => DeletedSpots.Add(spotnetHeader.NntpHeader.MessageId);
 }

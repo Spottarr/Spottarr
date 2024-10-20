@@ -133,6 +133,12 @@ internal sealed class SpotnetService : ISpotnetService
                 
                 var spotnetHeader = SpotnetHeaderParser.Parse(nntpHeader);
 
+                if (spotnetHeader.KeyId == KeyId.Moderator && spotnetHeader.Command == ModerationCommand.Delete)
+                {
+                    context.AddDeletion(spotnetHeader);
+                    continue;
+                }
+
                 var spot = spotnetHeader.ToSpot();
                 
                 context.AddSpot(spot);
