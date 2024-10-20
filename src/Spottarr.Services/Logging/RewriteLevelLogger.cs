@@ -12,11 +12,11 @@ public class RewriteLevelLogger : ILogger
         _logger = logger;
         _rewriteFunc = rewriteFunc;
     }
-
+    
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) =>
         _logger.Log(_rewriteFunc.Invoke(logLevel), eventId, state, exception, formatter);
 
-    public bool IsEnabled(LogLevel logLevel) => _logger.IsEnabled(logLevel);
+    public bool IsEnabled(LogLevel logLevel) => _logger.IsEnabled(_rewriteFunc.Invoke(logLevel));
 
     public IDisposable? BeginScope<TState>(TState state) where TState : notnull => _logger.BeginScope(state);
 }
