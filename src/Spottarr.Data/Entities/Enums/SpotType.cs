@@ -2,8 +2,9 @@ namespace Spottarr.Data.Entities.Enums;
 
 public enum SpotType
 {
-    Image = 0,
-    Audio = 1,
-    Game = 2,
-    Application = 3,
+    None = 0,
+    Image = 1,
+    Audio = 2,
+    Game = 3,
+    Application = 4,
 }
