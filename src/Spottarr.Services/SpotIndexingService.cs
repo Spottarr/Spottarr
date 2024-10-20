@@ -1,7 +1,13 @@
+using System.Globalization;
+using System.Text.RegularExpressions;
+using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Spottarr.Data;
+using Spottarr.Data.Entities;
 using Spottarr.Services.Contracts;
+using Spottarr.Services.Helpers;
+using Spottarr.Services.Parsers;
 
 namespace Spottarr.Services;
 
@@ -21,7 +27,53 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
 
     public async Task Index()
     {
-        var unindexed = await _dbContext.Spots.Where(s => s.IndexedAt == null)
+        var unindexedSpots = await _dbContext.Spots.Where(s => s.IndexedAt == null)
             .ToListAsync();
+
+        var now = DateTimeOffset.Now;
+        
+        foreach (var spot in unindexedSpots)
+        {
+            var title = spot.Title;
+            
+            // Replace BB tags
+            var description = spot.Description?
+                .Replace("[br]", "\n", StringComparison.OrdinalIgnoreCase);
+            
+            // Clean up title
+            // e.g. "Show.S01E04.Poster.1080p.DDP5.1.Atmos.H.264" -> "Show S01E04 Poster 1080p DDP5 1 Atmos H 264"
+            title = CleanTitleRegex()
+                .Replace(spot.Title, " ");
+
+            var titleAndDescription = string.Join('\n', title, description);
+
+            // Search for year, season and episode numbers.
+            // e.g. "2024 S01E04", "Season: 1", "Episode 2"
+            // We store all values found to make it easier to search for them
+            var (years, episodes, seasons) = YearEpisodeSeasonParser.Parse(titleAndDescription);
+
+            spot.Title = title;
+            spot.Years.Replace(years);
+            spot.Seasons.Replace(seasons);
+            spot.Episodes.Replace(episodes);
+            spot.IndexedAt = now.UtcDateTime;
+        }
+
+        await _dbContext.BulkUpdateAsync(unindexedSpots, c =>
+        {
+            c.PropertiesToIncludeOnUpdate =
+            [
+                nameof(Spot.Title),
+                nameof(Spot.Years),
+                nameof(Spot.Seasons),
+                nameof(Spot.Episodes),
+                nameof(Spot.IndexedAt),
+            ];
+        });
     }
+    
+    [GeneratedRegex(@"(?<=\w)\.(?=\w)")]
+    private static partial Regex CleanTitleRegex();
+    
+    
 }
