@@ -25,6 +25,7 @@ public static class ServiceCollectionExtensions
                 return new RewriteLevelLoggerFactory(defaultLoggerFactory);
             })
             .AddScoped<ISpotImportService, SpotImportService>()
+            .AddScoped<ISpotIndexingService, SpotIndexingService>()
             .Configure<UsenetOptions>(configuration.GetSection(UsenetOptions.Section))
             .Configure<SpotnetOptions>(configuration.GetSection(SpotnetOptions.Section));
     }
