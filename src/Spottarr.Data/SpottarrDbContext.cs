@@ -13,10 +13,6 @@ public class SpottarrDbContext : DbContext
     private readonly string _dbPath;
 
     public DbSet<Spot> Spots { get; set; }
-    public DbSet<ImageSpot> Images { get; set; }
-    public DbSet<AudioSpot> Audio { get; set; }
-    public DbSet<GameSpot> Games { get; set; }
-    public DbSet<ApplicationSpot> Applications { get; set; }
 
     public SpottarrDbContext(IHostEnvironment environment, ILoggerFactory loggerFactory)
     {
@@ -41,16 +37,7 @@ public class SpottarrDbContext : DbContext
         modelBuilder.Entity<Spot>().Property(s => s.Description);
         modelBuilder.Entity<Spot>().Property(s => s.Spotter).HasMaxLength(128);
         modelBuilder.Entity<Spot>().Property(s => s.MessageId).HasMaxLength(128);
-
         modelBuilder.Entity<Spot>().HasIndex(s => s.MessageId).IsUnique();
-
-        modelBuilder.Entity<Spot>().UseTphMappingStrategy();
-        modelBuilder.Entity<Spot>()
-            .HasDiscriminator(s => s.Type)
-            .HasValue<ImageSpot>(SpotType.Image)
-            .HasValue<AudioSpot>(SpotType.Audio)
-            .HasValue<GameSpot>(SpotType.Game)
-            .HasValue<ApplicationSpot>(SpotType.Application);
 
         modelBuilder.Entity<FtsSpot>(x =>
         {

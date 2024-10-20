@@ -14,9 +14,5 @@
   <ItemGroup>
     <ProjectReference Include="..\Spottarr.Data\Spottarr.Data.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Newznab\" />
-  </ItemGroup>
   
 </Project>

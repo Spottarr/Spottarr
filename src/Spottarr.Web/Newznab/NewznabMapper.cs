@@ -19,12 +19,12 @@ internal static class NewznabMapper
 
         item.PublishDate = spot.SpottedAt;
         
-        return spot switch
+        return spot.Type switch
         {
-            ImageSpot imageSpot => MapImageSpot(imageSpot, item),
-            AudioSpot audioSpot => MapAudioSpot(audioSpot, item),
-            GameSpot gameSpot => MapGameSpot(gameSpot, item),
-            ApplicationSpot applicationSpot => MapApplicationSpot(applicationSpot, item),
+            SpotType.Image => MapImageSpot(spot, item),
+            SpotType.Audio => MapAudioSpot(spot, item),
+            SpotType.Game => MapGameSpot(spot, item),
+            SpotType.Application => MapApplicationSpot(spot, item),
             _ => item
         };
     }
@@ -53,10 +53,10 @@ internal static class NewznabMapper
     /// Adds newznab attributes for tv, movies, books and erotic categories
     /// An image spot can have multiple types, e.g. Erotic AND Series
     /// </summary>
-    private static SyndicationItem MapImageSpot(ImageSpot spot, SyndicationItem item) =>
+    private static SyndicationItem MapImageSpot(Spot spot, SyndicationItem item) =>
         spot.ImageTypes.Aggregate(item, (current, type) => MapImageSpotType(type, spot, current));
 
-    private static SyndicationItem MapImageSpotType(ImageType type, ImageSpot spot, SyndicationItem item) =>
+    private static SyndicationItem MapImageSpotType(ImageType type, Spot spot, SyndicationItem item) =>
         type switch
         {
             ImageType.Series => MapTvSpot(spot, item),
@@ -69,7 +69,7 @@ internal static class NewznabMapper
     /// <summary>
     /// Adds newznab attributes for tv category
     /// </summary>
-    private static SyndicationItem MapTvSpot(ImageSpot spot, SyndicationItem item) =>
+    private static SyndicationItem MapTvSpot(Spot spot, SyndicationItem item) =>
         item.AddNewznabAttribute("season", "TBD")
             .AddNewznabAttribute("episode", "TBD")
             .AddNewznabAttribute("rageid", "TBD")
@@ -88,7 +88,7 @@ internal static class NewznabMapper
     /// <summary>
     /// Adds newznab attributes for movies category
     /// </summary>
-    private static SyndicationItem MapMovieSpot(ImageSpot spot, SyndicationItem item) =>
+    private static SyndicationItem MapMovieSpot(Spot spot, SyndicationItem item) =>
         item.AddNewznabAttribute("video", string.Join(',', spot.ImageFormats.Select(Enum.GetName)))
             .AddNewznabAttribute("audio", "TBD")
             .AddNewznabAttribute("resolution", "TBD")
@@ -112,7 +112,7 @@ internal static class NewznabMapper
     /// Adds newznab attributes for erotic (unofficial) category
     /// </summary>
     /// <returns></returns>
-    private static SyndicationItem MapEroticSpot(ImageSpot spot, SyndicationItem item) =>
+    private static SyndicationItem MapEroticSpot(Spot spot, SyndicationItem item) =>
         item.AddNewznabAttribute("video", string.Join(',', spot.ImageFormats.Select(Enum.GetName)))
             .AddNewznabAttribute("audio", "TBD")
             .AddNewznabAttribute("resolution", "TBD")
@@ -126,7 +126,7 @@ internal static class NewznabMapper
     /// <summary>
     /// Adds newznab attributes for books category
     /// </summary>
-    private static SyndicationItem MapBookSpot(ImageSpot spot, SyndicationItem item) =>
+    private static SyndicationItem MapBookSpot(Spot spot, SyndicationItem item) =>
         item.AddNewznabAttribute("publisher", "TBD")
             .AddNewznabAttribute("coverurl", "TBD")
             .AddNewznabAttribute("review", "TBD")
@@ -138,7 +138,7 @@ internal static class NewznabMapper
     /// <summary>
     /// Adds newznab attributes for audio category
     /// </summary>
-    private static SyndicationItem MapAudioSpot(this AudioSpot spot, SyndicationItem item)
+    private static SyndicationItem MapAudioSpot(this Spot spot, SyndicationItem item)
     {
         return item.AddNewznabAttribute("audio", string.Join(',', spot.AudioFormats.Select(Enum.GetName)))
             .AddNewznabAttribute("language", "TBD")
@@ -155,10 +155,10 @@ internal static class NewznabMapper
     /// <summary>
     /// Adds newznab attributes for game (unofficial) category
     /// </summary>
-    private static SyndicationItem MapGameSpot(this GameSpot spot, SyndicationItem item) => item;
+    private static SyndicationItem MapGameSpot(this Spot spot, SyndicationItem item) => item;
 
     /// <summary>
     /// Adds newznab attributes for pc (unofficial) category
     /// </summary>
-    private static SyndicationItem MapApplicationSpot(this ApplicationSpot spot, SyndicationItem item) => item;
+    private static SyndicationItem MapApplicationSpot(this Spot spot, SyndicationItem item) => item;
 }

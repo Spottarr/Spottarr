@@ -94,14 +94,9 @@ internal sealed class SpotImportService : ISpotImportService
         await Parallel.ForEachAsync(context.Spots, parallelOptions, async (spot, ct) => await GetSpotDetails(nntpClientPool, spot));
         
         // Save the fetched articles in bulk.
-        // We have to do this per article type because EfCore.BulkExtensions does not support a single insert
-        // for table-per-hierarchy setups.
         try
         {
-            await BulkInsertOrUpdateSpot(context.ImageSpots);
-            await BulkInsertOrUpdateSpot(context.AudioSpots);
-            await BulkInsertOrUpdateSpot(context.GameSpots);
-            await BulkInsertOrUpdateSpot(context.ApplicationSpots);
+            await BulkInsertOrUpdateSpot(context.Spots);
         }
         catch (DbException ex)
         {
@@ -232,8 +227,7 @@ internal sealed class SpotImportService : ISpotImportService
 
         await _dbContext.BulkInsertAsync(spots, c =>
         {
-            //c.UpdateByProperties = [nameof(Spot.MessageId)];
-            //c.PropertiesToIncludeOnUpdate = [];
+            c.UpdateByProperties = [nameof(Spot.MessageId)];
             c.SetOutputIdentity = true;
         });
 
