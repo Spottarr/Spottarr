@@ -40,7 +40,7 @@ internal static class SpotnetHeaderExtensions
             {
                 Title = header.Subject,
             },
-            Subject = header.Subject,
+            Title = header.Subject,
             Spotter = header.Nickname,
             Bytes = header.Size,
             MessageNumber = header.NntpHeader.ArticleNumber,
@@ -108,7 +108,7 @@ internal static class SpotnetHeaderExtensions
             {
                 Title = header.Subject,
             },
-            Subject = header.Subject,
+            Title = header.Subject,
             Spotter = header.Nickname,
             Bytes = header.Size,
             MessageNumber = header.NntpHeader.ArticleNumber,
@@ -176,7 +176,7 @@ internal static class SpotnetHeaderExtensions
             {
                 Title = header.Subject,
             },
-            Subject = header.Subject,
+            Title = header.Subject,
             Spotter = header.Nickname,
             Bytes = header.Size,
             MessageNumber = header.NntpHeader.ArticleNumber,
@@ -238,7 +238,7 @@ internal static class SpotnetHeaderExtensions
             {
                 Title = header.Subject,
             },
-            Subject = header.Subject,
+            Title = header.Subject,
             Spotter = header.Nickname,
             Bytes = header.Size,
             MessageNumber = header.NntpHeader.ArticleNumber,

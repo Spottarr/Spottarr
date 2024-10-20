@@ -156,7 +156,7 @@ public sealed class NewznabController : Controller
         var spotQuery = _dbContext.Spots.AsQueryable();
             
         if(q != null)
-            spotQuery = spotQuery.Where(s => s.Subject.Contains(q) || (s.Description != null && s.Description.Contains(q)));
+            spotQuery = spotQuery.Where(s => s.Title.Contains(q) || (s.Description != null && s.Description.Contains(q)));
 
         var spots = await spotQuery
             .OrderByDescending(s => s.SpottedAt)
