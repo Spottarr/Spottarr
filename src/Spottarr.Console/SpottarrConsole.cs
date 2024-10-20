@@ -5,9 +5,9 @@ namespace Spottarr.Console;
 
 internal sealed class SpottarrConsole : ISpottarrConsole
 {
-    private readonly ISpotnetService _spotnetService;
+    private readonly ISpotImportService _spotImportService;
 
-    public SpottarrConsole(ISpotnetService spotnetService) => _spotnetService = spotnetService;
+    public SpottarrConsole(ISpotImportService spotImportService) => _spotImportService = spotImportService;
 
-    public Task RunAsync() => _spotnetService.Import();
+    public Task RunAsync() => _spotImportService.Import();
 }

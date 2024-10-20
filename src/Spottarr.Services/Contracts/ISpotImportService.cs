@@ -1,6 +1,6 @@
 namespace Spottarr.Services.Contracts;
 
-public interface ISpotnetService
+public interface ISpotImportService
 {
     public Task Import();
 }

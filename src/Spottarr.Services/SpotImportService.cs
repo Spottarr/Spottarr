@@ -8,6 +8,7 @@ using Spottarr.Data.Entities;
 using Spottarr.Services.Configuration;
 using Spottarr.Services.Contracts;
 using Spottarr.Services.Helpers;
+using Spottarr.Services.Logging;
 using Spottarr.Services.Nntp;
 using Spottarr.Services.Parsers;
 using Usenet.Exceptions;
@@ -15,15 +16,15 @@ using Usenet.Nntp.Models;
 
 namespace Spottarr.Services;
 
-internal sealed class SpotnetService : ISpotnetService
+internal sealed class SpotImportService : ISpotImportService
 {
     private const int XoverBatchSize = 1000;
-    private readonly ILogger<SpotnetService> _logger;
+    private readonly ILogger<SpotImportService> _logger;
     private readonly IOptions<UsenetOptions> _usenetOptions;
     private readonly IOptions<SpotnetOptions> _spotnetOptions;
     private readonly SpottarrDbContext _dbContext;
 
-    public SpotnetService(ILoggerFactory loggerFactory, ILogger<SpotnetService> logger,
+    public SpotImportService(ILoggerFactory loggerFactory, ILogger<SpotImportService> logger,
         IOptions<UsenetOptions> usenetOptions, IOptions<SpotnetOptions> spotnetOptions, SpottarrDbContext dbContext)
     {
         _logger = logger;

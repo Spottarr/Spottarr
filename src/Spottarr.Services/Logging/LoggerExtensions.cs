@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Spottarr.Services.Parsers;
 
-namespace Spottarr.Services;
+namespace Spottarr.Services.Logging;
 
 public static partial class LoggerExtensions
 {
