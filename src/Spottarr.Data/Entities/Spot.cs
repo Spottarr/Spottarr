@@ -28,6 +28,7 @@ public class Spot : BaseEntity
     public ICollection<ApplicationPlatform> ApplicationPlatforms { get; init; } = [];
     public ICollection<ApplicationGenre> ApplicationGenres { get; init; } = [];
     public ICollection<ApplicationType> ApplicationTypes { get; init; } = [];
+    public ICollection<NewznabCategory> NewznabCategories { get; init; } = [];
     public ICollection<int> Years { get; init; } = [];
     public ICollection<int> Seasons { get; init; } = [];
     public ICollection<int> Episodes { get; init; } = [];

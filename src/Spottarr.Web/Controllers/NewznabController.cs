@@ -3,6 +3,7 @@ using System.ServiceModel.Syndication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Spottarr.Data;
+using Spottarr.Data.Entities.Enums;
 using Spottarr.Services.Contracts;
 using Spottarr.Web.Helpers;
 using Spottarr.Web.Newznab;
@@ -146,7 +147,7 @@ public sealed class NewznabController : Controller
     [HttpGet("pc")]
     [Produces(MediaTypeNames.Text.Xml)]
     public async Task<ActionResult> Search(string? q, int limit = DefaultPageSize, int offset = 0,
-        [FromQuery,ModelBinder<CommaSeparatedEnumBinder>] CategoryCode[]? cat = null)
+        [FromQuery,ModelBinder<CommaSeparatedEnumBinder>] NewznabCategory[]? cat = null)
     {
         var uriBuilder = new UriBuilder(Request.Scheme, Request.Host.Host, Request.Host.Port ?? -1);
         

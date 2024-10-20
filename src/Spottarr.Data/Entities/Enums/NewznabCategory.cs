@@ -1,8 +1,8 @@
-namespace Spottarr.Web.Newznab.Models;
+namespace Spottarr.Data.Entities.Enums;
 
 using System.ComponentModel.DataAnnotations;
 
-public enum CategoryCode
+public enum NewznabCategory
 {
     [Display(Name = "Reserved")]
     None = 0,
