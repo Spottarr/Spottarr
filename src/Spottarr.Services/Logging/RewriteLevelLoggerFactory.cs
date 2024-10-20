@@ -12,7 +12,7 @@ internal class RewriteLevelLoggerFactory : ILoggerFactory
     {
         var logger = _loggerFactory.CreateLogger(categoryName);
 
-        if (categoryName.StartsWith("Usenet.", StringComparison.OrdinalIgnoreCase))
+        if (categoryName.StartsWith("Spottarr.Usenet.", StringComparison.OrdinalIgnoreCase))
         {
             return new RewriteLevelLogger(logger, l => l switch
             {
