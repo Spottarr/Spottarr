@@ -2,7 +2,7 @@ using Spottarr.Data.Entities;
 using Spottarr.Data.Entities.Enums;
 using Spottarr.Services.Nntp;
 
-namespace Spottarr.Services.Helpers;
+namespace Spottarr.Services.Spotnet;
 
 internal static class SpotnetHeaderExtensions
 {

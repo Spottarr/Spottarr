@@ -11,6 +11,7 @@ using Spottarr.Services.Helpers;
 using Spottarr.Services.Logging;
 using Spottarr.Services.Nntp;
 using Spottarr.Services.Parsers;
+using Spottarr.Services.Spotnet;
 using Usenet.Exceptions;
 using Usenet.Nntp.Models;
 
@@ -195,7 +196,7 @@ internal sealed class SpotImportService : ISpotImportService
             var headers = article.Headers.ToDictionary(h => h.Key, h => string.Concat(h.Value), StringComparer.OrdinalIgnoreCase);
             var body = string.Concat(article.Body);
             
-            if (!headers.TryGetValue(Spotnet.HeaderName, out var spotnetXmlValues) || spotnetXmlValues == null)
+            if (!headers.TryGetValue(SpotnetXml.HeaderName, out var spotnetXmlValues) || spotnetXmlValues == null)
             {
                 // No spot XML header, fall back to plaintext body
                 spot.Description = body;

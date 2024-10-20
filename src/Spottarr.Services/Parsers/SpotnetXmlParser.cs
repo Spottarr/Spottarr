@@ -1,28 +1,28 @@
 using System.Xml;
 using System.Xml.Serialization;
-using Spottarr.Services.Nntp;
+using Spottarr.Services.Spotnet;
 
-namespace Spottarr.Services;
+namespace Spottarr.Services.Parsers;
 
 internal class SpotnetXmlParser
 {
-    private static readonly XmlSerializer Serializer = new(typeof(Spotnet)); 
-    private static readonly XmlReaderSettings XmlREaderSettings = new()
+    private static readonly XmlSerializer Serializer = new(typeof(SpotnetXml)); 
+    private static readonly XmlReaderSettings XmlReaderSettings = new()
     {
         Async = true,
         // Spot XML headers often contain invalid characters
         CheckCharacters = false
     };
     
-    public static Spotnet Parse(string xml)
+    public static SpotnetXml Parse(string xml)
     {
-        Spotnet? result;
+        SpotnetXml? result;
         
         try
         {
             using var stringReader = new StringReader(xml);
-            using var xmlReader = XmlReader.Create(stringReader, XmlREaderSettings);
-            result = Serializer.Deserialize(xmlReader) as Spotnet;
+            using var xmlReader = XmlReader.Create(stringReader, XmlReaderSettings);
+            result = Serializer.Deserialize(xmlReader) as SpotnetXml;
         }
         catch (Exception ex)
         {

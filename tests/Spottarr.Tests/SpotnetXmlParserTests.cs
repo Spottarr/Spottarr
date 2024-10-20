@@ -1,4 +1,4 @@
-using Spottarr.Services;
+using Spottarr.Services.Parsers;
 
 namespace Spottarr.Tests;
 
