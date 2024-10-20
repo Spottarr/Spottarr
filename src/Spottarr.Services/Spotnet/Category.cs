@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Xml.Serialization;
 
-namespace Spottarr.Services.Nntp;
+namespace Spottarr.Services.Spotnet;
 
 public sealed class Category
 {

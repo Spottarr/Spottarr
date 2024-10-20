@@ -1,4 +1,4 @@
-namespace Spottarr.Services.Nntp;
+namespace Spottarr.Services.Spotnet;
 
 /// <summary>
 /// https://github.com/spotweb/spotweb/blob/develop/lib/services/Retriever/Services_Retriever_Spots.php#L364

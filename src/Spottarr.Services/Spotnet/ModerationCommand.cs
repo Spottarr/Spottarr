@@ -1,4 +1,4 @@
-namespace Spottarr.Services.Nntp;
+namespace Spottarr.Services.Spotnet;
 
 internal enum ModerationCommand
 {

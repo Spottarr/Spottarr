@@ -1,4 +1,4 @@
-namespace Spottarr.Services;
+namespace Spottarr.Services.Parsers;
 
 public class BadSpotFormatException : Exception
 {

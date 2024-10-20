@@ -1,6 +1,6 @@
-using System.Text.RegularExpressions;
+using Spottarr.Services.Nntp;
 
-namespace Spottarr.Services.Nntp;
+namespace Spottarr.Services.Spotnet;
 
 internal sealed class SpotHeader
 {
