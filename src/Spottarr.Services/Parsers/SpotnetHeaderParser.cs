@@ -26,6 +26,7 @@ internal static partial class SpotnetHeaderParser
             var category = int.Parse(g["cat"].Value, CultureInfo.InvariantCulture);
             var size = long.Parse(g["size"].Value, CultureInfo.InvariantCulture);
             var unixTime = long.Parse(g["date"].Value, CultureInfo.InvariantCulture);
+            var keyId = Enum.Parse<KeyId>(g["kid"].Value);
             var date = DateTimeOffset.FromUnixTimeSeconds(unixTime);
 
             // Splits the sub category codes.
@@ -44,7 +45,7 @@ internal static partial class SpotnetHeaderParser
                 UserModulus = g["umod"].Value,
                 UserSignature = g["usig"].Value,
                 Category = category,
-                KeyId = g["kid"].Value,
+                KeyId = keyId,
                 SubCategories = subCategories,
                 Size = size,
                 Date = date,

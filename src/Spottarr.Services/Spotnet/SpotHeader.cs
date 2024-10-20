@@ -10,7 +10,7 @@ internal sealed class SpotHeader
     public required string UserModulus { get; init; }
     public required string UserSignature { get; init; }
     public required int Category { get; init; }
-    public required string KeyId { get; init; }
+    public required KeyId KeyId { get; init; }
     public required IReadOnlyList<(char Type, int Code)> SubCategories { get; init; }
     public required long Size { get; init; }
     public required DateTimeOffset Date { get; init; }

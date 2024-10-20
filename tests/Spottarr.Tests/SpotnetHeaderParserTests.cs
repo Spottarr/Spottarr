@@ -28,7 +28,7 @@ public class SpotnetHeaderParserTests
         Assert.Equal("pizlw58KFSC94SUdwAIMBzRNxmCZrhEnZb4ihCLAX9p6ViN9s2vf-pwFFZqPKwzFF", result.UserModulus);
         Assert.Equal("dpeyw-ssEYgAUebInWNwvjKu6irDwuJCTpgDL7Y1k6lBQj1j4YE-sl99LqQ-sjg7fUf", result.UserSignature);
         Assert.Equal(1, result.Category);
-        Assert.Equal("7", result.KeyId);
+        Assert.Equal(KeyId.SelfSigned, result.KeyId);
         Assert.Collection(result.SubCategories, cat1 =>
         {
             Assert.Equal('A', cat1.Type);
@@ -74,7 +74,7 @@ public class SpotnetHeaderParserTests
         Assert.Equal("7oGXyqZiTFIad-sLhInYOEcYylEmweUvnYF8CapS5S5hH12pdjwdLpd05fweJAHP5", result.UserModulus);
         Assert.Equal("U8c7LC-sA-sq2-sw0yjuY-s-sDj1bncqGmFVlaQy3UtQyw65WkWdMEf8i3g7ImuVTS1-pc", result.UserSignature);
         Assert.Equal(1, result.Category);
-        Assert.Equal("2", result.KeyId);
+        Assert.Equal(KeyId.Moderator, result.KeyId);
         Assert.Collection(result.SubCategories, cat1 =>
         {
             Assert.Equal('A', cat1.Type);
