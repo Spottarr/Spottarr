@@ -17,4 +17,6 @@ public abstract class Spot : BaseEntity
     public FtsSpot? FtsSpot { get; set; }
     
     public required DateTime SpottedAt { get; set; }
+    
+    public DateTime? IndexedAt { get; set; }
 }
