@@ -51,7 +51,7 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
             // Search for year, season and episode numbers.
             // e.g. "2024 S01E04", "Season: 1", "Episode 2"
             // We store all values found to make it easier to search for them
-            var (years, episodes, seasons) = YearEpisodeSeasonParser.Parse(titleAndDescription);
+            var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(titleAndDescription);
 
             spot.Title = title;
             spot.Description = description;
