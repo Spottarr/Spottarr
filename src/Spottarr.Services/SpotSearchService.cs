@@ -1,8 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Spottarr.Data;
-using Spottarr.Data.Entities;
-using Spottarr.Data.Entities.Enums;
 using Spottarr.Services.Contracts;
+using Spottarr.Services.Models;
 
 namespace Spottarr.Services;
 
@@ -56,21 +55,4 @@ public class SpotSearchService : ISpotSearchService
             TotalCount = totalCount
         };
     }
-}
-
-public class SpotSearchFilter
-{
-    public int Offset { get; set; }
-    public int Limit { get; set; }
-    public required string? Query { get; set; }
-    public required HashSet<NewznabCategory>? Categories { get; init; }
-    public required HashSet<int>? Years { get; init; }
-    public required HashSet<int>? Seasons { get; init; }
-    public required HashSet<int>? Episodes { get; init; }
-}
-
-public class SpotSearchResponse
-{
-    public required int TotalCount { get; init; }
-    public required ICollection<Spot> Spots { get; init; }
 }

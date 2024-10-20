@@ -1,3 +1,5 @@
+using Spottarr.Services.Models;
+
 namespace Spottarr.Services.Contracts;
 
 public interface ISpotSearchService
