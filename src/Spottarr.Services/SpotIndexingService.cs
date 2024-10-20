@@ -28,24 +28,22 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
 
     public async Task Index()
     {
-        var unindexedSpots = await _dbContext.Spots.Where(s => s.IndexedAt == null)
+        var unIndexedSpots = await _dbContext.Spots.Where(s => s.IndexedAt == null)
             .ToListAsync();
 
         var now = DateTimeOffset.Now;
         var fullTextIndexSpots = new List<FtsSpot>();
         
-        foreach (var spot in unindexedSpots)
+        foreach (var spot in unIndexedSpots)
         {
-            var title = spot.Title;
+            // Clean up title
+            // e.g. "Show.S01E04.Poster.1080p.DDP5.1.Atmos.H.264" -> "Show S01E04 Poster 1080p DDP5 1 Atmos H 264"
+            var title = CleanTitleRegex()
+                .Replace(spot.Title, " ");
             
             // Replace BB tags
             var description = (spot.Description ?? string.Empty)
                 .Replace("[br]", "\n", StringComparison.OrdinalIgnoreCase);
-            
-            // Clean up title
-            // e.g. "Show.S01E04.Poster.1080p.DDP5.1.Atmos.H.264" -> "Show S01E04 Poster 1080p DDP5 1 Atmos H 264"
-            title = CleanTitleRegex()
-                .Replace(spot.Title, " ");
 
             var titleAndDescription = string.Join('\n', title, description);
 
@@ -74,7 +72,7 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
             fullTextIndexSpots.Add(ftsSpot);
         }
 
-        await _dbContext.BulkUpdateAsync(unindexedSpots, c =>
+        await _dbContext.BulkUpdateAsync(unIndexedSpots, c =>
         {
             c.PropertiesToIncludeOnUpdate =
             [
