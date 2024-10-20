@@ -19,7 +19,7 @@ namespace Spottarr.Data.Migrations
                     RowId = table.Column<int>(type: "INTEGER", nullable: false),
                     Title = table.Column<string>(type: "TEXT", nullable: false),
                     Description = table.Column<string>(type: "TEXT", nullable: true),
-                    FtsSpot = table.Column<string>(type: "TEXT", nullable: false),
+                    FtsSpot = table.Column<string>(type: "TEXT", nullable: true),
                     Rank = table.Column<double>(type: "REAL", nullable: true)
                 },
                 constraints: table =>

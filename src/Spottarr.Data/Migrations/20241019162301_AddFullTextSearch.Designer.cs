@@ -29,7 +29,6 @@ namespace Spottarr.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Match")
-                        .IsRequired()
                         .HasColumnType("TEXT")
                         .HasColumnName("FtsSpots");
 
