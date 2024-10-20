@@ -91,13 +91,12 @@ internal sealed class SpotImportService : ISpotImportService
         // Limit the number of jobs we run in parallel to the maximum number of connections to prevent
         // waiting for a connection to become available in the pool
         var parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = usenetOptions.MaxConnections };
-        //var batches = context.Spots.Chunk(BatchSize).ToList();
         await Parallel.ForEachAsync(context.Spots, parallelOptions, async (spot, ct) => await GetSpotDetails(nntpClientPool, spot));
         
         // Save the fetched articles in bulk.
         try
         {
-            await _dbContext.BulkInsertAsync(context.Spots, c =>
+            await _dbContext.BulkInsertOrUpdateAsync(context.Spots, c =>
             {
                 c.UpdateByProperties = [nameof(Spot.MessageId)];
                 c.PropertiesToIncludeOnUpdate = [];
