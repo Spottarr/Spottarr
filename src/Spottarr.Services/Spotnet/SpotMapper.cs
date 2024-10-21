@@ -31,6 +31,7 @@ internal static class SpotnetHeaderExtensions
         
         return new Spot
         {
+            Type = spotType,
             Title = header.Subject,
             Description = null,
             Spotter = header.Nickname,

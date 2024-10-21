@@ -12,7 +12,7 @@ public class Spot : BaseEntity
     public required string? NzbMessageId { get; set; }
     public required string? ImageMessageId { get; set; }
     public required long MessageNumber { get; set; }
-    public SpotType Type { get; set; }
+    public required SpotType Type { get; set; }
     public ICollection<ImageType> ImageTypes { get; init; } = [];
     public ICollection<ImageFormat> ImageFormats { get; init; } = [];
     public ICollection<ImageSource> ImageSources { get; init; } = [];
