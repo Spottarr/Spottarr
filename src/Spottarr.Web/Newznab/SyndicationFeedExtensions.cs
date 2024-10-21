@@ -8,8 +8,10 @@ internal static class SyndicationFeedExtensions
 {
     private static readonly XNamespace Namespace = XNamespace.Get("https://www.newznab.com/DTD/2010/feeds/attributes/");
 
-    public static SyndicationItem AddNewznabAttribute(this SyndicationItem item, string name, string value)
+    public static SyndicationItem AddNewznabAttribute(this SyndicationItem item, string name, string? value)
     {
+        if(value == null) return item;
+        
         item.ElementExtensions.Add(new XElement(Namespace.GetName("attr"), new XAttribute("name", name),
             new XAttribute("value", value)));
 

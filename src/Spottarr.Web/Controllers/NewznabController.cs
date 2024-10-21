@@ -21,13 +21,15 @@ public sealed class NewznabController : Controller
     private readonly IApplicationVersionService _applicationVersionService;
     private readonly IHostEnvironment _hostEnvironment;
     private readonly ISpotSearchService _spotSearchService;
+    private readonly ISpotImportService _spotImportService;
 
     public NewznabController(IApplicationVersionService applicationVersionService, IHostEnvironment hostEnvironment,
-        ISpotSearchService spotSearchService)
+        ISpotSearchService spotSearchService, ISpotImportService spotImportService)
     {
         _applicationVersionService = applicationVersionService;
         _hostEnvironment = hostEnvironment;
         _spotSearchService = spotSearchService;
+        _spotImportService = spotImportService;
     }
 
     [HttpGet("caps")]
@@ -35,6 +37,7 @@ public sealed class NewznabController : Controller
     public Capabilities Capabilities()
     {
         var uriBuilder = new UriBuilder(Request.Scheme, Request.Host.Host, Request.Host.Port ?? -1);
+        uriBuilder.Path = "/newznab/api";
         var uri = uriBuilder.ToString();
         uriBuilder.Path = "/logo.png";
         var imageUri = uriBuilder.ToString();
@@ -117,6 +120,10 @@ public sealed class NewznabController : Controller
     )
     {
         var uriBuilder = new UriBuilder(Request.Scheme, Request.Host.Host, Request.Host.Port ?? -1);
+        uriBuilder.Path = "/newznab/api";
+        var apiUri = uriBuilder.Uri;
+        var spotUriTemplate = $"{uriBuilder}?t=get&guid={{0}}";
+        
         var clampedLimit = Math.Clamp(limit, 0, DefaultPageSize);
         var results = await _spotSearchService.Search(new SpotSearchFilter()
         {
@@ -129,9 +136,9 @@ public sealed class NewznabController : Controller
             Seasons = season.HasValue ? [season.Value] : null,
         });
 
-        var items = results.Spots.Select(s => s.ToSyndicationItem(uriBuilder.Uri)).ToList();
+        var items = results.Spots.Select(s => s.ToSyndicationItem(spotUriTemplate)).ToList();
 
-        var feed = new SyndicationFeed("Spottarr Index", "Spottarr Index API", uriBuilder.Uri, items)
+        var feed = new SyndicationFeed(_hostEnvironment.ApplicationName, _hostEnvironment.ApplicationName, apiUri, items)
             .AddNewznabNamespace()
             .AddNewznabResponseInfo(offset, results.TotalCount);
 

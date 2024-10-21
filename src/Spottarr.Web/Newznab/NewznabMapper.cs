@@ -11,11 +11,16 @@ internal static class NewznabMapper
     /// Creates a category specific RSS syndication item including any custom newznab attributes
     /// See: https://newznab.readthedocs.io/en/latest/misc/api.html#predefined-attributes
     /// </summary>
-    public static SyndicationItem ToSyndicationItem(this Spot spot, Uri baseUri)
+    public static SyndicationItem ToSyndicationItem(this Spot spot, string uriTemplate)
     {
-        var item = MapSpot(spot, baseUri)
-            .AddCategory("test123")
-            .AddNewznabNzbUrl(new Uri("https://www.test.com/test.nzb"), spot.Bytes);
+        var nzbUri = new Uri(string.Format(CultureInfo.InvariantCulture, uriTemplate, spot.Id));
+        var item = MapSpot(spot, nzbUri)
+            .AddNewznabNzbUrl(nzbUri, spot.Bytes);
+
+        foreach (var category in spot.NewznabCategories)
+        {
+            item = item.AddCategory(((int)category).ToString(CultureInfo.InvariantCulture));
+        }
 
         item.PublishDate = spot.SpottedAt;
         
@@ -32,22 +37,22 @@ internal static class NewznabMapper
     /// <summary>
     /// Adds attributes valid for all categories
     /// </summary>
-    private static SyndicationItem MapSpot(Spot spot, Uri baseUri) =>
-        new SyndicationItem(spot.Title, spot.Description, baseUri, spot.MessageId, spot.UpdatedAt)
+    private static SyndicationItem MapSpot(Spot spot, Uri spotUri) =>
+        new SyndicationItem(spot.Title, spot.Description, spotUri, spot.Id.ToString(CultureInfo.InvariantCulture), spot.UpdatedAt)
             .AddNewznabAttribute("size", spot.Bytes.ToString(CultureInfo.InvariantCulture))
-            .AddNewznabAttribute("category", "x")
-            .AddNewznabAttribute("guid", spot.MessageId)
-            .AddNewznabAttribute("files", "TBD")
+            .AddNewznabAttribute("category", string.Join(",", spot.NewznabCategories.Select(c => (int)c)))
+            .AddNewznabAttribute("guid", spot.Id.ToString(CultureInfo.InvariantCulture))
+            .AddNewznabAttribute("files", null)
             .AddNewznabAttribute("poster", spot.Spotter)
-            .AddNewznabAttribute("group", "TBD")
+            .AddNewznabAttribute("group", null)
             .AddNewznabAttribute("team", spot.Spotter)
-            .AddNewznabAttribute("grabs", "TBD")
-            .AddNewznabAttribute("password", "TBD")
-            .AddNewznabAttribute("comments", "TBD")
+            .AddNewznabAttribute("grabs", null)
+            .AddNewznabAttribute("password", null)
+            .AddNewznabAttribute("comments", null)
             .AddNewznabAttribute("usenetdate", spot.SpottedAt.ToString("r"))
-            .AddNewznabAttribute("nfo", "TBD")
-            .AddNewznabAttribute("info", "TBD")
-            .AddNewznabAttribute("year", "TBD");
+            .AddNewznabAttribute("nfo", null)
+            .AddNewznabAttribute("info", null)
+            .AddNewznabAttribute("year", string.Join(',', spot.Years));
 
     /// <summary>
     /// Adds newznab attributes for tv, movies, books and erotic categories
@@ -70,43 +75,43 @@ internal static class NewznabMapper
     /// Adds newznab attributes for tv category
     /// </summary>
     private static SyndicationItem MapTvSpot(Spot spot, SyndicationItem item) =>
-        item.AddNewznabAttribute("season", "TBD")
-            .AddNewznabAttribute("episode", "TBD")
-            .AddNewznabAttribute("rageid", "TBD")
-            .AddNewznabAttribute("tvtitle", "TBD")
-            .AddNewznabAttribute("tvairdate", "TBD")
+        item.AddNewznabAttribute("season", string.Join(',', spot.Seasons))
+            .AddNewznabAttribute("episode", string.Join(',', spot.Episodes))
+            .AddNewznabAttribute("rageid", null)
+            .AddNewznabAttribute("tvtitle", null)
+            .AddNewznabAttribute("tvairdate", null)
             .AddNewznabAttribute("video", string.Join(',', spot.ImageFormats.Select(Enum.GetName)))
-            .AddNewznabAttribute("audio", "TBD")
-            .AddNewznabAttribute("resolution", "TBD")
-            .AddNewznabAttribute("framerate", "TBD")
+            .AddNewznabAttribute("audio", null)
+            .AddNewznabAttribute("resolution", null)
+            .AddNewznabAttribute("framerate", null)
             .AddNewznabAttribute("language", string.Join(',', spot.ImageLanguages.Select(Enum.GetName)))
             .AddNewznabAttribute("subs", string.Join(',', spot.ImageLanguages.Select(Enum.GetName)))
             .AddNewznabAttribute("genre", string.Join(',', spot.ImageGenres.Select(Enum.GetName)))
-            .AddNewznabAttribute("coverurl", "TBD")
-            .AddNewznabAttribute("backdropcoverurl", "TBD");
+            .AddNewznabAttribute("coverurl", null)
+            .AddNewznabAttribute("backdropcoverurl", null);
 
     /// <summary>
     /// Adds newznab attributes for movies category
     /// </summary>
     private static SyndicationItem MapMovieSpot(Spot spot, SyndicationItem item) =>
         item.AddNewznabAttribute("video", string.Join(',', spot.ImageFormats.Select(Enum.GetName)))
-            .AddNewznabAttribute("audio", "TBD")
-            .AddNewznabAttribute("resolution", "TBD")
-            .AddNewznabAttribute("framerate", "TBD")
+            .AddNewznabAttribute("audio", null)
+            .AddNewznabAttribute("resolution", null)
+            .AddNewznabAttribute("framerate", null)
             .AddNewznabAttribute("language", string.Join(',', spot.ImageLanguages.Select(Enum.GetName)))
             .AddNewznabAttribute("subs", string.Join(',', spot.ImageLanguages.Select(Enum.GetName)))
-            .AddNewznabAttribute("imdb", "TBD")
-            .AddNewznabAttribute("imdbscore", "TBD")
-            .AddNewznabAttribute("imdbtitle", "TBD")
-            .AddNewznabAttribute("imdbtagline", "TBD")
-            .AddNewznabAttribute("imdbplot", "TBD")
-            .AddNewznabAttribute("imdbyear", "TBD")
-            .AddNewznabAttribute("imdbdirector", "TBD")
-            .AddNewznabAttribute("imdbactors", "TBD")
+            .AddNewznabAttribute("imdb", null)
+            .AddNewznabAttribute("imdbscore", null)
+            .AddNewznabAttribute("imdbtitle", null)
+            .AddNewznabAttribute("imdbtagline", null)
+            .AddNewznabAttribute("imdbplot", null)
+            .AddNewznabAttribute("imdbyear", null)
+            .AddNewznabAttribute("imdbdirector", null)
+            .AddNewznabAttribute("imdbactors", null)
             .AddNewznabAttribute("genre", string.Join(',', spot.ImageGenres.Select(Enum.GetName)))
-            .AddNewznabAttribute("coverurl", "TBD")
-            .AddNewznabAttribute("backdropcoverurl", "TBD")
-            .AddNewznabAttribute("review", "TBD");
+            .AddNewznabAttribute("coverurl", null)
+            .AddNewznabAttribute("backdropcoverurl", null)
+            .AddNewznabAttribute("review", null);
 
     /// <summary>
     /// Adds newznab attributes for erotic (unofficial) category
@@ -114,26 +119,26 @@ internal static class NewznabMapper
     /// <returns></returns>
     private static SyndicationItem MapEroticSpot(Spot spot, SyndicationItem item) =>
         item.AddNewznabAttribute("video", string.Join(',', spot.ImageFormats.Select(Enum.GetName)))
-            .AddNewznabAttribute("audio", "TBD")
-            .AddNewznabAttribute("resolution", "TBD")
-            .AddNewznabAttribute("framerate", "TBD")
+            .AddNewznabAttribute("audio", null)
+            .AddNewznabAttribute("resolution", null)
+            .AddNewznabAttribute("framerate", null)
             .AddNewznabAttribute("language", string.Join(',', spot.ImageLanguages.Select(Enum.GetName)))
             .AddNewznabAttribute("subs", string.Join(',', spot.ImageLanguages.Select(Enum.GetName)))
             .AddNewznabAttribute("genre", string.Join(',', spot.ImageGenres.Select(Enum.GetName)))
-            .AddNewznabAttribute("coverurl", "TBD")
-            .AddNewznabAttribute("backdropcoverurl", "TBD");
+            .AddNewznabAttribute("coverurl", null)
+            .AddNewznabAttribute("backdropcoverurl", null);
 
     /// <summary>
     /// Adds newznab attributes for books category
     /// </summary>
     private static SyndicationItem MapBookSpot(Spot spot, SyndicationItem item) =>
-        item.AddNewznabAttribute("publisher", "TBD")
-            .AddNewznabAttribute("coverurl", "TBD")
-            .AddNewznabAttribute("review", "TBD")
-            .AddNewznabAttribute("booktitle", "TBD")
-            .AddNewznabAttribute("publishdate", "TBD")
-            .AddNewznabAttribute("author", "TBD")
-            .AddNewznabAttribute("pages", "TBD");
+        item.AddNewznabAttribute("publisher", null)
+            .AddNewznabAttribute("coverurl", null)
+            .AddNewznabAttribute("review", null)
+            .AddNewznabAttribute("booktitle", null)
+            .AddNewznabAttribute("publishdate", null)
+            .AddNewznabAttribute("author", null)
+            .AddNewznabAttribute("pages", null);
 
     /// <summary>
     /// Adds newznab attributes for audio category
@@ -141,15 +146,15 @@ internal static class NewznabMapper
     private static SyndicationItem MapAudioSpot(this Spot spot, SyndicationItem item)
     {
         return item.AddNewznabAttribute("audio", string.Join(',', spot.AudioFormats.Select(Enum.GetName)))
-            .AddNewznabAttribute("language", "TBD")
+            .AddNewznabAttribute("language", null)
 
-            .AddNewznabAttribute("artist", "TBD")
-            .AddNewznabAttribute("album", "TBD")
-            .AddNewznabAttribute("publisher", "TBD")
-            .AddNewznabAttribute("tracks", "TBD")
-            .AddNewznabAttribute("coverurl", "TBD")
-            .AddNewznabAttribute("backdropcoverurl", "TBD")
-            .AddNewznabAttribute("review", "TBD");
+            .AddNewznabAttribute("artist", null)
+            .AddNewznabAttribute("album", null)
+            .AddNewznabAttribute("publisher", null)
+            .AddNewznabAttribute("tracks", null)
+            .AddNewznabAttribute("coverurl", null)
+            .AddNewznabAttribute("backdropcoverurl", null)
+            .AddNewznabAttribute("review", null);
     }
     
     /// <summary>

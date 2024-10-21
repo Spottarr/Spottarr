@@ -10,6 +10,15 @@ builder.Host.UseDefaultServiceProvider(configure =>
     configure.ValidateOnBuild = true;
 });
 
+if (builder.Environment.IsDevelopment())
+{
+    var root = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "../../"));
+    var env = builder.Environment.EnvironmentName;
+    builder.Configuration.SetBasePath(root);
+    builder.Configuration.AddJsonFile("appsettings.json");
+    builder.Configuration.AddJsonFile($"appsettings.{env}.json");
+}
+
 builder.Services.AddControllers().AddXmlSerializerFormatters();
 builder.Services.AddOpenApi();
 builder.Services.Configure<RouteOptions>(options =>
