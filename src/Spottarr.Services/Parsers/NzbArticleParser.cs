@@ -18,6 +18,7 @@ internal static class NzbArticleParser
         
         var msOut = new MemoryStream();
         await ds.CopyToAsync(msOut);
+        msOut.Position = 0;
 
         return msOut;
     }
