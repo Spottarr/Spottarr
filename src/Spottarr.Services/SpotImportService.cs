@@ -112,7 +112,7 @@ internal sealed class SpotImportService : ISpotImportService
     public async Task<MemoryStream?> RetrieveNzb(int spotId)
     {
         var spot = await _dbContext.Spots.FirstOrDefaultAsync(s => s.Id == spotId);
-        if (spot == null || string.IsNullOrEmpty(spot.ImageMessageId))
+        if (spot == null || string.IsNullOrEmpty(spot.NzbMessageId))
             return null;
 
         NntpClientWrapper? client = null; 
