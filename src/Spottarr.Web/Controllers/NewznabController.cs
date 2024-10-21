@@ -144,4 +144,14 @@ public sealed class NewznabController : Controller
 
         return File(NewznabRssSerializer.Serialize(feed), MediaTypeNames.Text.Xml);
     }
+    
+    [HttpGet("get")]
+    [Produces(MediaTypeNames.Text.Xml)]
+    public async Task<ActionResult> Get([FromQuery(Name = "guid")]int id)
+    {
+        var result = await _spotImportService.RetrieveNzb(id);
+        if (result == null) return NotFound();
+
+        return File(result, "application/x-nzb", $"{id}.nzb");
+    }
 }
