@@ -64,12 +64,9 @@ jobs:
         category: "/language:${{matrix.language}}"
 
     - name: Test
-      run: dotnet test --no-build --verbosity normal --logger trx --results-directory "TestResults"
-
-    - name: Upload test results
-      uses: actions/upload-artifact@v4
-      with:
-        name: dotnet-results
-        path: TestResults
-      # Use always() to always run this step to publish test results when there are test failures
-      if: ${{ always() }}
+      run: >
+        dotnet test
+        --no-build
+        --logger "GitHubActions;summary.includePassedTests=true;summary.includeSkippedTests=true"
+        --
+        RunConfiguration.CollectSourceInformation=true
