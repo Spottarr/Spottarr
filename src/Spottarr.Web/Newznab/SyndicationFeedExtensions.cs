@@ -1,6 +1,8 @@
+using System.Globalization;
 using System.ServiceModel.Syndication;
 using System.Xml;
 using System.Xml.Linq;
+using Spottarr.Data.Entities.Enums;
 
 namespace Spottarr.Web.Newznab;
 
@@ -18,19 +20,44 @@ internal static class SyndicationFeedExtensions
         return item;
     }
     
+    public static SyndicationItem AddNewznabAttributes(this SyndicationItem item, string name, IEnumerable<string> values)
+    {
+        foreach (var value in values)
+        {
+            item.AddNewznabAttribute(name, value);
+        }
+
+        return item;
+    }
+    
     public static SyndicationItem AddNewznabNzbUrl(this SyndicationItem item, Uri url, long bytes)
     {
         item.Links.Add(SyndicationLink.CreateMediaEnclosureLink(url, "application/x-nzb", bytes));
         return item;
     }
     
-    public static SyndicationItem AddCategory(this SyndicationItem item, string name)
+    public static SyndicationItem AddCategories(this SyndicationItem item, IEnumerable<NewznabCategory> categories)
     {
-        item.Categories.Add(new SyndicationCategory(name));
+        foreach (int category in categories)
+        {
+            item.Categories.Add(new SyndicationCategory(category.ToString(CultureInfo.InvariantCulture)));
+        }
         
         return item;
     }
+    
+    public static SyndicationItem AddPublishDate(this SyndicationItem item, DateTimeOffset date)
+    {
+        item.PublishDate = date;
+        return item;
+    }
 
+    public static SyndicationFeed AddLogo(this SyndicationFeed feed, Uri uri)
+    {
+        feed.ImageUrl = uri;
+        return feed;
+    }
+    
     public static SyndicationFeed AddNewznabNamespace(this SyndicationFeed feed)
     {
         feed.AttributeExtensions.Add(new XmlQualifiedName("newznab", XNamespace.Xmlns.NamespaceName),

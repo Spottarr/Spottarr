@@ -34,73 +34,9 @@ public sealed class NewznabController : Controller
 
     [HttpGet("caps")]
     [Produces("application/xml")]
-    public Capabilities Capabilities()
-    {
-        var uriBuilder = new UriBuilder(Request.Scheme, Request.Host.Host, Request.Host.Port ?? -1);
-        uriBuilder.Path = "/newznab/api";
-        var uri = uriBuilder.ToString();
-        uriBuilder.Path = "/logo.png";
-        var imageUri = uriBuilder.ToString();
-
-        // https://github.com/Prowlarr/Prowlarr/blob/develop/src/NzbDrone.Core/Indexers/IndexerCapabilities.cs
-        return new Capabilities
-        {
-            ServerInfo = new ServerInfo
-            {
-                Title = _hostEnvironment.ApplicationName,
-                Version = _applicationVersionService.Version,
-                Tagline = _hostEnvironment.ApplicationName,
-                Email = string.Empty,
-                Host = uri,
-                Image = imageUri,
-                Type = _hostEnvironment.ApplicationName,
-            },
-            Limits = new Limits
-            {
-                Max = DefaultPageSize,
-                Default = DefaultPageSize,
-            },
-            Registration = new Registration
-            {
-                Available = "no",
-                Open = "no"
-            },
-            Searching = new Searching
-            {
-                Search = new Search
-                {
-                    Available = "yes",
-                    SupportedParams = "q",
-                },
-                TvSearch = new Search
-                {
-                    Available = "yes",
-                    SupportedParams = "q,season,ep,year",
-                },
-                MovieSearch = new Search
-                {
-                    Available = "yes",
-                    SupportedParams = "q,season,ep,year",
-                },
-                AudioSearch = new Search
-                {
-                    Available = "yes",
-                    SupportedParams = "q,year",
-                },
-                PcSearch = new Search()
-                {
-                    Available = "no",
-                    SupportedParams = "",
-                },
-                BookSearch = new Search
-                {
-                    Available = "yes",
-                    SupportedParams = "q,title",
-                }
-            },
-            Categories = []
-        };
-    }
+    public Capabilities Capabilities() =>
+        CapabilitiesHelper.GetCapabilities(GetApiUri().Uri, GetLogoUri().Uri, _hostEnvironment.ApplicationName,
+            _applicationVersionService.Version, DefaultPageSize);
 
     [HttpGet("search")]
     [HttpGet("tvsearch")]
@@ -116,16 +52,12 @@ public sealed class NewznabController : Controller
         int? ep = null,
         int? season = null,
         int? year = null,
-        [FromQuery, ModelBinder<CommaSeparatedEnumBinder>] NewznabCategory[]? cat = null
+        [FromQuery, ModelBinder<CommaSeparatedEnumBinder>]
+        NewznabCategory[]? cat = null
     )
     {
-        var uriBuilder = new UriBuilder(Request.Scheme, Request.Host.Host, Request.Host.Port ?? -1);
-        uriBuilder.Path = "/newznab/api";
-        var apiUri = uriBuilder.Uri;
-        var spotUriTemplate = $"{uriBuilder}?t=get&guid={{0}}";
-        
         var clampedLimit = Math.Clamp(limit, 0, DefaultPageSize);
-        var results = await _spotSearchService.Search(new SpotSearchFilter()
+        var results = await _spotSearchService.Search(new SpotSearchFilter
         {
             Offset = offset,
             Limit = clampedLimit,
@@ -136,22 +68,50 @@ public sealed class NewznabController : Controller
             Seasons = season.HasValue ? [season.Value] : null,
         });
 
-        var items = results.Spots.Select(s => s.ToSyndicationItem(spotUriTemplate)).ToList();
+        var items = results.Spots.Select(s => s.ToSyndicationItem(GetNzbUri(s.Id).Uri)).ToList();
 
-        var feed = new SyndicationFeed(_hostEnvironment.ApplicationName, _hostEnvironment.ApplicationName, apiUri, items)
+        var feed = new SyndicationFeed(_hostEnvironment.ApplicationName, _hostEnvironment.ApplicationName,
+                GetApiUri().Uri, items)
+            .AddLogo(GetLogoUri().Uri)
             .AddNewznabNamespace()
             .AddNewznabResponseInfo(offset, results.TotalCount);
 
         return File(NewznabRssSerializer.Serialize(feed), MediaTypeNames.Text.Xml);
     }
-    
+
     [HttpGet("get")]
     [Produces(MediaTypeNames.Text.Xml)]
-    public async Task<ActionResult> Get([FromQuery(Name = "guid")]int id)
+    public async Task<ActionResult> Get([FromQuery(Name = "guid")] int id)
     {
         var result = await _spotImportService.RetrieveNzb(id);
         if (result == null) return NotFound();
 
         return File(result, "application/x-nzb", $"{id}.nzb");
     }
+
+    private UriBuilder GetApiUri()
+    {
+        var b = GetBaseUri();
+        b.Path = "/newznab/api";
+        return b;
+    }
+
+    private UriBuilder GetNzbUri(int id)
+    {
+        var b = GetApiUri();
+        b.Query = $"?t=get&guid={id}";
+        return b;
+    }
+
+    private UriBuilder GetLogoUri()
+    {
+        var b = GetApiUri();
+        b.Path = "/logo.png";
+        return b;
+    }
+
+    private UriBuilder GetBaseUri() => new(Request.Scheme, Request.Host.Host, Request.Host.Port ?? -1)
+    {
+        Path = "/newznab/api",
+    };
 }
