@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Text.RegularExpressions;
 using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;

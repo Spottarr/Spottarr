@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Spottarr.Services.Configuration;
 using Spottarr.Services.Contracts;
 using Spottarr.Services.Logging;
+using Spottarr.Services.Nntp;
 
 namespace Spottarr.Services;
 
@@ -24,6 +25,7 @@ public static class ServiceCollectionExtensions
                 
                 return new RewriteLevelLoggerFactory(defaultLoggerFactory);
             })
+            .AddSingleton<INntpClientPool, NntpClientPool>()
             .AddScoped<ISpotImportService, SpotImportService>()
             .AddScoped<ISpotIndexingService, SpotIndexingService>()
             .AddScoped<ISpotSearchService, SpotSearchService>()

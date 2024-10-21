@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Microsoft.Extensions.Logging;
 
 namespace Spottarr.Services.Parsers;
 

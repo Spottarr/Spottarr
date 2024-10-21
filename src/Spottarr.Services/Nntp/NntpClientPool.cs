@@ -1,16 +1,13 @@
 using System.Collections.Concurrent;
+using Microsoft.Extensions.Options;
 using Spottarr.Services.Configuration;
-using Usenet.Nntp;
+using Spottarr.Services.Contracts;
 
 namespace Spottarr.Services.Nntp;
 
-internal class NntpClientPool : IDisposable
+internal class NntpClientPool : INntpClientPool, IDisposable
 {
-    private readonly string _hostname;
-    private readonly int _port;
-    private readonly bool _useTls;
-    private readonly string _username;
-    private readonly string _password;
+    private readonly IOptions<UsenetOptions> _usenetOptions;
     private readonly int _maxPoolSize;
     
     private readonly ConcurrentBag<NntpClientWrapper> _availableClients = new();
@@ -19,15 +16,11 @@ internal class NntpClientPool : IDisposable
     private int _currentSize;
     private bool _disposed;
 
-    public NntpClientPool(string hostname, int port, bool useTls, string username, string password, int maxPoolSize)
+    public NntpClientPool(IOptions<UsenetOptions> usenetOptions)
     {
-        _hostname = hostname;
-        _port = port;
-        _useTls = useTls;
-        _username = username;
-        _password = password;
-        _maxPoolSize = maxPoolSize;
-        _semaphore = new SemaphoreSlim(maxPoolSize, maxPoolSize);
+        _usenetOptions = usenetOptions;
+        _maxPoolSize = usenetOptions.Value.MaxConnections;
+        _semaphore = new SemaphoreSlim(_maxPoolSize, _maxPoolSize);
     }
     
     public async Task<NntpClientWrapper> BorrowClient()
@@ -58,9 +51,10 @@ internal class NntpClientPool : IDisposable
 
     private async Task<NntpClientWrapper> CreateClient()
     {
+        var options = _usenetOptions.Value;
         var client = new NntpClientWrapper();
-        var success = await client.ConnectAndAuthenticateAsync(_hostname, _port, _useTls, _username, _password);
-        if (!success) throw new InvalidOperationException($"Failed to connect to '{_hostname}'");
+        var success = await client.ConnectAndAuthenticateAsync(options.Hostname, options.Port, options.UseTls, options.Username, options.Password);
+        if (!success) throw new InvalidOperationException($"Failed to connect to '{options.Hostname}'");
         return client;
     }
 

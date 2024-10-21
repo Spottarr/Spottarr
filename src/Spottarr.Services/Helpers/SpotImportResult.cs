@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using Spottarr.Data.Entities;
 using Spottarr.Services.Spotnet;
 

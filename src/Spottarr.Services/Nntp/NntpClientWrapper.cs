@@ -1,10 +1,6 @@
-using NetTopologySuite.Utilities;
-using Spottarr.Services.Configuration;
 using Usenet.Nntp;
 using Usenet.Nntp.Models;
-using Usenet.Nntp.Parsers;
 using Usenet.Nntp.Responses;
-using Usenet.Util;
 
 namespace Spottarr.Services.Nntp;
 

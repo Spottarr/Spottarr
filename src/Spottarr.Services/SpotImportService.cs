@@ -26,14 +26,17 @@ internal sealed class SpotImportService : ISpotImportService
     private readonly ILogger<SpotImportService> _logger;
     private readonly IOptions<UsenetOptions> _usenetOptions;
     private readonly IOptions<SpotnetOptions> _spotnetOptions;
+    private readonly INntpClientPool _nntpClientPool;
     private readonly SpottarrDbContext _dbContext;
 
     public SpotImportService(ILoggerFactory loggerFactory, ILogger<SpotImportService> logger,
-        IOptions<UsenetOptions> usenetOptions, IOptions<SpotnetOptions> spotnetOptions, SpottarrDbContext dbContext)
+        IOptions<UsenetOptions> usenetOptions, IOptions<SpotnetOptions> spotnetOptions,
+        INntpClientPool nntpClientPool, SpottarrDbContext dbContext)
     {
         _logger = logger;
         _usenetOptions = usenetOptions;
         _spotnetOptions = spotnetOptions;
+        _nntpClientPool = nntpClientPool;
         _dbContext = dbContext;
 
         // Enable NNTP client logging
@@ -45,14 +48,10 @@ internal sealed class SpotImportService : ISpotImportService
         _logger.SpotImportStarted(DateTimeOffset.Now);
         
         var usenetOptions = _usenetOptions.Value;
-        
-        using var nntpClientPool = new NntpClientPool(usenetOptions.Hostname, usenetOptions.Port, usenetOptions.UseTls,
-            usenetOptions.Username, usenetOptions.Password, usenetOptions.MaxConnections);
-
         var spotnetOptions = _spotnetOptions.Value;
         
         // Get a client from the pool
-        var client = await nntpClientPool.BorrowClient();
+        var client = await _nntpClientPool.BorrowClient();
 
         // Switch to the configured usenet group and verify that it exists.
         var groupResponse = client.Group(spotnetOptions.SpotGroup);
@@ -85,33 +84,22 @@ internal sealed class SpotImportService : ISpotImportService
         }
         
         // Return the client to the pool
-        nntpClientPool.ReturnClient(client);
+        _nntpClientPool.ReturnClient(client);
 
         // Fetch the article headers, we will do this in parallel to speed up the process
         // Limit the number of jobs we run in parallel to the maximum number of connections to prevent
         // waiting for a connection to become available in the pool
         var parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = usenetOptions.MaxConnections };
-        await Parallel.ForEachAsync(context.Spots, parallelOptions, async (spot, ct) => await GetSpotDetails(nntpClientPool, spot));
+        await Parallel.ForEachAsync(context.Spots, parallelOptions, GetSpotDetails);
         
         // Save the fetched articles in bulk.
         try
         {
-            await _dbContext.Database.BeginTransactionAsync();
-            await _dbContext.BulkInsertAsync(context.Spots, c =>
+            await _dbContext.BulkInsertOrUpdateAsync(context.Spots, c =>
             {
-                c.SetOutputIdentity = true;
+                c.UpdateByProperties = [nameof(Spot.MessageId)];
+                c.PropertiesToIncludeOnUpdate = [];
             });
-
-            var nzbFiles = new List<NzbFile>();
-            foreach (var spot in context.Spots)
-            {
-                if (spot.NzbFile == null) continue;
-                spot.NzbFile.SpotId = spot.Id;
-                nzbFiles.Add(spot.NzbFile);
-            }
-            
-            await _dbContext.BulkInsertAsync(nzbFiles);
-            await _dbContext.Database.CommitTransactionAsync();
         }
         catch (DbException ex)
         {
@@ -119,6 +107,46 @@ internal sealed class SpotImportService : ISpotImportService
         }
         
         _logger.SpotImportFinished(DateTimeOffset.Now, context.Spots.Count);
+    }
+
+    public async Task<MemoryStream?> RetrieveNzb(int spotId)
+    {
+        var spot = await _dbContext.Spots.FirstOrDefaultAsync(s => s.Id == spotId);
+        if (spot == null || string.IsNullOrEmpty(spot.ImageMessageId))
+            return null;
+
+        NntpClientWrapper? client = null; 
+        try
+        {
+            client = await _nntpClientPool.BorrowClient();
+            var nzbMessageId = spot.NzbMessageId;
+        
+            // Fetch the article headers which contains the NZB payload
+            var nzbArticleResponse = client.Article(new NntpMessageId(nzbMessageId));
+            if (!nzbArticleResponse.Success)
+            {
+                _logger.CouldNotRetrieveArticle(spot.MessageId, nzbArticleResponse.Code, nzbArticleResponse.Message);
+                return null;
+            }
+
+            var nzbData = string.Concat(nzbArticleResponse.Article.Body);
+            return await NzbArticleParser.Parse(nzbData);
+        }
+        catch (NntpException ex)
+        {
+            _logger.CouldNotRetrieveArticle(ex, spot.MessageId);
+        }
+        finally
+        {
+            if(client != null) _nntpClientPool.ReturnClient(client);
+        }
+
+        return null;
+    }
+    
+    public Task<MemoryStream?> RetrieveImage(int spotId)
+    {
+        throw new NotImplementedException();
     }
 
     private bool ParseHeaderBatch(SpotImportResult context, NntpClientWrapper client, NntpArticleRange batch,
@@ -184,12 +212,12 @@ internal sealed class SpotImportService : ISpotImportService
         }
     }
     
-    private async Task GetSpotDetails(NntpClientPool nntpClientPool, Spot spot)
+    private async ValueTask GetSpotDetails(Spot spot, CancellationToken ct)
     {
         NntpClientWrapper? client = null;
         try
         {
-            client = await nntpClientPool.BorrowClient();
+            client = await _nntpClientPool.BorrowClient();
 
             // Fetch the article headers which contains the full spot detail in XML format
             var spotArticleResponse = client.Article(new NntpMessageId(spot.MessageId));
@@ -218,29 +246,13 @@ internal sealed class SpotImportService : ISpotImportService
             var spotnetXml = string.Concat(spotnetXmlValues);
             var spotDetails = SpotnetXmlParser.Parse(spotnetXml);
 
-            // Fetch the article headers which contains the NZB payload
-            var nzbMessageId = spotDetails.Posting.Nzb.Segment;
-            var nzbArticleResponse = client.Article(new NntpMessageId(nzbMessageId));
-            if (!nzbArticleResponse.Success)
-            {
-                _logger.CouldNotRetrieveArticle(spot.MessageId, nzbArticleResponse.Code, nzbArticleResponse.Message);
-                return;
-            }
-
-            var nzbData = string.Concat(nzbArticleResponse.Article.Body);
-            var nzbFile = await NzbArticleParser.Parse(nzbMessageId, nzbData);
-
-            spot.NzbFile = nzbFile;
-
+            spot.NzbMessageId = spotDetails.Posting.Nzb.Segment;
+            spot.ImageMessageId = spotDetails.Posting.Image.Segment;
             spot.Description = spotDetails.Posting.Description;
         }
         catch (BadSpotFormatException ex)
         {
             _logger.ArticleContainsInvalidSpotXmlHeader(spot.MessageId, ex.Xml);
-        }
-        catch (InvalidDataException ex)
-        {
-            _logger.CouldNotRetrieveArticle(ex, spot.MessageId);
         }
         catch (NntpException ex)
         {
@@ -248,7 +260,7 @@ internal sealed class SpotImportService : ISpotImportService
         }
         finally
         {
-            if(client != null) nntpClientPool.ReturnClient(client);
+            if(client != null) _nntpClientPool.ReturnClient(client);
         }
     }
 }

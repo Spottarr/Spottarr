@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Spottarr.Services.Parsers;
 
 namespace Spottarr.Services.Logging;
 

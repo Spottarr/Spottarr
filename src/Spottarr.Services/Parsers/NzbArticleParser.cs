@@ -1,12 +1,11 @@
 using System.IO.Compression;
-using Spottarr.Data.Entities;
 using Usenet.Util;
 
 namespace Spottarr.Services.Parsers;
 
 internal static class NzbArticleParser
 {
-    public static async Task<NzbFile> Parse(string messageId, string body)
+    public static async Task<MemoryStream> Parse(string body)
     {
         body = body
             .Replace("=A", "\0", StringComparison.Ordinal)
@@ -19,15 +18,7 @@ internal static class NzbArticleParser
         
         var msOut = new MemoryStream();
         await ds.CopyToAsync(msOut);
-        
-        var now = DateTimeOffset.Now.UtcDateTime;
-        
-        return new NzbFile
-        {
-            MessageId = messageId,
-            Data = msOut.ToArray(),
-            CreatedAt = now,
-            UpdatedAt = now
-        };
+
+        return msOut;
     }
 }

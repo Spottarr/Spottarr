@@ -9,6 +9,8 @@ public class Spot : BaseEntity
     public required string Spotter { get; set; }
     public required long Bytes { get; set; }
     public required string MessageId { get; set; }
+    public required string? NzbMessageId { get; set; }
+    public required string? ImageMessageId { get; set; }
     public required long MessageNumber { get; set; }
     public SpotType Type { get; set; }
     public ICollection<ImageType> ImageTypes { get; init; } = [];
@@ -33,7 +35,6 @@ public class Spot : BaseEntity
     public ICollection<int> Seasons { get; init; } = [];
     public ICollection<int> Episodes { get; init; } = [];
     public FtsSpot? FtsSpot { get; set; }
-    public NzbFile? NzbFile { get; set; }
     public required DateTime SpottedAt { get; set; }
     public DateTime? IndexedAt { get; set; }
 }

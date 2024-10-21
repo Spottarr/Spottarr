@@ -1,5 +1,4 @@
 using System.Xml.Serialization;
-using Spottarr.Services.Nntp;
 
 namespace Spottarr.Services.Spotnet;
 

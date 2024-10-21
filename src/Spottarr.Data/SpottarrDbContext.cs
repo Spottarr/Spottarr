@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Spottarr.Data.Entities;
-using Spottarr.Data.Entities.Enums;
 
 namespace Spottarr.Data;
 
@@ -41,17 +40,9 @@ public class SpottarrDbContext : DbContext
             x.Property(s => s.Title).HasMaxLength(256);
             x.Property(s => s.Spotter).HasMaxLength(128);
             x.Property(s => s.MessageId).HasMaxLength(128);
+            x.Property(s => s.NzbMessageId).HasMaxLength(128);
+            x.Property(s => s.ImageMessageId).HasMaxLength(128);
             x.HasIndex(s => s.MessageId).IsUnique();
-        });
-        
-        modelBuilder.Entity<NzbFile>(x =>
-        {
-            x.ToTable("NzbFiles");
-            x.Property(s => s.MessageId).HasMaxLength(128);
-            x.HasIndex(s => s.MessageId).IsUnique();
-            x.HasOne(s => s.Spot)
-                .WithOne(s => s.NzbFile)
-                .HasForeignKey<NzbFile>(s => s.SpotId);
         });
         
         modelBuilder.Entity<FtsSpot>(x =>
