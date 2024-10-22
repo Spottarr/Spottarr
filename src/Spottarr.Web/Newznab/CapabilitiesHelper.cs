@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
-using Microsoft.OpenApi.Extensions;
 using Spottarr.Data.Entities.Enums;
+using Spottarr.Web.Helpers;
 using Spottarr.Web.Newznab.Models;
 
 namespace Spottarr.Web.Newznab;
