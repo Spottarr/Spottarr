@@ -3,7 +3,7 @@ using Quartz;
 
 namespace Spottarr.Services.Jobs;
 
-internal static class JobsServiceCollectionExtensions
+public static class JobsServiceCollectionExtensions
 {
     public static IServiceCollection AddSpottarrJobs(this IServiceCollection services) =>
         services.AddQuartz(c =>

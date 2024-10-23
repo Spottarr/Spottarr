@@ -1,11 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Quartz;
-using Spottarr.Data.Helpers;
 using Spottarr.Services.Configuration;
 using Spottarr.Services.Contracts;
-using Spottarr.Services.Jobs;
 using Spottarr.Services.Logging;
 using Spottarr.Services.Nntp;
 
@@ -19,7 +15,6 @@ public static class ServiceCollectionExtensions
 
         return services
             .AddSpottarrLogger()
-            .AddSpottarrJobs()
             .AddSingleton<INntpClientPool, NntpClientPool>()
             .AddSingleton<IApplicationVersionService, ApplicationVersionService>()
             .AddScoped<ISpotImportService, SpotImportService>()
