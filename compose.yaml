@@ -9,6 +9,7 @@ services:
     environment:
       USENET__HOSTNAME: "my.news.server.com"
       USENET__USERNAME: ""
+      # Make sure to escape special characters like $ en \n properly
       USENET__PASSWORD: ""
       USENET__PORT: "563"
       USENET__USETLS: "true"
