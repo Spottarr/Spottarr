@@ -18,6 +18,7 @@
         <Content Include="$(SolutionDir).dockerignore" Link=".dockerignore" CopyToOutputDirectory="PreserveNewest" />
         <Content Include="$(SolutionDir)appsettings.json" Link="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
         <Content Include="$(SolutionDir)appsettings.Development.json" Link="appsettings.Development.json" CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="$(SolutionDir)appsettings.Production.json" Link="appsettings.Production.json" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
     <!--
