@@ -53,8 +53,8 @@ internal class NntpClientPool : INntpClientPool, IDisposable
     {
         var options = _usenetOptions.Value;
         var client = new NntpClientWrapper();
-        var success = await client.ConnectAndAuthenticateAsync(options.Hostname, options.Port, options.UseTls, options.Username, options.Password);
-        if (!success) throw new InvalidOperationException($"Failed to connect to '{options.Hostname}'");
+        var (connected, authenticated) = await client.ConnectAndAuthenticateAsync(options.Hostname, options.Port, options.UseTls, options.Username, options.Password);
+        if (!connected || !authenticated) throw new InvalidOperationException($"Failed to connect to '{options.Hostname}:{options.Port}' TLS={options.UseTls} C={connected} A={authenticated}.'");
         return client;
     }
 

@@ -33,14 +33,14 @@ internal class NntpClientWrapper : IDisposable
         _client = new NntpClient(_connection);
     }
 
-    public async Task<bool> ConnectAndAuthenticateAsync(string hostname, int port, bool useTls, string username,
+    public async Task<(bool, bool)> ConnectAndAuthenticateAsync(string hostname, int port, bool useTls, string username,
         string password)
     {
         _connected = await _client.ConnectAsync(hostname, port, useTls);
-        if (!_connected) return false;
+        if (!_connected) return (_connected, false);
 
         var authenticated = _client.Authenticate(username, password);
-        return authenticated && _connected;
+        return (_connected, authenticated);
     }
 
     public NntpResponse XfeatureCompressGzip(bool withTerminator) => Client.XfeatureCompressGzip(withTerminator);
