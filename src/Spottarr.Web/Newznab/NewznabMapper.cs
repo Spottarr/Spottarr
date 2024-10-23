@@ -78,8 +78,8 @@ internal static class NewznabMapper
             .AddNewznabAttribute("audio", null)
             .AddNewznabAttribute("resolution", null)
             .AddNewznabAttribute("framerate", null)
-            .AddNewznabAttribute("language", string.Join(',', spot.ImageLanguages.Select(Enum.GetName)))
-            .AddNewznabAttribute("subs", string.Join(',', spot.ImageLanguages.Select(Enum.GetName)))
+            .AddNewznabAttribute("language", MapImageAudioLanguage(spot.ImageLanguages))
+            .AddNewznabAttribute("subs", MapImageSubtitleLanguage(spot.ImageLanguages))
             .AddNewznabAttribute("genre", string.Join(',', spot.ImageGenres.Select(Enum.GetName)))
             .AddNewznabAttribute("coverurl", null)
             .AddNewznabAttribute("backdropcoverurl", null);
@@ -92,8 +92,8 @@ internal static class NewznabMapper
             .AddNewznabAttribute("audio", null)
             .AddNewznabAttribute("resolution", null)
             .AddNewznabAttribute("framerate", null)
-            .AddNewznabAttribute("language", string.Join(',', spot.ImageLanguages.Select(Enum.GetName)))
-            .AddNewznabAttribute("subs", string.Join(',', spot.ImageLanguages.Select(Enum.GetName)))
+            .AddNewznabAttribute("language", MapImageAudioLanguage(spot.ImageLanguages))
+            .AddNewznabAttribute("subs", MapImageSubtitleLanguage(spot.ImageLanguages))
             .AddNewznabAttribute("imdb", null)
             .AddNewznabAttribute("imdbscore", null)
             .AddNewznabAttribute("imdbtitle", null)
@@ -116,8 +116,8 @@ internal static class NewznabMapper
             .AddNewznabAttribute("audio", null)
             .AddNewznabAttribute("resolution", null)
             .AddNewznabAttribute("framerate", null)
-            .AddNewznabAttribute("language", string.Join(',', spot.ImageLanguages.Select(Enum.GetName)))
-            .AddNewznabAttribute("subs", string.Join(',', spot.ImageLanguages.Select(Enum.GetName)))
+            .AddNewznabAttribute("language", MapImageAudioLanguage(spot.ImageLanguages))
+            .AddNewznabAttribute("subs", MapImageSubtitleLanguage(spot.ImageLanguages))
             .AddNewznabAttribute("genre", string.Join(',', spot.ImageGenres.Select(Enum.GetName)))
             .AddNewznabAttribute("coverurl", null)
             .AddNewznabAttribute("backdropcoverurl", null);
@@ -141,7 +141,6 @@ internal static class NewznabMapper
     {
         return item.AddNewznabAttribute("audio", string.Join(',', spot.AudioFormats.Select(Enum.GetName)))
             .AddNewznabAttribute("language", null)
-
             .AddNewznabAttribute("artist", null)
             .AddNewznabAttribute("album", null)
             .AddNewznabAttribute("publisher", null)
@@ -160,4 +159,32 @@ internal static class NewznabMapper
     /// Adds newznab attributes for pc (unofficial) category
     /// </summary>
     private static SyndicationItem MapApplicationSpot(this Spot spot, SyndicationItem item) => item;
+    
+    private static string MapImageAudioLanguage(ICollection<ImageLanguage> languages) =>
+        string.Join(',', languages.Select(l => l switch
+        {
+            ImageLanguage.EnglishAudio => "English",
+            ImageLanguage.DutchAudio => "Dutch",
+            ImageLanguage.GermanAudioWritten => "German",
+            ImageLanguage.FrenchAudioWritten => "French",
+            ImageLanguage.SpanishAudioWritten => "Spanish",
+            ImageLanguage.AsianAudioWritten => "Japanese", // Asian, lol
+            _ => null
+        }).Where(s => s != null));
+    
+    private static string MapImageSubtitleLanguage(ICollection<ImageLanguage> languages) =>
+        string.Join(',', languages.Select(l => l switch
+        {
+            ImageLanguage.DutchSubtitlesExternal => "Dutch",
+            ImageLanguage.DutchSubtitlesBakedIn => "Dutch",
+            ImageLanguage.EnglishSubtitlesExternal => "English",
+            ImageLanguage.EnglishSubtitlesBakedIn => "English",
+            ImageLanguage.DutchSubtitlesConfigurable => "Dutch",
+            ImageLanguage.EnglishSubtitlesConfigurable => "English",
+            ImageLanguage.GermanAudioWritten => "German",
+            ImageLanguage.FrenchAudioWritten => "French",
+            ImageLanguage.SpanishAudioWritten => "Spanish",
+            ImageLanguage.AsianAudioWritten => "Japanese", // Asian, lol
+            _ => null
+        }).Where(s => s != null));
 }
