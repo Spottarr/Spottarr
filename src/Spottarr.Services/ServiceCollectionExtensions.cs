@@ -36,7 +36,6 @@ public static class ServiceCollectionExtensions
             .Configure<SpotnetOptions>(configuration.GetSection(SpotnetOptions.Section))
             .AddQuartz(c =>
             {
-                c.UsePersistentStore(p => p.UseSQLite($"Data source={DbPathHelper.GetDbPath()}"));
                 c.SchedulerName = "Spottarr Scheduler";
                 c.ScheduleJob<ImportSpotsJob>(t => t.WithSimpleSchedule(s => s.WithIntervalInMinutes(5)));
             })
