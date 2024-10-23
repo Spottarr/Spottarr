@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Text.RegularExpressions;
 using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,7 @@ using Spottarr.Data;
 using Spottarr.Data.Entities;
 using Spottarr.Services.Contracts;
 using Spottarr.Services.Helpers;
+using Spottarr.Services.Logging;
 using Spottarr.Services.Newznab;
 using Spottarr.Services.Parsers;
 
@@ -27,19 +29,21 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
 
     public async Task Index()
     {
+        _logger.SpotImportStarted(DateTimeOffset.Now);
+
         var unIndexedSpots = await _dbContext.Spots.Where(s => s.IndexedAt == null)
             .ToListAsync();
 
         var now = DateTimeOffset.Now;
         var fullTextIndexSpots = new List<FtsSpot>();
-        
+
         foreach (var spot in unIndexedSpots)
         {
             // Clean up title
             // e.g. "Show.S01E04.Poster.1080p.DDP5.1.Atmos.H.264" -> "Show S01E04 Poster 1080p DDP5 1 Atmos H 264"
             var title = CleanTitleRegex()
                 .Replace(spot.Title, " ");
-            
+
             // Replace BB tags
             var description = (spot.Description ?? string.Empty)
                 .Replace("[br]", "\n", StringComparison.OrdinalIgnoreCase);
@@ -52,7 +56,7 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
             var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(titleAndDescription);
 
             var newznabCategories = NewznabCategoryMapper.Map(spot);
-            
+
             spot.Title = title;
             spot.Description = description;
             spot.Years.Replace(years);
@@ -67,27 +71,36 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
                 Title = title,
                 Description = description
             };
-            
+
             fullTextIndexSpots.Add(ftsSpot);
         }
 
-        await _dbContext.BulkUpdateAsync(unIndexedSpots, c =>
+        try
         {
-            c.PropertiesToIncludeOnUpdate =
-            [
-                nameof(Spot.Title),
-                nameof(Spot.Description),
-                nameof(Spot.Years),
-                nameof(Spot.Seasons),
-                nameof(Spot.Episodes),
-                nameof(Spot.NewznabCategories),
-                nameof(Spot.IndexedAt),
-            ];
-        });
+            await _dbContext.BulkUpdateAsync(unIndexedSpots, c =>
+            {
+                c.PropertiesToIncludeOnUpdate =
+                [
+                    nameof(Spot.Title),
+                    nameof(Spot.Description),
+                    nameof(Spot.Years),
+                    nameof(Spot.Seasons),
+                    nameof(Spot.Episodes),
+                    nameof(Spot.NewznabCategories),
+                    nameof(Spot.IndexedAt),
+                ];
+            }, progress: p => _logger.BulkInsertUpdateProgress(p));
 
-        await _dbContext.BulkInsertAsync(fullTextIndexSpots);
+            await _dbContext.BulkInsertAsync(fullTextIndexSpots, progress: p => _logger.BulkInsertUpdateProgress(p));
+        }
+        catch (DbException ex)
+        {
+            _logger.FailedToSaveSpots(ex);
+        }
+
+        _logger.SpotImportFinished(DateTimeOffset.Now, fullTextIndexSpots.Count);
     }
-    
+
     [GeneratedRegex(@"(?<=\w)\.(?=\w)")]
     private static partial Regex CleanTitleRegex();
 }

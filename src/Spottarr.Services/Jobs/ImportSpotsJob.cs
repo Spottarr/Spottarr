@@ -3,8 +3,10 @@ using Spottarr.Services.Contracts;
 
 namespace Spottarr.Services.Jobs;
 
-public class ImportSpotsJob : IJob
+internal class ImportSpotsJob : IJob
 {
+    public static readonly JobKey Key = new("import-spots");
+    
     private readonly ISpotImportService _spotImportService;
     private readonly ISpotIndexingService _spotIndexingService;
 

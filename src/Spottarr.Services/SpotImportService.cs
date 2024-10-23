@@ -99,7 +99,7 @@ internal sealed class SpotImportService : ISpotImportService
             {
                 c.UpdateByProperties = [nameof(Spot.MessageId)];
                 c.PropertiesToIncludeOnUpdate = [];
-            });
+            }, progress: p => _logger.BulkInsertUpdateProgress(p));
         }
         catch (DbException ex)
         {

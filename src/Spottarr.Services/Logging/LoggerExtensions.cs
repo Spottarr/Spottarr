@@ -34,6 +34,15 @@ public static partial class LoggerExtensions
     [LoggerMessage(Level = LogLevel.Information, Message = "Spot import finished at {DateTime}. Imported {SpotCount} spots.")]
     public static partial void SpotImportFinished(this ILogger logger, DateTimeOffset dateTime, int spotCount);
     
+    [LoggerMessage(Level = LogLevel.Information, Message = "Spot indexing started at {DateTime}.")]
+    public static partial void SpotIndexingStarted(this ILogger logger, DateTimeOffset dateTime);
+    
+    [LoggerMessage(Level = LogLevel.Information, Message = "Spot indexing finished at {DateTime}. Indexed {SpotCount} spots.")]
+    public static partial void SpotIndexingFinished(this ILogger logger, DateTimeOffset dateTime, int spotCount);
+    
+    [LoggerMessage(Level = LogLevel.Information, Message = "Bulk insert / update progress {Percentage}%")]
+    public static partial void BulkInsertUpdateProgress(this ILogger logger, decimal percentage);
+    
     [LoggerMessage(Level = LogLevel.Debug,
         Message = "Reached retrieve after date {RetrieveAfter}, stopping import.")]
     public static partial void ReachedRetrieveAfter(this ILogger logger, DateTimeOffset retrieveAfter);
