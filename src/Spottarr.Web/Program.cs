@@ -1,6 +1,7 @@
 using Scalar.AspNetCore;
 using Spottarr.Data;
 using Spottarr.Services;
+using Spottarr.Services.Helpers;
 using Spottarr.Web.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,7 +13,7 @@ builder.Host.UseDefaultServiceProvider(configure =>
 
 if (builder.Environment.IsDevelopment())
 {
-    var root = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "../../"));
+    var root = builder.Environment.IsContainer() ? AppContext.BaseDirectory : Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "../../"));
     var env = builder.Environment.EnvironmentName;
     builder.Configuration.SetBasePath(root);
     builder.Configuration.AddJsonFile("appsettings.json");
