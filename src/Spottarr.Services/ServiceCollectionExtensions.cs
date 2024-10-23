@@ -1,8 +1,11 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Quartz;
+using Spottarr.Data.Helpers;
 using Spottarr.Services.Configuration;
 using Spottarr.Services.Contracts;
+using Spottarr.Services.Jobs;
 using Spottarr.Services.Logging;
 using Spottarr.Services.Nntp;
 
@@ -16,7 +19,7 @@ public static class ServiceCollectionExtensions
         
         return services
             .AddSingleton<IApplicationVersionService, ApplicationVersionService>()
-            .AddSingleton<ILoggerFactory, RewriteLevelLoggerFactory>(s =>
+            .AddSingleton<ILoggerFactory, RewriteLevelLoggerFactory>(_ =>
             {
                 var defaultLoggerFactory = LoggerFactory.Create(logging =>
                 {
@@ -30,6 +33,17 @@ public static class ServiceCollectionExtensions
             .AddScoped<ISpotIndexingService, SpotIndexingService>()
             .AddScoped<ISpotSearchService, SpotSearchService>()
             .Configure<UsenetOptions>(configuration.GetSection(UsenetOptions.Section))
-            .Configure<SpotnetOptions>(configuration.GetSection(SpotnetOptions.Section));
+            .Configure<SpotnetOptions>(configuration.GetSection(SpotnetOptions.Section))
+            .AddQuartz(c =>
+            {
+                c.UsePersistentStore(p => p.UseSQLite($"Data source={DbPathHelper.GetDbPath()}"));
+                c.SchedulerName = "Spottarr Scheduler";
+                c.ScheduleJob<ImportSpotsJob>(t => t.WithSimpleSchedule(s => s.WithIntervalInMinutes(5)));
+            })
+            .AddQuartzHostedService(c =>
+            {
+                c.WaitForJobsToComplete = true;
+                c.AwaitApplicationStarted = true;
+            });
     }
 }

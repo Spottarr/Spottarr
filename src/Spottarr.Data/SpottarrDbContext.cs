@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Spottarr.Data.Entities;
+using Spottarr.Data.Helpers;
 
 namespace Spottarr.Data;
 
@@ -9,22 +10,18 @@ public class SpottarrDbContext : DbContext
 {
     private readonly IHostEnvironment _environment;
     private readonly ILoggerFactory _loggerFactory;
-    private readonly string _dbPath;
 
     public DbSet<Spot> Spots { get; set; }
     public DbSet<FtsSpot> FtsSpots { get; set; }
 
     public SpottarrDbContext(IHostEnvironment environment, ILoggerFactory loggerFactory)
     {
-        var path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        _dbPath = Path.Join(path, "spottarr.db");
-
         _environment = environment;
         _loggerFactory = loggerFactory;
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
-        optionsBuilder.UseSqlite($"Data Source={_dbPath}")
+        optionsBuilder.UseSqlite($"Data Source={DbPathHelper.GetDbPath()}")
             .UseLoggerFactory(_loggerFactory)
             .EnableDetailedErrors(_environment.IsDevelopment())
             .EnableSensitiveDataLogging(_environment.IsDevelopment());
