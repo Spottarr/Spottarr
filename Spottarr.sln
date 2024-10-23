@@ -10,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution", "solution", "{26
 		.globalconfig = .globalconfig
 		.editorconfig = .editorconfig
 		global.json = global.json
+		compose.yaml = compose.yaml
 		appsettings.json = appsettings.json
 		appsettings.Development.json = appsettings.Development.json
 		appsettings.Production.json = appsettings.Production.json
