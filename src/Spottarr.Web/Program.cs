@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Scalar.AspNetCore;
 using Spottarr.Data;
 using Spottarr.Data.Helpers;
 using Spottarr.Services;
@@ -25,7 +24,6 @@ if (builder.Environment.IsDevelopment())
 }
 
 builder.Services.AddControllers().AddXmlSerializerFormatters();
-builder.Services.AddOpenApi();
 builder.Services.Configure<RouteOptions>(options =>
 {
     options.LowercaseQueryStrings = true;
@@ -51,8 +49,6 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAuthorization();
 
-app.MapOpenApi();
-app.MapScalarApiReference();
 app.MapControllers();
 
 app.UseMiddleware<NewsznabQueryActionMiddleware>();
