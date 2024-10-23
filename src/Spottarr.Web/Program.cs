@@ -1,7 +1,10 @@
+using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using Spottarr.Data;
+using Spottarr.Data.Helpers;
 using Spottarr.Services;
 using Spottarr.Services.Helpers;
+using Spottarr.Web.Logging;
 using Spottarr.Web.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,6 +35,15 @@ builder.Services.AddSpottarrData();
 builder.Services.AddSpottarrServices(builder.Configuration);
 
 var app = builder.Build();
+
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    logger.DatabaseMigrationStarted(DbPathHelper.GetDbPath());
+    var dbContext = scope.ServiceProvider.GetRequiredService<SpottarrDbContext>();
+    await dbContext.Database.MigrateAsync();
+    logger.DatabaseMigrationFinished();
+}
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
