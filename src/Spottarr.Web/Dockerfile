@@ -25,4 +25,5 @@ RUN dotnet publish "Spottarr.Web.csproj" -c $BUILD_CONFIGURATION -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+COPY --from=publish /src/appsettings*.json .
 ENTRYPOINT ["dotnet", "Spottarr.Web.dll"]
