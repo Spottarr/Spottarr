@@ -30,7 +30,8 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64,linux/arm64
+          file: src/Spottarr.Web/Dockerfile
           push: true
           tags: |
-            ghcr.io/spottarr/spottarr:latest
-            ghcr.io/spottarr/spottarr:${{ github.event.release.tag_name }}      
+            ${{ github.event.release.prerelease == false && 'ghcr.io/spottarr/spottarr:latest' || '' }}
+            ghcr.io/spottarr/spottarr:${{ github.event.release.tag_name }}
