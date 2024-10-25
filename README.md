@@ -22,7 +22,7 @@ services:
     image: ghcr.io/spottarr/spottarr:latest
     container_name: spottarr    
     environment:
-      - "USENET__HOSTNAME=news.eweka.nl"
+      - "USENET__HOSTNAME=my.news.server.com"
       - "USENET__USERNAME=username"
       - "USENET__PASSWORD=somep@ssw0rd"
       - "USENET__PORT=563"

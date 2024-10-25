@@ -6,14 +6,13 @@ services:
       dockerfile: ./src/Spottarr.Web/Dockerfile
     image: ghcr.io/spottarr/spottarr:latest
     environment:
-      USENET__HOSTNAME: "my.news.server.com"
-      USENET__USERNAME: ""
-      # Make sure to escape special characters like $ and \n properly
-      USENET__PASSWORD: ""
-      USENET__PORT: "563"
-      USENET__USETLS: "true"
-      USENET__MAXCONNECTIONS: "10"
-      SPOTNET__RETRIEVEAFTER: "2024-10-01T00:00:00Z"                     
+      - "USENET__HOSTNAME=my.news.server.com"
+      - "USENET__USERNAME=username"
+      - "USENET__PASSWORD=somep@ssw0rd"
+      - "USENET__PORT=563"
+      - "USENET__USETLS=true"
+      - "USENET__MAXCONNECTIONS=10"
+      - "SPOTNET__RETRIEVEAFTER=2024-10-01T00:00:00Z"
     ports:
       - "8383:8383"
     volumes:
