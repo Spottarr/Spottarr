@@ -5,7 +5,7 @@ services:
     build: 
       context: .
       dockerfile: ./src/Spottarr.Web/Dockerfile
-    image: spottarr:latest
+    image: ghcr.io/spottarr/spottarr:latest
     environment:
       USENET__HOSTNAME: "my.news.server.com"
       USENET__USERNAME: ""
