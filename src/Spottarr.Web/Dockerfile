@@ -23,6 +23,7 @@ ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "Spottarr.Web.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
+ENV DOTNET_ENVIRONMENT=Production
 WORKDIR /app
 COPY --from=publish /app/publish .
 COPY --from=publish /src/appsettings*.json .
