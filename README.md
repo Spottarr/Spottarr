@@ -35,7 +35,9 @@ services:
       - "8383:8383"
     restart: unless-stopped
 ```
-Note: Make sure to properly escape special characters like `$` in your password.
+**Note** Make sure to properly escape special characters like `$` in your password.
+
+**Note** Spottarr runs as the non-privileged user `app` with the uid `1654`. It might be necessary to grant this user permissions to the mounted data directory on the host machine. 
 
 Once the Spottarr is up and running, it will automatically start indexing the spotnet messages starting from the provided `SPOTNET_RETRIEVEAFTER` date.
 
@@ -49,7 +51,7 @@ After starting Spottarr, it can easily be connected to the *Arr of your choice:
 3. Spottarr will now be used for searches
 ![Step 3](docs/arr-3.png)
 
-Note: Spottarr does not require an API key, anyone with access to your Spottarr instance can perform searches on it.
+**Note** Spottarr does not require an API key, anyone with access to your Spottarr instance can perform searches on it.
 
 ## Issues, requests and improvements
 Issues can be used to submit application errors as long as the issue template is properly filled out.
