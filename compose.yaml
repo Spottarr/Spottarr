@@ -1,7 +1,6 @@
 services:
   spottarr:
     container_name: spottarr
-    hostname: spottarr
     build: 
       context: .
       dockerfile: ./src/Spottarr.Web/Dockerfile
@@ -16,7 +15,7 @@ services:
       USENET__MAXCONNECTIONS: "10"
       SPOTNET__RETRIEVEAFTER: "2024-10-01T00:00:00Z"                     
     ports:
-      - "8383:8080"
+      - "8383:8383"
     volumes:
       - spottarr-data:/data
 volumes:
