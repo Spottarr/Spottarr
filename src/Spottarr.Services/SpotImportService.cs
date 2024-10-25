@@ -62,19 +62,21 @@ internal sealed class SpotImportService : ISpotImportService
         }
         var group = groupResponse.Group;
         
+        // Get the oldest and newest message known to Spottarr
+        var db = await _dbContext.Spots.GroupBy(_ => true).Select(g => new
+        {
+            HighWaterMark = g.Max(r => r.MessageNumber),
+            LowWaterMark = g.Min(r => r.MessageNumber),
+        }).FirstAsync();
+        
+        // Only fetch records after the last known record in the DB
+        var lowWaterMark = Math.Max(db.HighWaterMark, group.LowWaterMark);
+        
         // Prepare XOVER commands spanning the range of the newest message to the oldest message,
         // limited by the maximum number of messages to retrieve
-        var headerBatches = GetXoverBatches(group.LowWaterMark, group.HighWaterMark, spotnetOptions.RetrieveCount).ToList();
+        var headerBatches = GetXoverBatches(lowWaterMark, group.HighWaterMark, spotnetOptions.RetrieveCount).ToList();
 
-        // Get the message IDs of any existing records added after the retrieve after dates.
-        // This prevents fetching the message headers and body twice
-        var retrieveAfterUtc = spotnetOptions.RetrieveAfter.UtcDateTime;
-        var existing = await _dbContext.Spots
-            .Where(s => s.CreatedAt >= retrieveAfterUtc)
-            .Select(s => s.MessageId)
-            .ToHashSetAsync();
-
-        var context = new SpotImportResult(existing);
+        var context = new SpotImportResult();
         
         // Execute the prepared XOVER commands, stop when we reach a message created before the retrieve after date.
         foreach (var headerBatch in headerBatches)
@@ -175,7 +177,7 @@ internal sealed class SpotImportService : ISpotImportService
                 
                 var spotnetHeader = SpotnetHeaderParser.Parse(nntpHeader);
 
-                if (spotnetHeader.KeyId == KeyId.Moderator && spotnetHeader.Command == ModerationCommand.Delete)
+                if (spotnetHeader is { KeyId: KeyId.Moderator, Command: ModerationCommand.Delete })
                 {
                     context.AddDeletion(spotnetHeader);
                     continue;

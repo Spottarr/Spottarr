@@ -5,11 +5,9 @@ namespace Spottarr.Services.Helpers;
 
 internal sealed class SpotImportResult
 {
-    private readonly HashSet<string> _existingMessageIds;
+    private readonly HashSet<string> _existingMessageIds = [];
     public List<Spot> Spots { get; } = [];
     public HashSet<string> DeletedSpots { get; } = new(StringComparer.OrdinalIgnoreCase);
-
-    public SpotImportResult(HashSet<string> existingMessageIds) => _existingMessageIds = existingMessageIds;
 
     public void AddSpot(Spot spot)
     {
