@@ -39,6 +39,7 @@ public class SpottarrDbContext : DbContext
             x.Property(s => s.NzbMessageId).HasMaxLength(128);
             x.Property(s => s.ImageMessageId).HasMaxLength(128);
             x.HasIndex(s => s.MessageId).IsUnique();
+            x.HasIndex(s => s.MessageNumber);
         });
         
         modelBuilder.Entity<FtsSpot>(x =>
