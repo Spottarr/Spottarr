@@ -29,7 +29,7 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
 
     public async Task Index()
     {
-        _logger.SpotImportStarted(DateTimeOffset.Now);
+        _logger.SpotIndexingStarted(DateTimeOffset.Now);
 
         var unIndexedSpots = await _dbContext.Spots.Where(s => s.IndexedAt == null)
             .ToListAsync();
@@ -98,7 +98,7 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
             _logger.FailedToSaveSpots(ex);
         }
 
-        _logger.SpotImportFinished(DateTimeOffset.Now, fullTextIndexSpots.Count);
+        _logger.SpotIndexingFinished(DateTimeOffset.Now, fullTextIndexSpots.Count);
     }
 
     [GeneratedRegex(@"(?<=\w)\.(?=\w)")]
