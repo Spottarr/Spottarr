@@ -62,15 +62,9 @@ internal sealed class SpotImportService : ISpotImportService
         }
         var group = groupResponse.Group;
         
-        // Get the oldest and newest message known to Spottarr
-        var db = await _dbContext.Spots.GroupBy(_ => true).Select(g => new
-        {
-            HighWaterMark = g.Max(r => r.MessageNumber),
-            LowWaterMark = g.Min(r => r.MessageNumber),
-        }).FirstAsync();
-        
         // Only fetch records after the last known record in the DB
-        var lowWaterMark = Math.Max(db.HighWaterMark, group.LowWaterMark);
+        var lastImportedMessage = _dbContext.Spots.Max(s => s.MessageNumber);
+        var lowWaterMark = Math.Max(lastImportedMessage, group.LowWaterMark);
         
         // Prepare XOVER commands spanning the range of the newest message to the oldest message,
         // limited by the maximum number of messages to retrieve
