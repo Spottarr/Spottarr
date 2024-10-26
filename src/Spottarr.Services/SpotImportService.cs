@@ -64,7 +64,13 @@ internal sealed class SpotImportService : ISpotImportService
         
         // Only fetch records after the last known record in the DB
         var lastImportedMessage = _dbContext.Spots.Max(s => (int?)s.MessageNumber) ?? 0;
-        var lowWaterMark = Math.Max(lastImportedMessage, group.LowWaterMark);
+        var lowWaterMark = Math.Max(lastImportedMessage + 1, group.LowWaterMark);
+        
+        if (lowWaterMark > group.HighWaterMark)
+        {
+            _nntpClientPool.ReturnClient(client);
+            return;
+        };
         
         // Prepare XOVER commands spanning the range of the newest message to the oldest message,
         // limited by the maximum number of messages to retrieve
@@ -91,11 +97,7 @@ internal sealed class SpotImportService : ISpotImportService
         // Save the fetched articles in bulk.
         try
         {
-            await _dbContext.BulkInsertOrUpdateAsync(context.Spots, c =>
-            {
-                c.UpdateByProperties = [nameof(Spot.MessageId)];
-                c.PropertiesToIncludeOnUpdate = [];
-            }, progress: p => _logger.BulkInsertUpdateProgress(p));
+            await _dbContext.BulkInsertAsync(context.Spots, progress: p => _logger.BulkInsertUpdateProgress(p));
         }
         catch (DbException ex)
         {
