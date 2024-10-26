@@ -63,7 +63,7 @@ internal sealed class SpotImportService : ISpotImportService
         var group = groupResponse.Group;
         
         // Only fetch records after the last known record in the DB
-        var lastImportedMessage = _dbContext.Spots.Max(s => s.MessageNumber);
+        var lastImportedMessage = _dbContext.Spots.Max(s => (int?)s.MessageNumber) ?? 0;
         var lowWaterMark = Math.Max(lastImportedMessage, group.LowWaterMark);
         
         // Prepare XOVER commands spanning the range of the newest message to the oldest message,
