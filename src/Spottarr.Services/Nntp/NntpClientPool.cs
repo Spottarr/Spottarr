@@ -16,8 +16,7 @@ internal class NntpClientPool : INntpClientPool, IDisposable
     private readonly IOptions<UsenetOptions> _usenetOptions;
     private readonly int _maxPoolSize;
     private readonly SemaphoreSlim _semaphore;
-    private readonly Task _monitorTask;
-    
+
     private int _currentSize;
     private bool _disposed;
     
@@ -28,7 +27,7 @@ internal class NntpClientPool : INntpClientPool, IDisposable
         _semaphore = new SemaphoreSlim(_maxPoolSize, _maxPoolSize);
         
         // Start the background monitoring task
-        _monitorTask = Task.Run(() => MonitorIdleClients(_cts.Token));
+        Task.Run(() => MonitorIdleClients(_cts.Token));
     }
     
     public async Task<NntpClientWrapper> BorrowClient()
@@ -117,7 +116,6 @@ internal class NntpClientPool : INntpClientPool, IDisposable
             }
 
             _availableClients.Clear();
-            _monitorTask.Dispose();
             _semaphore.Dispose();
             _cts.Dispose();
         }
