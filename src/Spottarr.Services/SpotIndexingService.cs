@@ -65,6 +65,7 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
             spot.Episodes.Replace(episodes);
             spot.NewznabCategories.Replace(newznabCategories);
             spot.IndexedAt = now.UtcDateTime;
+            spot.UpdatedAt = now.UtcDateTime;
 
             var ftsSpot = new FtsSpot()
             {
@@ -89,6 +90,7 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
                     nameof(Spot.Episodes),
                     nameof(Spot.NewznabCategories),
                     nameof(Spot.IndexedAt),
+                    nameof(Spot.UpdatedAt)
                 ];
             }, progress: p => _logger.BulkInsertUpdateProgress(p));
 
