@@ -2,6 +2,7 @@
 RUN mkdir -p /data && chown -R $APP_UID /data && chmod -R 755 /data
 USER $APP_UID
 WORKDIR /app
+ENV DOTNET_RUNNING_IN_CONTAINER_FAST_MODE=true
 ENV ASPNETCORE_HTTP_PORTS=8383
 EXPOSE 8383
 
@@ -24,6 +25,7 @@ RUN dotnet publish "Spottarr.Web.csproj" -c $BUILD_CONFIGURATION -o /app/publish
 
 FROM base AS final
 ENV DOTNET_ENVIRONMENT=Production
+ENV DOTNET_RUNNING_IN_CONTAINER_FAST_MODE=false
 WORKDIR /app
 COPY --from=publish /app/publish .
 COPY --from=publish /src/appsettings*.json .

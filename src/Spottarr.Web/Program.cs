@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration.Json;
+using Microsoft.Extensions.FileProviders;
 using Spottarr.Data;
 using Spottarr.Data.Helpers;
 using Spottarr.Services;
@@ -22,13 +24,18 @@ else
     builder.Logging.AddConsole();
 }
 
-if (builder.Environment.IsDevelopment())
+if (builder.Environment.IsDevelopment() || builder.Environment.IsContainerFastMode())
 {
-    var root = builder.Environment.IsContainer() ? AppContext.BaseDirectory : Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "../../"));
-    var env = builder.Environment.EnvironmentName;
-    builder.Configuration.SetBasePath(root);
-    builder.Configuration.AddJsonFile("appsettings.json");
-    builder.Configuration.AddJsonFile($"appsettings.{env}.json");
+    // ASP.NET expects the configuration files to be in the root of the project when running an app from source.
+    // Because we share the config file for the entire solution we need to read it from the bin directory like
+    // a console app does instead.
+    var root = AppContext.BaseDirectory;
+
+    foreach (var json in builder.Configuration.Sources.OfType<JsonConfigurationSource>())
+        json.FileProvider = new PhysicalFileProvider(root);
+    
+    if (builder.Configuration is IConfigurationRoot configRoot)
+        configRoot.Reload();
 }
 
 builder.Services.AddControllers().AddXmlSerializerFormatters();
