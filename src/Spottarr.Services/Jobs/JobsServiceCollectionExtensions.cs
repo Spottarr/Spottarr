@@ -5,18 +5,17 @@ namespace Spottarr.Services.Jobs;
 
 public static class JobsServiceCollectionExtensions
 {
-    public static IServiceCollection AddSpottarrJobs(this IServiceCollection services) =>
+    public static IServiceCollection AddSpottarrJobs(this IServiceCollection services, bool runOnce) =>
         services.AddQuartz(c =>
             {
                 c.SchedulerName = "Spottarr Scheduler";
                 c.ScheduleJob<ImportSpotsJob>(t => t
                         .StartNow()
-                        .WithSimpleSchedule(s => s
-                            .WithIntervalInMinutes(5)
-                            .RepeatForever()
-                        ), j => j
-                        .WithIdentity(ImportSpotsJob.Key)
-                        .DisallowConcurrentExecution()
+                        .WithSimpleSchedule(s =>
+                        {
+                            if (!runOnce)
+                                s.WithIntervalInMinutes(5).RepeatForever();
+                        }), j => j.WithIdentity(ImportSpotsJob.Key).DisallowConcurrentExecution()
                 );
             })
             .AddQuartzHostedService(c =>

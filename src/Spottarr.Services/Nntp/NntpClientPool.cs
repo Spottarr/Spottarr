@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using Microsoft.Extensions.Options;
 using Spottarr.Services.Configuration;
 using Spottarr.Services.Contracts;

@@ -5,7 +5,6 @@ using Spottarr.Data;
 using Spottarr.Data.Helpers;
 using Spottarr.Services;
 using Spottarr.Services.Helpers;
-using Spottarr.Services.Jobs;
 using Spottarr.Web.Logging;
 using Spottarr.Web.Middlewares;
 
@@ -45,9 +44,7 @@ builder.Services.Configure<RouteOptions>(options =>
     options.LowercaseUrls = true;
 });
 
-builder.Services.AddSpottarrData();
 builder.Services.AddSpottarrServices(builder.Configuration);
-builder.Services.AddSpottarrJobs();
 
 var app = builder.Build();
 
