@@ -107,4 +107,38 @@ public class SpotnetXmlParserTests
 
 	    var result = SpotnetXmlParser.Parse(xml);
     }
+    
+    [Fact]
+    public void DoesNotParseXmlInvalidImageTag()
+    {
+	    const string xml = """
+                           <Spotnet>
+                               <Posting>
+                                   <Key>7</Key>
+                                   <Created>1729126073</Created>
+                                   <Poster>SomePoster</Poster>
+                                   <Title>Echoes of Tomorrow - S04E01: A New Dawn</Title>
+                                   <Description>In a world where people can glimpse fleeting moments of their future, a secretive government agency uses this ability to prevent catastrophic events. As Season 4 begins, former agent Maya Quinn is forced out of hiding to confront a mysterious new threat. With the timelines growing unstable, Maya and her old team must race against time to stop a rogue faction determined to rewrite history. S04E01, “A New Dawn,” kicks off the season with shocking revelations and a dangerous new mission that will challenge everything they know about their powers.</Description>
+                                   <ImageWidth='900' Height='600'>
+                                       <Segment>someid1@spot.net</Segment>
+                                   </Image>
+                                   <Size>447177625</Size>
+                                   <Category>01
+                                       <Sub>01a09</Sub>
+                                       <Sub>01b04</Sub>
+                                       <Sub>01d11</Sub>
+                                       <Sub>01b11</Sub>
+                                       <Sub>01c00</Sub>
+                                       <Sub>01c11</Sub>
+                                       <Sub>01z01</Sub>
+                                   </Category>
+                                   <NZB>
+                                       <Segment>someid4@spot.net</Segment>
+                                   </NZB>
+                               </Posting>
+                           </Spotnet>
+                           """;
+
+	    Assert.Throws<BadSpotFormatException>(() => SpotnetXmlParser.Parse(xml));
+    }
 }
