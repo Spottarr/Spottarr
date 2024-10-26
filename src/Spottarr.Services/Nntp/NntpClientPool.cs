@@ -1,96 +1,112 @@
-using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spottarr.Services.Configuration;
 using Spottarr.Services.Contracts;
+using Spottarr.Services.Logging;
 
 namespace Spottarr.Services.Nntp;
 
 internal class NntpClientPool : INntpClientPool, IDisposable
 {
-    private readonly ConcurrentBag<NntpClientWrapper> _availableClients = [];
+    private readonly object _lock = new();
+    private readonly Queue<NntpClientWrapper> _availableClients = [];
     private readonly TimeSpan _monitorInterval = TimeSpan.FromSeconds(10);
     private readonly TimeSpan _idleTimeout = TimeSpan.FromSeconds(30);
+    private readonly TimeSpan _waitTimeout = TimeSpan.FromSeconds(60);
     private readonly CancellationTokenSource _cts = new();
-    
+
+    private readonly ILogger<NntpClientPool> _logger;
     private readonly IOptions<UsenetOptions> _usenetOptions;
     private readonly int _maxPoolSize;
     private readonly SemaphoreSlim _semaphore;
 
-    private int _currentSize;
+    private int _currentPoolSize;
     private bool _disposed;
-    
-    public NntpClientPool(IOptions<UsenetOptions> usenetOptions)
+
+    public NntpClientPool(ILogger<NntpClientPool> logger, IOptions<UsenetOptions> usenetOptions)
     {
+        _logger = logger;
         _usenetOptions = usenetOptions;
         _maxPoolSize = usenetOptions.Value.MaxConnections;
         _semaphore = new SemaphoreSlim(_maxPoolSize, _maxPoolSize);
-        
+
         // Start the background monitoring task
         Task.Run(() => MonitorIdleClients(_cts.Token));
     }
-    
+
     public async Task<NntpClientWrapper> BorrowClient()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
-        await _semaphore.WaitAsync();
+        var success = await _semaphore.WaitAsync(_waitTimeout);
+        if (!success) throw new InvalidOperationException("Timed out waiting for NNTP (usenet) client");
 
-        if (_availableClients.TryTake(out var client))
-            return client;
+        _logger.BorrowingNntpClient();
+        var client = BorrowClientInternal();
+        if (client.Connected) return client;
 
-        if (_currentSize > _maxPoolSize)
-            throw new InvalidOperationException("No available clients in the pool.");
-
-        client = await CreateClient();
-        Interlocked.Increment(ref _currentSize);
+        var options = _usenetOptions.Value;
+        var (connected, authenticated) = await client.ConnectAndAuthenticateAsync(options.Hostname, options.Port,
+            options.UseTls, options.Username, options.Password);
+        if (!connected || !authenticated)
+            throw new InvalidOperationException(
+                $"Failed to connect to '{options.Hostname}:{options.Port}' TLS={options.UseTls} C={connected} A={authenticated}.'");
         return client;
     }
-    
+
     public void ReturnClient(NntpClientWrapper client)
     {
-        client.ResetCounters();
         ObjectDisposedException.ThrowIf(_disposed, this);
+        client.ResetCounters();
+        _logger.ReturningNntpClient();
 
-        _availableClients.Add(client);
-        _semaphore.Release();
+        lock (_lock)
+        {
+            _availableClients.Enqueue(client);
+            _semaphore.Release();
+        }
     }
 
-    private async Task<NntpClientWrapper> CreateClient()
+    private NntpClientWrapper BorrowClientInternal()
     {
-        var options = _usenetOptions.Value;
-        var client = new NntpClientWrapper();
-        var (connected, authenticated) = await client.ConnectAndAuthenticateAsync(options.Hostname, options.Port, options.UseTls, options.Username, options.Password);
-        if (!connected || !authenticated) throw new InvalidOperationException($"Failed to connect to '{options.Hostname}:{options.Port}' TLS={options.UseTls} C={connected} A={authenticated}.'");
-        return client;
+        lock (_lock)
+        {
+            if (_availableClients.TryDequeue(out var client))
+                return client;
+
+            if (_currentPoolSize > _maxPoolSize)
+                throw new InvalidOperationException("No available clients in the pool.");
+
+            _currentPoolSize++;
+            _logger.CreatingNewNntpClient(_currentPoolSize, _maxPoolSize);
+
+            return new NntpClientWrapper();
+        }
     }
-    
+
     private async Task MonitorIdleClients(CancellationToken ct)
     {
         while (!ct.IsCancellationRequested)
         {
             await Task.Delay(_monitorInterval, ct);
-            
             var now = DateTimeOffset.Now;
-            var activeClients = new List<NntpClientWrapper>();
-            
-            // Take all available clients from the pool
-            while (_availableClients.TryTake(out var availableClient))
-            {
-                // Dispose idle clients
-                if (now - availableClient.LastActivity > _idleTimeout)
-                {
-                    availableClient.Dispose();
-                }
-                else
-                {
-                    activeClients.Add(availableClient);
-                }
-            }
 
-            // Add clients with recent activity back into the pool
-            foreach (var activeClient in activeClients)
+            lock (_lock)
             {
-                _availableClients.Add(activeClient);
+                var count = _availableClients.Count;
+                for (var i = 0; i < count; i++)
+                {
+                    var client = _availableClients.Dequeue();
+                    if (now - client.LastActivity > _idleTimeout)
+                    {
+                        client.Dispose();
+                        _currentPoolSize--;
+                        _logger.DisposingIdleNntpClient(_currentPoolSize, _maxPoolSize);
+                        continue;
+                    }
+
+                    _availableClients.Enqueue(client);
+                }
             }
         }
     }
@@ -109,12 +125,16 @@ internal class NntpClientPool : INntpClientPool, IDisposable
         {
             _cts.Cancel();
 
-            foreach (var client in _availableClients)
+            lock (_lock)
             {
-                client.Dispose();
+                foreach (var client in _availableClients)
+                {
+                    client.Dispose();
+                }
+
+                _availableClients.Clear();
             }
 
-            _availableClients.Clear();
             _semaphore.Dispose();
             _cts.Dispose();
         }

@@ -46,4 +46,16 @@ public static partial class LoggerExtensions
     [LoggerMessage(Level = LogLevel.Debug,
         Message = "Reached retrieve after date {RetrieveAfter}, stopping import.")]
     public static partial void ReachedRetrieveAfter(this ILogger logger, DateTimeOffset retrieveAfter);
+    
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Borrowing NNTP client from pool")]
+    public static partial void BorrowingNntpClient(this ILogger logger);
+    
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Returning NNTP client to pool")]
+    public static partial void ReturningNntpClient(this ILogger logger);
+    
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Creating new NNTP client ({CurrentPoolSize}/{MaxPoolSize})")]
+    public static partial void CreatingNewNntpClient(this ILogger logger, int currentPoolSize, int maxPoolSize);
+    
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Disposing idle NNTP client ({CurrentPoolSize}/{MaxPoolSize})")]
+    public static partial void DisposingIdleNntpClient(this ILogger logger, int currentPoolSize, int maxPoolSize);
 }

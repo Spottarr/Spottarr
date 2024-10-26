@@ -12,7 +12,7 @@ internal class NntpClientWrapper : IDisposable
     private readonly NntpConnection _connection;
     private readonly NntpClient _client;
     private bool _disposed;
-    private bool _connected;
+    public bool Connected { get; private set; }
     public DateTimeOffset LastActivity { get; private set; }
 
     private NntpClient Client
@@ -21,7 +21,7 @@ internal class NntpClientWrapper : IDisposable
         {
             ObjectDisposedException.ThrowIf(_disposed, _client);
             
-            if (!_connected)
+            if (!Connected)
                 throw new InvalidOperationException("Client not connected, call ConnectAndAuthenticateAsync first"); 
 
             LastActivity = DateTimeOffset.Now;
@@ -39,11 +39,11 @@ internal class NntpClientWrapper : IDisposable
     public async Task<(bool, bool)> ConnectAndAuthenticateAsync(string hostname, int port, bool useTls, string username,
         string password)
     {
-        _connected = await _client.ConnectAsync(hostname, port, useTls);
-        if (!_connected) return (_connected, false);
+        Connected = await _client.ConnectAsync(hostname, port, useTls);
+        if (!Connected) return (Connected, false);
 
         var authenticated = _client.Authenticate(username, password);
-        return (_connected, authenticated);
+        return (Connected, authenticated);
     }
 
     public NntpResponse XfeatureCompressGzip(bool withTerminator) => Client.XfeatureCompressGzip(withTerminator);
@@ -183,7 +183,7 @@ internal class NntpClientWrapper : IDisposable
         if (disposing)
         {
             _client.Quit();
-            _connected = false;
+            Connected = false;
             _connection.Dispose();
         }
 
