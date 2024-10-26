@@ -16,7 +16,7 @@ internal partial class YearEpisodeSeasonParser
     /// </returns>
     public static (HashSet<int> Years, HashSet<int> Seasons, HashSet<int> Episodes) Parse(string text)
     {
-        var matches = YearEpsideSeasonRegex().Matches(text);
+        var matches = YearEpisodeSeasonRegex().Matches(text);
 
         var years = new HashSet<int>();
         var seasons = new HashSet<int>();
@@ -45,6 +45,6 @@ internal partial class YearEpisodeSeasonParser
     }
 
     [GeneratedRegex(
-        @"(?:(?:^|\s|\p{P})\(?(?<year>\d{4})\)?(?:$|\s|\p{P}))|(?:S(?<sshort>\d{2})\s?E(?<eshort>\d{2}))|(?:(?:Season|Seizoen)\:?)\s*(?<slong>\d{1,2})|(?:(?:Episode|Aflevering)\:?)\s*(?<elong>\d{1,2})")]
-    private static partial Regex YearEpsideSeasonRegex();
+        @"(?:(?:^|\s|\p{P})\(?(?<year>\d{4})\)?(?:$|\s|\p{P}))|(?:S(?<sshort>\d{2})\s?E(?<eshort>\d{2}))|(?:(?:Season|Seizoen)\:?)\s*(?<slong>\d{1,2})|(?:(?:Episode|Aflevering)\:?)\s*(?<elong>\d{1,2})", RegexOptions.IgnoreCase)]
+    private static partial Regex YearEpisodeSeasonRegex();
 }
