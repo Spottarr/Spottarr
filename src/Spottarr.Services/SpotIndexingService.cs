@@ -79,6 +79,7 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
 
         try
         {
+            await _dbContext.BulkInsertAsync(fullTextIndexSpots, progress: p => _logger.BulkInsertUpdateProgress(p));
             await _dbContext.BulkUpdateAsync(unIndexedSpots, c =>
             {
                 c.PropertiesToIncludeOnUpdate =
@@ -93,8 +94,6 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
                     nameof(Spot.UpdatedAt)
                 ];
             }, progress: p => _logger.BulkInsertUpdateProgress(p));
-
-            await _dbContext.BulkInsertAsync(fullTextIndexSpots, progress: p => _logger.BulkInsertUpdateProgress(p));
         }
         catch (DbException ex)
         {
