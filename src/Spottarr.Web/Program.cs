@@ -8,11 +8,15 @@ using Spottarr.Web.Logging;
 using Spottarr.Web.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Host.UseDefaultServiceProvider(configure =>
+
+if (builder.Environment.IsContainer())
 {
-    configure.ValidateScopes = true;
-    configure.ValidateOnBuild = true;
-});
+    builder.Logging.AddSystemdConsole();
+}
+else
+{
+    builder.Logging.AddConsole();
+}
 
 if (builder.Environment.IsDevelopment())
 {

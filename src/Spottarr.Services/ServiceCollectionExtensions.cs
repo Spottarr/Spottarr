@@ -14,7 +14,6 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(configuration);
 
         return services
-            .AddSpottarrLogger()
             .AddSingleton<INntpClientPool, NntpClientPool>()
             .AddSingleton<IApplicationVersionService, ApplicationVersionService>()
             .AddScoped<ISpotImportService, SpotImportService>()
