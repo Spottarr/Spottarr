@@ -7,17 +7,7 @@ namespace Spottarr.Tests;
 public class SpotnetHeaderParserTests
 {
     [Fact]
-    public void ParsesHeader()
-    {
-        const string spotnetHeader =
-            "BeAware <ys2GY-pPgAmyOVPpnUAG5wVj0AK6o0-saMWIsfCmLX4FCg834PdODIE9OhNSwQQ3XR.qoJvSsrXXhL65SUp8zhvdH-pzqhuzVFUpP1FgDqQhIsGJDN01j7yGNsJeOuLslCTL@spot.net>";
-        var nntpHeader = PrepareNntpHeader(spotnetHeader);
-
-        Assert.Throws<BadHeaderFormatException>(() => SpotnetHeaderParser.Parse(nntpHeader));
-    }
-
-    [Fact]
-    public void ParsesHeader2()
+    public void ParsesHeaderValidVariant1()
     {
         const string spotnetHeader =
             "solem <pizlw58KFSC94SUdwAIMBzRNxmCZrhEnZb4ihCLAX9p6ViN9s2vf-pwFFZqPKwzFF.dpeyw-ssEYgAUebInWNwvjKu6irDwuJCTpgDL7Y1k6lBQj1j4YE-sl99LqQ-sjg7fUf@17a09b04d11b11c00c11z01.3366259428.20.1727723059.1.NL.OmepU20o1i7VxNRhQkAxC1MU8UH4fuOy-pmcHCSgOyCv71Qi-pKuuyPFADcZSY2JqI>";
@@ -63,7 +53,7 @@ public class SpotnetHeaderParserTests
     }
 
     [Fact]
-    public void ParsesHeader3()
+    public void ParsesHeaderValidVariant2()
     {
         const string spotnetHeader =
             "Krid <7oGXyqZiTFIad-sLhInYOEcYylEmweUvnYF8CapS5S5hH12pdjwdLpd05fweJAHP5.U8c7LC-sA-sq2-sw0yjuY-s-sDj1bncqGmFVlaQy3UtQyw65WkWdMEf8i3g7ImuVTS1-pc@12a01.999.10.1727721178.1.NL.rV-sGFAvYDLhOVSllN173n2ZbEbq0rkSm9ku9j5CDmSQwKVj0kP-ph8CzB4L2PcEfr>";
@@ -88,6 +78,16 @@ public class SpotnetHeaderParserTests
         Assert.Equal("rV-sGFAvYDLhOVSllN173n2ZbEbq0rkSm9ku9j5CDmSQwKVj0kP-ph8CzB4L2PcEfr", result.ServerSignature);
     }
 
+    [Fact]
+    public void DoesNotParseHeaderMissingFields()
+    {
+        const string spotnetHeader =
+            "BeAware <ys2GY-pPgAmyOVPpnUAG5wVj0AK6o0-saMWIsfCmLX4FCg834PdODIE9OhNSwQQ3XR.qoJvSsrXXhL65SUp8zhvdH-pzqhuzVFUpP1FgDqQhIsGJDN01j7yGNsJeOuLslCTL@spot.net>";
+        var nntpHeader = PrepareNntpHeader(spotnetHeader);
+
+        Assert.Throws<BadHeaderFormatException>(() => SpotnetHeaderParser.Parse(nntpHeader));
+    }
+    
     private static NntpHeader PrepareNntpHeader(string spotnetHeader) =>
         new()
         {

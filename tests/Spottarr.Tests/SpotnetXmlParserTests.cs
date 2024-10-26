@@ -5,7 +5,7 @@ namespace Spottarr.Tests;
 public class SpotnetXmlParserTests
 {
     [Fact]
-    public void ParsesXml()
+    public void ParsesXmlValidVariant1()
     {
 	    const string xml = """
 	                       <Spotnet>
@@ -19,14 +19,8 @@ public class SpotnetXmlParserTests
 	                                   <Segment>someid1@spot.net</Segment>
 	                               </Image>
 	                               <Size>864501308</Size>
-	                               <Category>
-	                                   01
-	                                   <Sub>01a09</Sub>
+	                               <Category>01<Sub>01a09</Sub>
 	                                   <Sub>01b04</Sub>
-	                                   <Sub>01d11</Sub>
-	                                   <Sub>01c10</Sub>
-	                                   <Sub>01d06</Sub>
-	                                   <Sub>01z01</Sub>
 	                               </Category>
 	                               <NZB>
 	                                   <Segment>someid2@spot.net</Segment>
@@ -36,10 +30,22 @@ public class SpotnetXmlParserTests
 
 	                       """;
 	    var result = SpotnetXmlParser.Parse(xml);
+	    
+	    Assert.Equal("SomePoster", result.Posting.Poster);
+	    Assert.Equal("Echoes of Tomorrow - S04E01: A New Dawn", result.Posting.Title);
+	    Assert.Equal("01", result.Posting.Category.Text);
+	    Assert.Collection(result.Posting.Category.Sub, sub1 =>
+	    {
+		    Assert.Equal("01a09", sub1);
+	    }, sub2 =>
+	    {
+		    Assert.Equal("01b04", sub2);
+	    });
+	    Assert.Equal("someid2@spot.net", result.Posting.Nzb.Segment);
     }
     
     [Fact]
-    public void ParsesXml2()
+    public void ParsesXmlValidVariant2()
     {
 	    const string xml = """
 	                       <Spotnet>
@@ -53,14 +59,8 @@ public class SpotnetXmlParserTests
 	                       			<Segment>someid3@spot.net</Segment>
 	                       		</Image>
 	                       		<Size>3158689370</Size>
-	                       		<Category>01
-	                       			<Sub>01a09</Sub>
+	                       		<Category>01<Sub>01a09</Sub>
 	                       			<Sub>01b04</Sub>
-	                       			<Sub>01d11</Sub>
-	                       			<Sub>01b11</Sub>
-	                       			<Sub>01c00</Sub>
-	                       			<Sub>01c11</Sub>
-	                       			<Sub>01z01</Sub>
 	                       		</Category>
 	                       		<NZB>
 	                       			<Segment>someid4@spot.net</Segment>
@@ -71,6 +71,18 @@ public class SpotnetXmlParserTests
 	                       """;
 
 	    var result = SpotnetXmlParser.Parse(xml);
+	    
+	    Assert.Equal("SomePoster", result.Posting.Poster);
+	    Assert.Equal("Midnight Requiem - S01E09: The Final Note", result.Posting.Title);
+	    Assert.Equal("01", result.Posting.Category.Text);
+	    Assert.Collection(result.Posting.Category.Sub, sub1 =>
+	    {
+		    Assert.Equal("01a09", sub1);
+	    }, sub2 =>
+	    {
+		    Assert.Equal("01b04", sub2);
+	    });
+	    Assert.Equal("someid4@spot.net", result.Posting.Nzb.Segment);
     }
 
     [Fact]
@@ -88,14 +100,8 @@ public class SpotnetXmlParserTests
 	                       			<Segment>someid3@spot.net</Segment>
 	                       		</Image>
 	                       		<Size>3158689370</Size>
-	                       		<Category>01
-	                       			<Sub>01a09</Sub>
+	                       		<Category>01<Sub>01a09</Sub>
 	                       			<Sub>01b04</Sub>
-	                       			<Sub>01d11</Sub>
-	                       			<Sub>01b11</Sub>
-	                       			<Sub>01c00</Sub>
-	                       			<Sub>01c11</Sub>
-	                       			<Sub>01z01</Sub>
 	                       		</Category>
 	                       		<NZB>
 	                       			<Segment>someid4@spot.net</Segment>
@@ -106,6 +112,19 @@ public class SpotnetXmlParserTests
 	                       """;
 
 	    var result = SpotnetXmlParser.Parse(xml);
+	    
+	    Assert.Equal("SomePoster", result.Posting.Poster);
+	    Assert.Equal("Midnight Requiem - S01E09: The Final Note", result.Posting.Title);
+	    Assert.Equal("Test \ud83d\ude0d", result.Posting.Description);
+	    Assert.Equal("01", result.Posting.Category.Text);
+	    Assert.Collection(result.Posting.Category.Sub, sub1 =>
+	    {
+		    Assert.Equal("01a09", sub1);
+	    }, sub2 =>
+	    {
+		    Assert.Equal("01b04", sub2);
+	    });
+	    Assert.Equal("someid4@spot.net", result.Posting.Nzb.Segment);
     }
     
     [Fact]
@@ -123,14 +142,8 @@ public class SpotnetXmlParserTests
                                        <Segment>someid1@spot.net</Segment>
                                    </Image>
                                    <Size>447177625</Size>
-                                   <Category>01
-                                       <Sub>01a09</Sub>
+                                   <Category>01<Sub>01a09</Sub>
                                        <Sub>01b04</Sub>
-                                       <Sub>01d11</Sub>
-                                       <Sub>01b11</Sub>
-                                       <Sub>01c00</Sub>
-                                       <Sub>01c11</Sub>
-                                       <Sub>01z01</Sub>
                                    </Category>
                                    <NZB>
                                        <Segment>someid4@spot.net</Segment>
