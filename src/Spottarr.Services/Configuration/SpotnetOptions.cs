@@ -12,7 +12,7 @@ public class SpotnetOptions
     /// The maximum age of spots to retrieve
     /// Defaults to 30 days
     /// </summary>
-    public required DateTimeOffset RetrieveAfter { get; init; } = DateTimeOffset.Now.AddDays(30);
+    public required DateTimeOffset RetrieveAfter { get; init; } = DateTimeOffset.Now.AddDays(-30);
     /// <summary>
     /// The maximum number of spots to retrieve
     /// Defaults to unlimited
