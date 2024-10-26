@@ -32,6 +32,7 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
         _logger.SpotIndexingStarted(DateTimeOffset.Now);
 
         var unIndexedSpots = await _dbContext.Spots.Where(s => s.IndexedAt == null)
+            .AsNoTracking()
             .ToListAsync();
 
         var now = DateTimeOffset.Now;
