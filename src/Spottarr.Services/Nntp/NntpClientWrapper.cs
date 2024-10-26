@@ -13,6 +13,7 @@ internal class NntpClientWrapper : IDisposable
     private readonly NntpClient _client;
     private bool _disposed;
     private bool _connected;
+    public DateTimeOffset LastActivity { get; private set; }
 
     private NntpClient Client
     {
@@ -21,7 +22,9 @@ internal class NntpClientWrapper : IDisposable
             ObjectDisposedException.ThrowIf(_disposed, _client);
             
             if (!_connected)
-                throw new InvalidOperationException("Client not connected, call ConnectAsync first"); 
+                throw new InvalidOperationException("Client not connected, call ConnectAndAuthenticateAsync first"); 
+
+            LastActivity = DateTimeOffset.Now;
             
             return _client;
         }
