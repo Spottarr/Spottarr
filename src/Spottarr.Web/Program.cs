@@ -11,7 +11,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 if (builder.Environment.IsContainer())
 {
-    builder.Logging.AddSystemdConsole();
+    builder.Logging.AddSimpleConsole(options =>
+    {
+        options.SingleLine = true;
+        options.TimestampFormat = "HH:mm:ss ";
+    });
 }
 else
 {
