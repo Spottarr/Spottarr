@@ -17,6 +17,12 @@ internal static class NewznabMapper
             .AddNewznabNzbUrl(nzbUri, spot.Bytes)
             .AddCategories(spot.NewznabCategories)
             .AddPublishDate(spot.SpottedAt);
+
+        if (!string.IsNullOrEmpty(spot.ReleaseTitle))
+        {
+            item.Title = new TextSyndicationContent(spot.ReleaseTitle);
+            item.AddNewznabAttribute("title", spot.Title);
+        }
         
         return spot.Type switch
         {

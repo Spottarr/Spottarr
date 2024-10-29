@@ -37,19 +37,20 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
 
         var now = DateTimeOffset.Now;
         var fullTextIndexSpots = new List<FtsSpot>();
+        var releaseTitleRegex = ReleaseTitleRegex();
 
         foreach (var spot in unIndexedSpots)
         {
-            // Clean up title
-            // e.g. "Show.S01E04.Poster.1080p.DDP5.1.Atmos.H.264" -> "Show S01E04 Poster 1080p DDP5 1 Atmos H 264"
-            var title = CleanTitleRegex()
-                .Replace(spot.Title, " ");
-
             // Replace BB tags
             var description = (spot.Description ?? string.Empty)
                 .Replace("[br]", "\n", StringComparison.OrdinalIgnoreCase);
 
-            var titleAndDescription = string.Join('\n', title, description);
+            var titleAndDescription = string.Join('\n', spot.Title, description);
+            
+            // Extract release title
+            var releaseMatch = releaseTitleRegex.Match(titleAndDescription);
+            if (releaseMatch.Success)
+                spot.ReleaseTitle = releaseMatch.Value;
 
             // Search for year, season and episode numbers.
             // e.g. "2024 S01E04", "Season: 1", "Episode 2"
@@ -58,8 +59,6 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
 
             var newznabCategories = NewznabCategoryMapper.Map(spot);
 
-            spot.Title = title;
-            spot.Description = description;
             spot.Years.Replace(years);
             spot.Seasons.Replace(seasons);
             spot.Episodes.Replace(episodes);
@@ -67,10 +66,15 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
             spot.IndexedAt = now.UtcDateTime;
             spot.UpdatedAt = now.UtcDateTime;
 
+            // Clean up release title for fulltext search
+            // e.g. "Show.S01E04.Poster.1080p.DDP5.1.Atmos.H.264" -> "Show S01E04 Poster 1080p DDP5 1 Atmos H 264"
+            var ftsTitle = CleanTitleRegex()
+                .Replace(spot.Title, " ");
+            
             var ftsSpot = new FtsSpot()
             {
                 RowId = spot.Id,
-                Title = title,
+                Title = ftsTitle,
                 Description = description
             };
 
@@ -86,6 +90,7 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
                 c.PropertiesToIncludeOnUpdate =
                 [
                     nameof(Spot.Title),
+                    nameof(Spot.ReleaseTitle),
                     nameof(Spot.Description),
                     nameof(Spot.Years),
                     nameof(Spot.Seasons),
@@ -107,4 +112,7 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
 
     [GeneratedRegex(@"(?<=\w)\.(?=\w)")]
     private static partial Regex CleanTitleRegex();
+    
+    [GeneratedRegex(@"\b(\w+\.)+\w+-\w+\b", RegexOptions.IgnoreCase)]
+    private static partial Regex ReleaseTitleRegex();
 }

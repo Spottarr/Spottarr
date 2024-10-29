@@ -5,6 +5,7 @@ namespace Spottarr.Data.Entities;
 public class Spot : BaseEntity
 {
     public required string Title { get; set; }
+    public string? ReleaseTitle { get; set; }
     public string? Description { get; set; }
     public required string Spotter { get; set; }
     public required long Bytes { get; set; }

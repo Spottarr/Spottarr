@@ -34,6 +34,7 @@ public class SpottarrDbContext : DbContext
         {
             x.ToTable("Spots");
             x.Property(s => s.Title).HasMaxLength(256);
+            x.Property(s => s.ReleaseTitle).HasMaxLength(256);
             x.Property(s => s.Spotter).HasMaxLength(128);
             x.Property(s => s.MessageId).HasMaxLength(128);
             x.Property(s => s.NzbMessageId).HasMaxLength(128);
