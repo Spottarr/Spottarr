@@ -46,7 +46,6 @@ internal static partial class SpotnetHeaderParser
             // For example 27a00b00c07d01z00 has category 2 but subcategories A01,B01,C08,D02,Z01
             var subCategories = g["scats"].Captures
                 .Select(c => (char.ToUpperInvariant(c.Value[0]), int.Parse(c.Value[1..3], CultureInfo.InvariantCulture)))
-                .Where(x => x.Item2 > 0)
                 .ToList();
 
             return new SpotHeader

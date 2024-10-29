@@ -39,11 +39,15 @@ public class SpotnetHeaderParserTests
         }, cat5 =>
         {
             Assert.Equal('C', cat5.Type);
-            Assert.Equal(11, cat5.Code);
+            Assert.Equal(0, cat5.Code);
         }, cat6 =>
         {
-            Assert.Equal('Z', cat6.Type);
-            Assert.Equal(1, cat6.Code);
+            Assert.Equal('C', cat6.Type);
+            Assert.Equal(11, cat6.Code);
+        }, cat7 =>
+        {
+            Assert.Equal('Z', cat7.Type);
+            Assert.Equal(1, cat7.Code);
         });
         Assert.Equal(3366259428, result.Size);
         Assert.Equal(new DateTimeOffset(2024, 09, 30, 19, 04, 19, TimeSpan.Zero), result.Date);
