@@ -1,19 +1,16 @@
-name: Release image
+name: Docker build
 on:
   push:
-    branches:
-      - 'main'
-    tags:
-      - 'v*'
+    branches: [ "main" ]
+    tags: [ "v*" ]
   pull_request:
-    branches:
-      - 'main'
+    branches: [ "main" ]
 permissions:
   contents: read
   packages: write
 jobs:
-  release:
-    name: Release docker image
+  build:
+    name: Docker build
     runs-on: ubuntu-latest
     steps:
       - name: Set up QEMU
@@ -39,7 +36,7 @@ jobs:
         uses: docker/metadata-action@v5
         id: meta
         with:
-          images: spottarr/spottarr
+          images: ghcr.io/spottarr/spottarr
 
       - name: Build and push
         uses: docker/build-push-action@v6
