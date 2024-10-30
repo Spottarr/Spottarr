@@ -38,7 +38,7 @@ jobs:
         with:
           images: ghcr.io/spottarr/spottarr
 
-      - name: Build and push
+      - name: Build and pushdock
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64 #,linux/arm64
