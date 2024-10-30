@@ -1,7 +1,13 @@
 name: Release image
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - 'main'
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - 'main'
 permissions:
   contents: read
   packages: write
@@ -28,13 +34,18 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Add docker metadata
+        uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: spottarr/spottarr
 
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64 #,linux/arm64
           file: src/Spottarr.Web/Dockerfile
-          push: true
-          tags: |
-            ${{ github.event.release.prerelease == false && 'ghcr.io/spottarr/spottarr:latest' || '' }}
-            ghcr.io/spottarr/spottarr:${{ github.event.release.tag_name }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
