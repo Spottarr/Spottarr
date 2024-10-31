@@ -1,11 +1,14 @@
 # Spottarr
 _A modern spotnet client and index for your *Arrs._
 
+![docker](https://img.shields.io/docker/v/spottarr/spottarr?logo=docker&logoColor=%23fff)
+
 [Spotnet](https://github.com/spotnet/spotnet/wiki) is a protocol on top of Usenet that provides a decentralized alternative to indexing websites. 
 
 Spottarr is a small application that can index the spotnet messages (spots) and exposes them as a newznab indexer.
 
 Using Spottarr it becomes very easy to search spots directly from Radarr, Sonarr, Readarr, Lidarr, Prowlarr and many other newznab compatible tools. 
+
 
 ## Motivation
 Spotnet provides a great decentralized source for Usenet indexing, but most existing clients are no longer maintained desktop applications, or building on top of a relatively outdated codebase.
