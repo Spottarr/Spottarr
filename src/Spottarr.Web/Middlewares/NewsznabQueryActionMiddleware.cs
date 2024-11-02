@@ -22,7 +22,7 @@ internal sealed class NewsznabQueryActionMiddleware
         
         var path = context.Request.Path;
 
-        if (!path.StartsWithSegments($"/{NewznabController.Name}", StringComparison.OrdinalIgnoreCase))
+        if (!path.StartsWithSegments(NewznabController.PathPrefix, StringComparison.OrdinalIgnoreCase))
         {
             await _next.Invoke(context);
             return;
