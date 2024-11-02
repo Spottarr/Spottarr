@@ -12,4 +12,8 @@
     <ProjectReference Include="..\Spottarr.Services\Spottarr.Services.csproj" />
   </ItemGroup>
 
+  <Target Name="Tailwind" BeforeTargets="Compile">
+    <Exec Command="tailwindcss -i ./Styles/style.css -o ./wwwroot/style.css" />
+  </Target>
+
 </Project>
