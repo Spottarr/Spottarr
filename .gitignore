@@ -33,4 +33,4 @@ Thumbs.db
 Desktop.ini
 .DS_Store
 
-wwwroot/dist
+dist/
