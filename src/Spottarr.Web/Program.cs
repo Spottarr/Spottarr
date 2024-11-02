@@ -24,14 +24,7 @@ builder.Services.Configure<RouteOptions>(options =>
 
 var app = builder.Build();
 
-await using (var scope = app.Services.CreateAsyncScope())
-{
-    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-    logger.DatabaseMigrationStarted(DbPathHelper.GetDbPath());
-    var dbContext = scope.ServiceProvider.GetRequiredService<SpottarrDbContext>();
-    await dbContext.Database.MigrateAsync();
-    logger.DatabaseMigrationFinished();
-}
+await app.MigrateDatabase();
 
 if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
