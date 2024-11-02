@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <Target Name="Tailwind" BeforeTargets="Compile">
-    <Exec Command="tailwindcss -i ./Styles/style.css -o ./wwwroot/style.css" />
+    <Exec Command="tailwindcss -i ./Styles/style.css -o ./wwwroot/dist/style.css" />
   </Target>
 
 </Project>
