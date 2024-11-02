@@ -1,6 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration.Json;
-using Microsoft.Extensions.FileProviders;
 using Spottarr.Data;
 using Spottarr.Data.Helpers;
 using Spottarr.Services;
@@ -35,14 +33,18 @@ await using (var scope = app.Services.CreateAsyncScope())
     logger.DatabaseMigrationFinished();
 }
 
-app.UseHttpsRedirection();
-app.UseDefaultFiles();
-app.UseStaticFiles();
-app.UseAuthorization();
+if (!app.Environment.IsDevelopment())
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
 
+app.MapStaticAssets();
+app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 app.MapControllers();
 
+// Middleware pipeline, order matters here
+app.UseHttpsRedirection();
+app.UseAuthorization();
 app.UseMiddleware<NewsznabQueryActionMiddleware>();
 app.UseRouting();
+app.UseAntiforgery();
 
 await app.RunAsync();
