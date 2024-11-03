@@ -1,15 +1,15 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="flex flex-wrap bg-red-7 w-full h-screen">
-    <div class="w-3/12 bg-white p-3 shadow-lg">
-        <NavMenu />
-    </div>
+<div class="flex flex-wrap w-full h-screen">
+    <aside class="w-72 h-screen flex-none p-4 space-y-4 overflow-y-auto shadow bg-white dark:bg-slate-800">
+        <Sidebar />
+    </aside>
 
-    <div class="w-9/12">
-        <div class="p-4 text-gray-500">
+     <main class="flex-1 p-4">
+        <div class="overflow-auto rounded-md p-4 shadow bg-white dark:bg-slate-800">
             @Body
         </div>
-    </div>
+    </main>
 </div>
 
 
