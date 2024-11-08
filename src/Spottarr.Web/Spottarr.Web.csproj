@@ -4,6 +4,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0-rc.*" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0-rc.*" />
     <PackageReference Include="Microsoft.XmlSerializer.Generator" Version="9.0.0-rc.*" />
+    <PackageReference Include="System.Reactive" Version="6.0.1" />
     <PackageReference Include="System.ServiceModel.Syndication" Version="9.0.0-rc.*" />
   </ItemGroup>
 
