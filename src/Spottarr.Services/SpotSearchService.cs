@@ -20,6 +20,21 @@ public class SpotSearchService : ISpotSearchService
         if (filter.Categories != null)
             query = query.Where(s => s.NewznabCategories.Any(y => filter.Categories.Contains(y)));
 
+        if (filter.Types != null)
+            query = query.Where(s => filter.Types.Contains(s.Type));
+
+        if (filter.ImageTypes != null)
+            query = query.Where(s => s.ImageTypes.Any(y => filter.ImageTypes.Contains(y)));
+
+        if (filter.AudioTypes != null)
+            query = query.Where(s => s.AudioTypes.Any(y => filter.AudioTypes.Contains(y)));
+
+        if (filter.ApplicationTypes != null)
+            query = query.Where(s => s.ApplicationTypes.Any(y => filter.ApplicationTypes.Contains(y)));
+
+        if (filter.GameTypes != null)
+            query = query.Where(s => s.GameTypes.Any(y => filter.GameTypes.Contains(y)));
+
         if (filter.Years != null)
             query = query.Where(s => s.Years.Any(y => filter.Years.Contains(y)));
 
