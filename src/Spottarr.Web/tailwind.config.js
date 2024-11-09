@@ -5,6 +5,12 @@ module.exports = {
   content: [
     './**/*.{razor,html}'
   ],
+  safelist: [
+    {
+      pattern: /bg-(sky|emerald|amber|red|fuchsia)/,
+      variants: ['dark']
+    },
+  ],
   theme: {
     extend: {
       fontFamily: {
