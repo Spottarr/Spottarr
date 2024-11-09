@@ -1,18 +1,20 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="flex w-full h-screen">
-    <aside class="w-72 h-screen flex-none p-4 space-y-4 overflow-y-auto shadow bg-white dark:bg-slate-800">
+<div class="flex">
+    <aside class="w-72 flex-none relative h-screen p-4 space-y-4 overflow-y-auto shadow bg-white dark:bg-slate-800">
         <Sidebar />
     </aside>
 
-    <main class="flex-1 p-4">
-        <div class="overflow-auto rounded-md p-4 shadow bg-white dark:bg-slate-800">
-            @Body
+    <main class="w-full flex-initial overflow-x-hidden h-screen flex">
+        <div class="p-4 overflow-y-scroll">
+            <div class="p-4 w-full rounded-md shadow bg-white dark:bg-slate-800">
+                @Body
+            </div>
         </div>
     </main>
 </div>
 
-<div id="blazor-error-ui" data-nosnippet>
+<div id="blazor-error-ui" class="hidden" data-nosnippet>
     An unhandled error has occurred.
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
