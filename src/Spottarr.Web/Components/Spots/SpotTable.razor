@@ -6,7 +6,7 @@
 @using Spottarr.Web.Helpers
 
 <div class="overflow-x-auto">
-    <table class="border-collapse table-auto">
+    <table class="border-collapse table-auto w-full">
         <thead>
         <tr class="font-light border-b border-gray-200 dark:border-slate-600 bg-gray-100 dark:bg-slate-700 text-left">
             <th class="">
@@ -70,6 +70,9 @@
 {
     [Inject]
     private ISpotSearchService SpotSearchService { get; set; } = default!;
+    
+    [Parameter, EditorRequired]
+    public SpotType SpotType { get; set; }
 
     private ICollection<Spot> _spots = [];
 
@@ -78,12 +81,8 @@
         await base.OnInitializedAsync();
         var result = await SpotSearchService.Search(new SpotSearchFilter()
         {
-            Categories = [NewznabCategory.Movies],
-            Years = null,
-            Seasons = null,
-            Episodes = null,
-            Query = null,
-            Limit = 100,
+            Types = [SpotType],
+            Limit = 20,
             Offset = 0,
         });
         _spots = result.Spots;

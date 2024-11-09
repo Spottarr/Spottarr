@@ -1,0 +1,12 @@
+﻿@page "/spots/{spotType:int}"
+@using Spottarr.Data.Entities.Enums
+@using Spottarr.Web.Components.Spots
+
+<PageTitle>@SpotType</PageTitle>
+<h1 class="mb-4 p-4 rounded-md bg-sky-100 dark:bg-sky-800 font-semibold text-lg">@SpotType</h1>
+<SpotTable SpotType="(SpotType)SpotType" />
+
+@code {
+    [Parameter]
+    public int SpotType { get; set; } = (int)Spottarr.Data.Entities.Enums.SpotType.Image;
+}
