@@ -13,8 +13,8 @@
     <ProjectReference Include="..\Spottarr.Services\Spottarr.Services.csproj" />
   </ItemGroup>
 
-  <Target Name="Tailwind" BeforeTargets="Compile">
-    <Exec Command="tailwindcss -i ./Styles/style.css -o ./wwwroot/dist/style.css" />
+  <Target Name="Tailwind" BeforeTargets="Build">
+    <Exec Command="npm run css:build" />
   </Target>
 
 </Project>
