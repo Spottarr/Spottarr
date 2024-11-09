@@ -16,7 +16,7 @@ public static class ServiceCollectionExtensions
 
         return services
             .AddSpottarrData()
-            .AddSpottarrJobs(runOnce)
+            //.AddSpottarrJobs(runOnce)
             .AddSingleton<INntpClientPool, NntpClientPool>()
             .AddSingleton<IApplicationVersionService, ApplicationVersionService>()
             .AddScoped<ISpotImportService, SpotImportService>()

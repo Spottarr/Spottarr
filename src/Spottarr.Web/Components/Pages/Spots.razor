@@ -1,12 +1,15 @@
-﻿@page "/spots/{spotType:int}"
+﻿@page "/spots/{typeParameter:int}"
 @using Spottarr.Data.Entities.Enums
 @using Spottarr.Web.Components.Spots
+@using Spottarr.Web.Helpers
 
-<PageTitle>@SpotType</PageTitle>
-<h1 class="mb-4 p-4 rounded-md bg-sky-100 dark:bg-sky-800 font-semibold text-lg">@SpotType</h1>
-<SpotTable SpotType="(SpotType)SpotType" />
+<PageTitle>@Type.GetDisplayName()</PageTitle>
+<h1 class="mb-4 p-4 rounded-md bg-sky-100 dark:bg-sky-800 font-semibold text-lg">@Type.GetDisplayName()</h1>
+<SpotTable Type="Type" />
 
 @code {
     [Parameter]
-    public int SpotType { get; set; } = (int)Spottarr.Data.Entities.Enums.SpotType.Image;
+    public int TypeParameter { get; set; }
+
+    public SpotType Type => (SpotType)TypeParameter;
 }
