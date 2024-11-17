@@ -1,7 +1,7 @@
 # Spottarr
 _A modern spotnet client and index for your *Arrs._
 
-![docker](https://img.shields.io/docker/v/spottarr/spottarr?logo=docker&logoColor=%23fff)
+[![Docker](https://img.shields.io/docker/v/spottarr/spottarr?logo=docker&logoColor=ffffff&sort=semver&color=7cb100)](https://hub.docker.com/r/spottarr/spottarr)
 
 [Spotnet](https://github.com/spotnet/spotnet/wiki) is a protocol on top of Usenet that provides a decentralized alternative to indexing websites. 
 
