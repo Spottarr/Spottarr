@@ -13,7 +13,7 @@ Using Spottarr it becomes very easy to search spots directly from Radarr, Sonarr
 ## Motivation
 Spotnet provides a great decentralized source for Usenet indexing, but most existing clients are no longer maintained desktop applications, or building on top of a relatively outdated codebase.
 
-While some alternatives like [Spotweb](https://github.com/spotweb/spotweb) are still very much alive, I've personally had some issues matching the correct when searching from *Arrs.
+While some alternatives like [Spotweb](https://github.com/spotweb/spotweb) are still very much alive, I've personally had some issues matching the search results when searching from *Arrs.
 
 The aim of Spottarr is to provide a more modern application that aims for efficiency and more precise search results, while leaving the media management and browsing to the existing *Arrs.
 
