@@ -81,7 +81,7 @@ internal sealed class SpotImportService : ISpotImportService
         // Execute the prepared XOVER commands, stop when we reach a message created before the retrieve after date.
         foreach (var headerBatch in headerBatches)
         {
-            var done = ParseHeaderBatch(context, client, headerBatch, spotnetOptions.RetrieveAfter);
+            var done = ParseHeaderBatch(context, client, headerBatch, spotnetOptions);
             if (done) break;
         }
         
@@ -147,8 +147,7 @@ internal sealed class SpotImportService : ISpotImportService
         throw new NotImplementedException();
     }
 
-    private bool ParseHeaderBatch(SpotImportResult context, NntpClientWrapper client, NntpArticleRange batch,
-        DateTimeOffset retrieveAfter)
+    private bool ParseHeaderBatch(SpotImportResult context, NntpClientWrapper client, NntpArticleRange batch, SpotnetOptions options)
     {
         var xOverResponse = client.Xover(batch);
         if (!xOverResponse.Success)
@@ -164,11 +163,11 @@ internal sealed class SpotImportService : ISpotImportService
             {
                 var nntpHeader = NntpHeaderParser.Parse(header);
 
-                if (nntpHeader.Date < retrieveAfter)
+                if (nntpHeader.Date < options.RetrieveAfter)
                 {
                     // Even when we hit the retrieve after date, we have to keep reading the response, so the buffer is empty
                     done = true;
-                    _logger.ReachedRetrieveAfter(retrieveAfter);
+                    _logger.ReachedRetrieveAfter(options.RetrieveAfter);
                 }
                 
                 var spotnetHeader = SpotnetHeaderParser.Parse(nntpHeader);
@@ -180,6 +179,8 @@ internal sealed class SpotImportService : ISpotImportService
                 }
 
                 var spot = spotnetHeader.ToSpot();
+
+                if (spot.IsAdultContent() && !options.ImportAdultContent) continue;
                 
                 context.AddSpot(spot);
             }

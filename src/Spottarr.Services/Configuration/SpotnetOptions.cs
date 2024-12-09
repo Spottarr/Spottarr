@@ -8,6 +8,7 @@ public class SpotnetOptions
     public required string CommentGroup { get; init; }
     public required string ReportGroup { get; init; }
     public required string NzbGroup { get; init; }
+    public required bool ImportAdultContent { get; init; }
     /// <summary>
     /// The maximum age of spots to retrieve
     /// Defaults to 30 days
