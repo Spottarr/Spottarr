@@ -1,6 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using Spottarr.Data;
-using Spottarr.Data.Helpers;
+using Scalar.AspNetCore;
 using Spottarr.Services;
 using Spottarr.Web.Components;
 using Spottarr.Web.Helpers;
@@ -13,6 +11,7 @@ builder.Logging.AddConsole(builder.Environment);
 builder.Configuration.MapConfigurationSources(builder.Environment);
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+builder.Services.AddOpenApi();
 builder.Services.AddControllers().AddXmlSerializerFormatters();
 builder.Services.AddSpottarrServices(builder.Configuration);
 
@@ -31,6 +30,8 @@ if (!app.Environment.IsDevelopment())
 
 app.MapStaticAssets();
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+app.MapOpenApi();
+app.MapScalarApiReference();
 app.MapControllers();
 
 // Middleware pipeline, order matters here
