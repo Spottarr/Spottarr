@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
-    <PackageReference Include="Microsoft.XmlSerializer.Generator" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.1" />
+    <PackageReference Include="Microsoft.XmlSerializer.Generator" Version="9.0.1" />
     <PackageReference Include="Scalar.AspNetCore" Version="1.2.72" />
     <PackageReference Include="System.Reactive" Version="6.0.1" />
-    <PackageReference Include="System.ServiceModel.Syndication" Version="9.0.0" />
+    <PackageReference Include="System.ServiceModel.Syndication" Version="9.0.1" />
   </ItemGroup>
 
   <ItemGroup>
