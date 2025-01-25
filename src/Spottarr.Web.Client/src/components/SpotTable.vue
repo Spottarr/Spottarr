@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { SortIcon } from 'mdi-vue3';
+import { DownloadIcon, SortIcon } from 'mdi-vue3';
 import prettyBytes from 'pretty-bytes';
 import useSpots from '@/composables/useSpots';
 import { useTimeAgo } from '@vueuse/core';
 import { onMounted } from 'vue';
 
-const { spots, error, loading, fetchSpots } = useSpots();
+const { spots, error, loading, fetchSpots, nzbUrl } = useSpots();
 
 onMounted(fetchSpots);
 </script>
@@ -73,7 +73,11 @@ onMounted(fetchSpots);
             <td class="p-4">{{ useTimeAgo(spot.spottedAt) }}</td>
             <td class="p-4">{{ prettyBytes(spot.bytes) }}</td>
             <td class="p-4">
-              <a href="#" class="">NZB</a>
+              <a class="" target="_blank" :href="nzbUrl(spot.id)">
+                <button class="rounded-md dark:bg-slate-600 dark:hover:bg-slate-500 p-2">
+                  <download-icon class="size-5" />
+                </button>
+              </a>
             </td>
           </tr>
         </tbody>
