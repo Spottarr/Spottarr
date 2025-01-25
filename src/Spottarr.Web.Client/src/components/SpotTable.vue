@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { SortIcon } from 'mdi-vue3';
+import prettyBytes from 'pretty-bytes';
 import useSpots from '@/composables/useSpots';
+import { useTimeAgo } from '@vueuse/core';
 import { onMounted } from 'vue';
 
 const { spots, error, loading, fetchSpots } = useSpots();
@@ -68,8 +70,8 @@ onMounted(fetchSpots);
             <td class="p-4">{{ spot.title }}</td>
             <td class="p-4">{{ spot.genre }}</td>
             <td class="p-4">{{ spot.spotter }}</td>
-            <td class="p-4">{{ spot.spottedAt }}</td>
-            <td class="p-4">{{ spot.bytes }}</td>
+            <td class="p-4">{{ useTimeAgo(spot.spottedAt) }}</td>
+            <td class="p-4">{{ prettyBytes(spot.bytes) }}</td>
             <td class="p-4">
               <a href="#" class="">NZB</a>
             </td>
