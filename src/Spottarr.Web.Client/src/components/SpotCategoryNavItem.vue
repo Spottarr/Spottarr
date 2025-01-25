@@ -1,11 +1,13 @@
 <script setup lang="ts">
-defineProps<{ title: string; color: string; icon: string; }>();
+import type { DefineComponent } from "vue";
+
+defineProps<{ title: string; color: string; icon: DefineComponent; }>();
 </script>
 
 <template>
   <li class="space-y-1 mb-4 rounded-md overflow-hidden" :class="`bg-${color}-100 dark:bg-${color}-800`">
     <button class="flex items-center p-2 w-full" :class="`bg-${color}-200 dark:bg-${color}-700`">
-      <Icon Name="icon" CssClass="size-5 flex-none fill-slate-900 dark:fill-white" />
+      <component :is="icon" class="size-5 flex-none fill-slate-900 dark:fill-white" />
       <span class="flex-1 px-2">{{title}}</span>
       <svg class="size-5 flex-none fill-slate-900 dark:fill-white" viewBox="0 0 24 24"
            xmlns="http://www.w3.org/2000/svg">
