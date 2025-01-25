@@ -21,6 +21,8 @@ builder.Services.Configure<RouteOptions>(options =>
     options.LowercaseUrls = true;
 });
 
+builder.Services.AddCors(c => c.AddDefaultPolicy(p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
+
 var app = builder.Build();
 
 await app.MigrateDatabase();
@@ -36,9 +38,10 @@ app.MapControllers();
 
 // Middleware pipeline, order matters here
 app.UseHttpsRedirection();
-app.UseAuthorization();
 app.UseMiddleware<NewsznabQueryActionMiddleware>();
 app.UseRouting();
+app.UseCors();
 app.UseAntiforgery();
+app.UseAuthorization();
 
 await app.RunAsync();
