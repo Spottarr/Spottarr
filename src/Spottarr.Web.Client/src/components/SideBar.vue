@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import SpotCategoryNav from "@/components/SpotCategoryNav.vue";
-import UserInfo from "@/components/UserInfo.vue";
+import Search from '@/components/Search.vue';
+import SpotCategoryNav from '@/components/SpotCategoryNav.vue';
+import UserInfo from '@/components/UserInfo.vue';
 </script>
 
 <template>
