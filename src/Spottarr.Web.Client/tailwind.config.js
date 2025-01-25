@@ -3,6 +3,12 @@ import defaultTheme from 'tailwindcss/defaultTheme';
 
 export default {
   content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
+  safelist: [
+    {
+      pattern: /bg-(sky|emerald|amber|red|fuchsia)/,
+      variants: ['dark']
+    },
+  ],
   theme: {
     extend: {
       fontFamily: {
