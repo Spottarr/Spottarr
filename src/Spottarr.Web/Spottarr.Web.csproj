@@ -28,7 +28,7 @@
     <PropertyGroup>
       <TypeGenVersion Condition="'%(PackageReference.Identity)' == 'TypeGen'">%(PackageReference.Version)</TypeGenVersion>
     </PropertyGroup>
-    <Exec Command="dotnet $(NuGetPackageFolders)typegen/$(TypeGenVersion)/tools/TypeGen.Cli.dll generate -p $(MSBuildProjectDirectory) --output-folder $(MSBuildProjectDirectory)/Assets/"/>
+    <Exec Command="dotnet $(NuGetPackageFolders)typegen/$(TypeGenVersion)/tools/TypeGen.Cli.dll generate -p $(MSBuildProjectDirectory) --output-folder $(MSBuildProjectDirectory)/../Spottarr.Web.Client/src/types/generated"/>
   </Target>
 
 </Project>
