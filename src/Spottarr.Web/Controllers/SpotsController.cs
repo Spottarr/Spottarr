@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Spottarr.Data.Entities.Enums;
 using Spottarr.Services.Contracts;
 using Spottarr.Services.Models;
+using Spottarr.Web.Models;
 
 namespace Spottarr.Web.Controllers;
 
@@ -34,6 +35,6 @@ public sealed class SpotsController : Controller
             Seasons = season.HasValue ? [season.Value] : null,
         });
 
-        return Json(results);
+        return Json(results.Spots.Select(s => new SpotTableRowResponseDto(s)));
     }
 }
