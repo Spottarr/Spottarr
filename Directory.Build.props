@@ -14,7 +14,7 @@
     <!--
       Automatically add the appsettings file to all entry point projects
     -->
-    <ItemGroup Condition="$(OutputType) == 'Exe'">
+    <ItemGroup Condition="$(OutputType) == 'Exe' And $(MSBuildProjectExtension) == '.csproj'">
         <Content Include="$(SolutionDir).dockerignore" Link=".dockerignore" CopyToOutputDirectory="PreserveNewest" />
         <Content Include="$(SolutionDir)appsettings.json" Link="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
         <Content Include="$(SolutionDir)appsettings.Development.json" Link="appsettings.Development.json" CopyToOutputDirectory="PreserveNewest" />
