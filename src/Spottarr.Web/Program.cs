@@ -1,6 +1,5 @@
 using Scalar.AspNetCore;
 using Spottarr.Services;
-using Spottarr.Web.Components;
 using Spottarr.Web.Helpers;
 using Spottarr.Web.Logging;
 using Spottarr.Web.Middlewares;
@@ -10,7 +9,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.AddConsole(builder.Environment);
 builder.Configuration.MapConfigurationSources(builder.Environment);
 
-builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddOpenApi();
 builder.Services.AddControllers().AddXmlSerializerFormatters();
 builder.Services.AddSpottarrServices(builder.Configuration);
@@ -31,7 +29,6 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
 
 app.MapStaticAssets();
-app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 app.MapOpenApi();
 app.MapScalarApiReference();
 app.MapControllers();

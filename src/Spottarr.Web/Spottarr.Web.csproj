@@ -16,14 +16,6 @@
     <ProjectReference Include="..\Spottarr.Services\Spottarr.Services.csproj" />
   </ItemGroup>
 
-  <Target Name="Tailwind" BeforeTargets="Build">
-    <Exec Command="npm run css:build" />
-  </Target>
-
-  <Target Name="Tailwind" BeforeTargets="Build">
-    <Exec Command="npm run css:build" />
-  </Target>
-
   <Target Name="TypeGen" AfterTargets="Build">
     <PropertyGroup>
       <TypeGenVersion Condition="'%(PackageReference.Identity)' == 'TypeGen'">%(PackageReference.Version)</TypeGenVersion>
