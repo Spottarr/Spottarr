@@ -20,5 +20,5 @@ internal static class EnumExtensions
     }
 
     public static string GetDisplayNames<T>(this IEnumerable<T> enumValues) where T : Enum =>
-        string.Join(',', enumValues.Select(e => e.GetDisplayName()));
+        string.Join(", ", enumValues.Select(e => e.GetDisplayName()));
 }
