@@ -10,6 +10,7 @@ builder.Logging.AddConsole(builder.Environment);
 builder.Configuration.MapConfigurationSources(builder.Environment);
 
 builder.Services.AddOpenApi();
+builder.Services.AddAntiforgery();
 builder.Services.AddControllers().AddXmlSerializerFormatters();
 builder.Services.AddSpottarrServices(builder.Configuration);
 
