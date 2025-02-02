@@ -35,6 +35,7 @@ app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 app.MapOpenApi();
 app.MapScalarApiReference();
 app.MapControllers();
+app.MapFallbackToFile("/index.html");
 
 // Middleware pipeline, order matters here
 app.UseHttpsRedirection();
