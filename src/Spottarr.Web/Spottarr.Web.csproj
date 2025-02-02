@@ -5,7 +5,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.1" />
     <PackageReference Include="Microsoft.XmlSerializer.Generator" Version="9.0.1" />
-    <PackageReference Include="TypeGen" Version="6.0.2" />
+    <PackageReference Include="TypeGen" Version="6.0.2" GeneratePathProperty="true" />
     <PackageReference Include="Scalar.AspNetCore" Version="1.2.72" />
     <PackageReference Include="System.Reactive" Version="6.0.1" />
     <PackageReference Include="System.ServiceModel.Syndication" Version="9.0.1" />
@@ -28,7 +28,7 @@
     <PropertyGroup>
       <TypeGenVersion Condition="'%(PackageReference.Identity)' == 'TypeGen'">%(PackageReference.Version)</TypeGenVersion>
     </PropertyGroup>
-    <Exec Command="dotnet $(NuGetPackageFolders)typegen/$(TypeGenVersion)/tools/TypeGen.Cli.dll generate -p $(MSBuildProjectDirectory) --output-folder $(MSBuildProjectDirectory)/../Spottarr.Web.Client/src/types/generated"/>
+    <Exec Command="dotnet $(PkgTypeGen)/tools/TypeGen.Cli.dll generate -p $(MSBuildProjectDirectory) --output-folder $(MSBuildProjectDirectory)/../Spottarr.Web.Client/src/types/generated"/>
   </Target>
 
 </Project>
