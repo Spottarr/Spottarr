@@ -3,8 +3,10 @@ using System.Text.RegularExpressions;
 using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Spottarr.Data;
 using Spottarr.Data.Entities;
+using Spottarr.Services.Configuration;
 using Spottarr.Services.Contracts;
 using Spottarr.Services.Helpers;
 using Spottarr.Services.Logging;
@@ -20,20 +22,38 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
 {
     private readonly ILogger<SpotIndexingService> _logger;
     private readonly SpottarrDbContext _dbContext;
+    private readonly IOptions<SpotnetOptions> _spotnetOptions;
 
-    public SpotIndexingService(ILogger<SpotIndexingService> logger, SpottarrDbContext dbContext)
+    public SpotIndexingService(ILogger<SpotIndexingService> logger, SpottarrDbContext dbContext, IOptions<SpotnetOptions> spotnetOptions)
     {
         _logger = logger;
         _dbContext = dbContext;
+        _spotnetOptions = spotnetOptions;
     }
 
     public async Task Index()
     {
         _logger.SpotIndexingStarted(DateTimeOffset.Now);
 
+        var options = _spotnetOptions.Value;
+        bool done;
+        do
+        {
+            done = await IndexBatch(options);
+        } while (!done);
+        
+        _logger.SpotIndexingFinished(DateTimeOffset.Now);
+    }
+
+    private async Task<bool> IndexBatch(SpotnetOptions options)
+    {
         var unIndexedSpots = await _dbContext.Spots.Where(s => s.IndexedAt == null)
             .AsNoTracking()
+            .OrderBy(s => s.Id)
+            .Take(options.ImportBatchSize)
             .ToListAsync();
+
+        if (unIndexedSpots.Count == 0) return true;
 
         var now = DateTimeOffset.Now;
         var fullTextIndexSpots = new List<FtsSpot>();
@@ -106,8 +126,9 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
         {
             _logger.FailedToSaveSpots(ex);
         }
-
-        _logger.SpotIndexingFinished(DateTimeOffset.Now, fullTextIndexSpots.Count);
+        
+        _logger.SpotIndexingBatchFinished(DateTimeOffset.Now, unIndexedSpots.Count);
+        return false;
     }
 
     [GeneratedRegex(@"(?<=\w)\.(?=\w)")]
