@@ -31,8 +31,11 @@ public static partial class LoggerExtensions
     [LoggerMessage(Level = LogLevel.Information, Message = "Spot import started at {DateTime}.")]
     public static partial void SpotImportStarted(this ILogger logger, DateTimeOffset dateTime);
     
-    [LoggerMessage(Level = LogLevel.Information, Message = "Spot import finished at {DateTime}. Imported {SpotCount} spots.")]
-    public static partial void SpotImportFinished(this ILogger logger, DateTimeOffset dateTime, int spotCount);
+    [LoggerMessage(Level = LogLevel.Information, Message = "Spot import batch finished at {DateTime}. Imported {SpotCount} spots.")]
+    public static partial void SpotImportBatchFinished(this ILogger logger, DateTimeOffset dateTime, int spotCount);
+    
+    [LoggerMessage(Level = LogLevel.Information, Message = "Spot import finished at {DateTime}.")]
+    public static partial void SpotImportFinished(this ILogger logger, DateTimeOffset dateTime);
     
     [LoggerMessage(Level = LogLevel.Information, Message = "Spot indexing started at {DateTime}.")]
     public static partial void SpotIndexingStarted(this ILogger logger, DateTimeOffset dateTime);

@@ -49,32 +49,38 @@ internal sealed class SpotImportService : ISpotImportService
         
         var usenetOptions = _usenetOptions.Value;
         var spotnetOptions = _spotnetOptions.Value;
-        
-        // Get a client from the pool
-        var client = await _nntpClientPool.BorrowClient();
 
+        bool done;
+        do
+        {
+            done = await ImportBatch(spotnetOptions, usenetOptions);
+        } while (!done);
+        
+        _logger.SpotImportFinished(DateTimeOffset.Now);
+    }
+
+    private async Task<bool> ImportBatch(SpotnetOptions spotnetOptions, UsenetOptions usenetOptions)
+    {
+        var client = await _nntpClientPool.BorrowClient();
         // Switch to the configured usenet group and verify that it exists.
         var groupResponse = client.Group(spotnetOptions.SpotGroup);
-        if (!groupResponse.Success)
+        if (!groupResponse.Success || groupResponse.Group == null)
         {
             _logger.CouldNotRetrieveSpotGroup(spotnetOptions.SpotGroup, groupResponse.Code, groupResponse.Message);
-            return;
+            return true;
         }
+
         var group = groupResponse.Group;
         
         // Only fetch records after the last known record in the DB
         var lastImportedMessage = _dbContext.Spots.Max(s => (int?)s.MessageNumber) ?? 0;
         var lowWaterMark = Math.Max(lastImportedMessage + 1, group.LowWaterMark);
         
-        if (lowWaterMark > group.HighWaterMark)
-        {
-            _nntpClientPool.ReturnClient(client);
-            return;
-        };
+        if (lowWaterMark > group.HighWaterMark) return true;
         
         // Prepare XOVER commands spanning the range of the newest message to the oldest message,
         // limited by the maximum number of messages to retrieve
-        var headerBatches = GetXoverBatches(lowWaterMark, group.HighWaterMark, spotnetOptions.RetrieveCount).ToList();
+        var headerBatches = GetXoverBatches(lowWaterMark, group.HighWaterMark, spotnetOptions).ToList();
 
         var context = new SpotImportResult();
         
@@ -84,6 +90,8 @@ internal sealed class SpotImportService : ISpotImportService
             var done = ParseHeaderBatch(context, client, headerBatch, spotnetOptions);
             if (done) break;
         }
+
+        if (context.Spots.Count == 0) return true;
         
         // Return the client to the pool
         _nntpClientPool.ReturnClient(client);
@@ -102,9 +110,11 @@ internal sealed class SpotImportService : ISpotImportService
         catch (DbException ex)
         {
             _logger.FailedToSaveSpots(ex);
+            return true;
         }
-        
-        _logger.SpotImportFinished(DateTimeOffset.Now, context.Spots.Count);
+
+        _logger.SpotImportBatchFinished(DateTimeOffset.Now, context.Spots.Count);
+        return false;
     }
 
     public async Task<MemoryStream?> RetrieveNzb(int spotId)
@@ -193,9 +203,9 @@ internal sealed class SpotImportService : ISpotImportService
         return done;
     }
 
-    private static IEnumerable<NntpArticleRange> GetXoverBatches(long lowWaterMark, long highWaterMark, int retrieveCount)
+    private static IEnumerable<NntpArticleRange> GetXoverBatches(long lowWaterMark, long highWaterMark, SpotnetOptions options)
     {
-        var start = retrieveCount > 0 ? highWaterMark - retrieveCount : lowWaterMark;
+        var start = Math.Max(lowWaterMark, highWaterMark - options.ImportBatchSize);
         var batchEnd = highWaterMark;
         
         while (batchEnd >= start)
