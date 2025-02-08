@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Data.Common;
 using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
@@ -197,11 +198,15 @@ internal sealed class SpotImportService : ISpotImportService
                 return [];
             }
 
-            // We always have read all lines from the response, so the buffer is empty
-            return ParseSpotHeaders(xOverResponse.Lines).Where(s =>
-                s.SpottedAt >= options.RetrieveAfter && (options.ImportAdultContent || !s.IsAdultContent())
-            ).ToList();
+            // Always enumerate all lines from the response so the buffer is empty
+            var headers = xOverResponse.Lines.ToList();
             
+            // Parallelize to speed up parsing
+            var spots = new ConcurrentBag<Spot>();
+            Parallel.ForEach(headers, spot => ParseSpotHeader(spot, spots, options.RetrieveAfter, options.ImportAdultContent));
+            
+            return spots.ToList();
+
         }
         catch (NntpException exception)
         {
@@ -214,31 +219,25 @@ internal sealed class SpotImportService : ISpotImportService
         }
     }
 
-    private IEnumerable<Spot> ParseSpotHeaders(IEnumerable<string> headers)
+    private void ParseSpotHeader(string header, ConcurrentBag<Spot> spots, DateTimeOffset retrieveAfter, bool importAdultContent)
     {
-        foreach (var header in headers)
+        try
         {
-            Spot? spot = null;
-            try
-            {
-                var nntpHeader = NntpHeaderParser.Parse(header);
-                var spotnetHeader = SpotnetHeaderParser.Parse(nntpHeader);
+            var nntpHeader = NntpHeaderParser.Parse(header);
+            var spotnetHeader = SpotnetHeaderParser.Parse(nntpHeader);
 
-                if (spotnetHeader is { KeyId: KeyId.Moderator, Command: ModerationCommand.Delete })
-                {
-                    //result.AddDeletion(spotnetHeader);
-                }
-                else
-                {
-                    spot = spotnetHeader.ToSpot();
-                }
-            }
-            catch (BadHeaderFormatException ex)
-            {
-                _logger.FailedToParseSpotHeader(ex.Header);
-            }
-
-            if (spot != null) yield return spot;
+            // For now, we ignore delete requests
+            if (spotnetHeader is { KeyId: KeyId.Moderator, Command: ModerationCommand.Delete })
+                return;
+            
+            var spot = spotnetHeader.ToSpot();
+            
+            if (spot.SpottedAt >= retrieveAfter && (importAdultContent || !spot.IsAdultContent()))
+                spots.Add(spot);
+        }
+        catch (BadHeaderFormatException ex)
+        {
+            _logger.FailedToParseSpotHeader(ex.Header);
         }
     }
 
