@@ -28,10 +28,10 @@ public static partial class LoggerExtensions
     [LoggerMessage(Level = LogLevel.Debug, Message = "Failed to parse spot header: [{Header}].'")]
     public static partial void FailedToParseSpotHeader(this ILogger logger, string header);
     
-    [LoggerMessage(Level = LogLevel.Warning, Message = "Article [{MessageId}] is missing spot XML header.'")]
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Article [{MessageId}] is missing spot XML header.'")]
     public static partial void ArticleIsMissingSpotXmlHeader(this ILogger logger, string messageId);
     
-    [LoggerMessage(Level = LogLevel.Warning, Message = "Article [{MessageId}] contains invalid spot XML header: [{Xml}].'")]
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Article [{MessageId}] contains invalid spot XML header: [{Xml}].'")]
     public static partial void ArticleContainsInvalidSpotXmlHeader(this ILogger logger, string messageId, string xml);
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Spot import started at {DateTime}.")]
