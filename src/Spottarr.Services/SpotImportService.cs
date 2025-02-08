@@ -287,7 +287,7 @@ internal sealed class SpotImportService : ISpotImportService
             var spotDetails = SpotnetXmlParser.Parse(spotnetXml);
 
             spot.NzbMessageId = spotDetails.Posting.Nzb.Segment;
-            spot.ImageMessageId = spotDetails.Posting.Image.Segment;
+            spot.ImageMessageId = spotDetails.Posting.Image?.Segment;
             spot.Description = spotDetails.Posting.Description;
         }
         catch (InvalidOperationException ex)
