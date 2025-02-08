@@ -16,7 +16,6 @@ public class SpotnetOptions
     public required DateTimeOffset RetrieveAfter { get; init; } = DateTimeOffset.Now.AddDays(-30);
     /// <summary>
     /// The maximum number of spots to retrieve per batch during import
-    /// Defaults to 10000
     /// </summary>
-    public required int ImportBatchSize { get; init; } = 10000;
+    public required int ImportBatchSize { get; init; }
 }
