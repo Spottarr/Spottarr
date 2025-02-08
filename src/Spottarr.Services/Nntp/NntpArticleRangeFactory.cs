@@ -13,24 +13,13 @@ internal sealed class NntpArticleRangeFactory
     public static IReadOnlyList<NntpArticleRange> GetBatches(long lowWaterMark, long highWaterMark, int importBatchSize) =>
         GetBatchesInternal(lowWaterMark, highWaterMark, importBatchSize).ToList();
     
-    private static IEnumerable<NntpArticleRange> GetBatchesInternal(long lowWaterMark, long highWaterMark, int importBatchSize)
+    private static IEnumerable<NntpArticleRange> GetBatchesInternal(long min, long max, int size)
     {
-        var batchEnd = highWaterMark;
-        while (batchEnd >= lowWaterMark)
+        for (var start = min; start < max; start += size)
         {
-            var batchStart = GetBatchStart(lowWaterMark, batchEnd, importBatchSize);
-            var range = new NntpArticleRange(batchStart, batchEnd);
-            batchEnd = batchStart - 1;
-            yield return range;
+            var inclusiveOffset = start + size < max ? -1 : 0;
+            var end = Math.Min(start + size + inclusiveOffset, max);
+            yield return new NntpArticleRange(start, end);
         }
-    }
-
-    private static long GetBatchStart(long lowWaterMark, long batchEnd, int importBatchSize)
-    {
-        var batchStart = Math.Max(lowWaterMark, batchEnd - (importBatchSize - 1));
-
-        // Make sure that the final batch is inclusive
-        if (batchStart - 1 == lowWaterMark) batchStart = lowWaterMark;
-        return batchStart;
     }
 }
