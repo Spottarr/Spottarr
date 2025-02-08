@@ -203,7 +203,10 @@ internal sealed class SpotImportService : ISpotImportService
             
             // Parallelize to speed up parsing
             var spots = new ConcurrentBag<Spot>();
-            Parallel.ForEach(headers, spot => ParseSpotHeader(spot, spots, options.RetrieveAfter, options.ImportAdultContent));
+            var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 10 };
+            Parallel.ForEach(headers, parallelOptions, spot =>
+                ParseSpotHeader(spot, spots, options.RetrieveAfter, options.ImportAdultContent)
+            );
             
             return spots.ToList();
 
@@ -221,24 +224,32 @@ internal sealed class SpotImportService : ISpotImportService
 
     private void ParseSpotHeader(string header, ConcurrentBag<Spot> spots, DateTimeOffset retrieveAfter, bool importAdultContent)
     {
-        try
+        var nntpHeaderResult = NntpHeaderParser.Parse(header);
+        if (nntpHeaderResult.HasError)
         {
-            var nntpHeader = NntpHeaderParser.Parse(header);
-            var spotnetHeader = SpotnetHeaderParser.Parse(nntpHeader);
+            _logger.FailedToParseSpotHeader(header);
+            return;
+        }
+        
+        var nntpHeader = nntpHeaderResult.Result;
+        
+        var spotnetHeaderResult = SpotnetHeaderParser.Parse(nntpHeader);
+        if (spotnetHeaderResult.HasError)
+        {
+            _logger.FailedToParseSpotHeader(nntpHeader.Subject);
+            return;
+        }
 
-            // For now, we ignore delete requests
-            if (spotnetHeader is { KeyId: KeyId.Moderator, Command: ModerationCommand.Delete })
-                return;
-            
-            var spot = spotnetHeader.ToSpot();
-            
-            if (spot.SpottedAt >= retrieveAfter && (importAdultContent || !spot.IsAdultContent()))
-                spots.Add(spot);
-        }
-        catch (BadHeaderFormatException ex)
-        {
-            _logger.FailedToParseSpotHeader(ex.Header);
-        }
+        var spotnetHeader = spotnetHeaderResult.Result;
+        
+        // For now, we ignore delete requests
+        if (spotnetHeader is { KeyId: KeyId.Moderator, Command: ModerationCommand.Delete })
+            return;
+        
+        var spot = spotnetHeader.ToSpot();
+        
+        if (spot.SpottedAt >= retrieveAfter && (importAdultContent || !spot.IsAdultContent()))
+            spots.Add(spot);
     }
 
     private async ValueTask GetSpotDetails(Spot spot, CancellationToken ct)
@@ -279,9 +290,9 @@ internal sealed class SpotImportService : ISpotImportService
             spot.ImageMessageId = spotDetails.Posting.Image.Segment;
             spot.Description = spotDetails.Posting.Description;
         }
-        catch (BadSpotFormatException ex)
+        catch (InvalidOperationException ex)
         {
-            _logger.ArticleContainsInvalidSpotXmlHeader(spot.MessageId, ex.Xml);
+            _logger.ArticleContainsInvalidSpotXmlHeader(spot.MessageId, ex.Message);
         }
         catch (NntpException ex)
         {

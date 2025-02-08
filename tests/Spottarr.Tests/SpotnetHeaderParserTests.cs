@@ -13,7 +13,11 @@ public class SpotnetHeaderParserTests
             "solem <pizlw58KFSC94SUdwAIMBzRNxmCZrhEnZb4ihCLAX9p6ViN9s2vf-pwFFZqPKwzFF.dpeyw-ssEYgAUebInWNwvjKu6irDwuJCTpgDL7Y1k6lBQj1j4YE-sl99LqQ-sjg7fUf@17a09b04d11b11c00c11z01.3366259428.20.1727723059.1.NL.OmepU20o1i7VxNRhQkAxC1MU8UH4fuOy-pmcHCSgOyCv71Qi-pKuuyPFADcZSY2JqI>";
         var nntpHeader = PrepareNntpHeader(spotnetHeader);
 
-        var result = SpotnetHeaderParser.Parse(nntpHeader);
+        var parsingResult = SpotnetHeaderParser.Parse(nntpHeader);
+        
+        Assert.False(parsingResult.HasError);
+        
+        var result = parsingResult.Result;
 
         Assert.Equal("solem", result.Nickname);
         Assert.Equal("pizlw58KFSC94SUdwAIMBzRNxmCZrhEnZb4ihCLAX9p6ViN9s2vf-pwFFZqPKwzFF", result.UserModulus);
@@ -63,7 +67,11 @@ public class SpotnetHeaderParserTests
             "Krid <7oGXyqZiTFIad-sLhInYOEcYylEmweUvnYF8CapS5S5hH12pdjwdLpd05fweJAHP5.U8c7LC-sA-sq2-sw0yjuY-s-sDj1bncqGmFVlaQy3UtQyw65WkWdMEf8i3g7ImuVTS1-pc@12a01.999.10.1727721178.1.NL.rV-sGFAvYDLhOVSllN173n2ZbEbq0rkSm9ku9j5CDmSQwKVj0kP-ph8CzB4L2PcEfr>";
         var nntpHeader = PrepareNntpHeader(spotnetHeader);
 
-        var result = SpotnetHeaderParser.Parse(nntpHeader);
+        var parsingResult = SpotnetHeaderParser.Parse(nntpHeader);
+        
+        Assert.False(parsingResult.HasError);
+        
+        var result = parsingResult.Result;
 
         Assert.Equal("Krid", result.Nickname);
         Assert.Equal("7oGXyqZiTFIad-sLhInYOEcYylEmweUvnYF8CapS5S5hH12pdjwdLpd05fweJAHP5", result.UserModulus);
@@ -89,7 +97,9 @@ public class SpotnetHeaderParserTests
             "BeAware <ys2GY-pPgAmyOVPpnUAG5wVj0AK6o0-saMWIsfCmLX4FCg834PdODIE9OhNSwQQ3XR.qoJvSsrXXhL65SUp8zhvdH-pzqhuzVFUpP1FgDqQhIsGJDN01j7yGNsJeOuLslCTL@spot.net>";
         var nntpHeader = PrepareNntpHeader(spotnetHeader);
 
-        Assert.Throws<BadHeaderFormatException>(() => SpotnetHeaderParser.Parse(nntpHeader));
+        var parsingResult = SpotnetHeaderParser.Parse(nntpHeader);
+        
+        Assert.True(parsingResult.HasError);
     }
     
     private static NntpHeader PrepareNntpHeader(string spotnetHeader) =>

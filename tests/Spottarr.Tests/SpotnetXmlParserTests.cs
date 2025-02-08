@@ -152,6 +152,6 @@ public class SpotnetXmlParserTests
                            </Spotnet>
                            """;
 
-	    Assert.Throws<BadSpotFormatException>(() => SpotnetXmlParser.Parse(xml));
+	    Assert.Throws<InvalidOperationException>(() => SpotnetXmlParser.Parse(xml));
     }
 }

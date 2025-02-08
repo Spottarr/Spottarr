@@ -24,12 +24,12 @@ internal class SpotnetXmlParser
             using var xmlReader = XmlReader.Create(stringReader, XmlReaderSettings);
             result = Serializer.Deserialize(xmlReader) as SpotnetXml;
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            throw new BadSpotFormatException(xml, ex);
+            throw new InvalidOperationException(xml, ex);
         }
 
-        if (result == null) throw new BadSpotFormatException(xml);
+        if (result == null) throw new InvalidOperationException(xml);
 
         return result;
     }
