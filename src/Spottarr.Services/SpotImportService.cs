@@ -41,7 +41,7 @@ internal sealed class SpotImportService : ISpotImportService
         // Enable NNTP client logging
         Usenet.Logger.Factory = loggerFactory;
     }
-    
+
     public async Task<MemoryStream?> RetrieveNzb(int spotId)
     {
         var spot = await _dbContext.Spots.FirstOrDefaultAsync(s => s.Id == spotId);
@@ -107,16 +107,14 @@ internal sealed class SpotImportService : ISpotImportService
         for (var i = 0; i < articleRanges.Count; i++)
         {
             _logger.SpotImportBatchStarted(i + 1, articleRanges.Count, DateTimeOffset.Now);
-            
-            var (done, spots) = await FetchSpotHeaders(spotnetOptions, articleRanges[i]);
+
+            var spots = await FetchSpotHeaders(spotnetOptions, articleRanges[i]);
             if (spots.Count > 0) await FetchAndSaveSpots(usenetOptions, spots, cancellationToken);
-            
+
             _logger.SpotImportBatchFinished(i + 1, articleRanges.Count, DateTimeOffset.Now, spots.Count);
-            
-            if (done) break;
         }
     }
-    
+
     private async Task<NntpGroup?> GetGroup(string group)
     {
         NntpClientWrapper? client = null;
@@ -142,7 +140,8 @@ internal sealed class SpotImportService : ISpotImportService
         return null;
     }
 
-    private async Task FetchAndSaveSpots(UsenetOptions usenetOptions, IReadOnlyList<Spot> spots, CancellationToken cancellationToken)
+    private async Task FetchAndSaveSpots(UsenetOptions usenetOptions, IReadOnlyList<Spot> spots,
+        CancellationToken cancellationToken)
     {
         // Fetch the article headers, we will do this in parallel to speed up the process
         // Limit the number of jobs we run in parallel to the maximum number of connections to prevent
@@ -153,7 +152,8 @@ internal sealed class SpotImportService : ISpotImportService
         // Save the fetched articles in bulk.
         try
         {
-            await _dbContext.BulkInsertAsync(spots, progress: p => _logger.BulkInsertUpdateProgress(p), cancellationToken: cancellationToken);
+            await _dbContext.BulkInsertAsync(spots, progress: p => _logger.BulkInsertUpdateProgress(p),
+                cancellationToken: cancellationToken);
         }
         catch (DbException ex)
         {
@@ -175,7 +175,7 @@ internal sealed class SpotImportService : ISpotImportService
             : [];
     }
 
-    private async Task<(bool Done, IReadOnlyList<Spot> Spots)> FetchSpotHeaders(SpotnetOptions options, NntpArticleRange batch)
+    private async Task<IReadOnlyList<Spot>> FetchSpotHeaders(SpotnetOptions options, NntpArticleRange batch)
     {
         NntpClientWrapper? client = null;
         try
@@ -187,29 +187,26 @@ internal sealed class SpotImportService : ISpotImportService
             if (!groupResponse.Success)
             {
                 _logger.CouldNotRetrieveSpotGroup(options.SpotGroup, groupResponse.Code, groupResponse.Message);
-                return (true, []);
+                return [];
             }
-            
+
             var xOverResponse = client.Xover(batch);
             if (!xOverResponse.Success)
             {
                 _logger.CouldNotRetrieveArticleHeaders(batch.From, batch.To, xOverResponse.Code, xOverResponse.Message);
-                return (true, []);
+                return [];
             }
 
             // We always have read all lines from the response, so the buffer is empty
-            var spots = ParseSpotHeaders(xOverResponse.Lines).ToList();
-
-            var done = spots.Any(s => s.SpottedAt < options.RetrieveAfter);
-            var spotsToImport = spots.Where(s =>
-                s.SpottedAt >= options.RetrieveAfter && (options.ImportAdultContent || !s.IsAdultContent())).ToList();
-
-            return (done, spotsToImport);
+            return ParseSpotHeaders(xOverResponse.Lines).Where(s =>
+                s.SpottedAt >= options.RetrieveAfter && (options.ImportAdultContent || !s.IsAdultContent())
+            ).ToList();
+            
         }
         catch (NntpException exception)
         {
             _logger.CouldNotRetrieveArticleHeaders(exception, batch.From, batch.To);
-            return (true, []);
+            return [];
         }
         finally
         {
@@ -243,7 +240,6 @@ internal sealed class SpotImportService : ISpotImportService
 
             if (spot != null) yield return spot;
         }
-        
     }
 
     private async ValueTask GetSpotDetails(Spot spot, CancellationToken ct)
