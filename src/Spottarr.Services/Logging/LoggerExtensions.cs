@@ -49,11 +49,14 @@ public static partial class LoggerExtensions
     [LoggerMessage(Level = LogLevel.Information, Message = "Spot indexing started at {DateTime}.")]
     public static partial void SpotIndexingStarted(this ILogger logger, DateTimeOffset dateTime);
     
-    [LoggerMessage(Level = LogLevel.Information, Message = "Spot indexing batch finished at {DateTime}. Indexed {SpotCount} spots.")]
-    public static partial void SpotIndexingBatchFinished(this ILogger logger, DateTimeOffset dateTime, int spotCount);
-    
     [LoggerMessage(Level = LogLevel.Information, Message = "Spot indexing finished at {DateTime}.")]
     public static partial void SpotIndexingFinished(this ILogger logger, DateTimeOffset dateTime);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Spot indexing batch ({Current}/{Total}) started at {DateTime}.")]
+    public static partial void SpotIndexingBatchStarted(this ILogger logger, int current, int total, DateTimeOffset dateTime);
+    
+    [LoggerMessage(Level = LogLevel.Information, Message = "Spot indexing batch ({Current}/{Total}) finished at {DateTime}. Indexed {SpotCount} spots.")]
+    public static partial void SpotIndexingBatchFinished(this ILogger logger, int current, int total, DateTimeOffset dateTime, int spotCount);
     
     [LoggerMessage(Level = LogLevel.Information, Message = "Bulk insert / update progress {Percentage}%")]
     public static partial void BulkInsertUpdateProgress(this ILogger logger, decimal percentage);

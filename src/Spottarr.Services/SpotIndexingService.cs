@@ -36,24 +36,34 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
         _logger.SpotIndexingStarted(DateTimeOffset.Now);
 
         var options = _spotnetOptions.Value;
-        bool done;
-        do
+        var unIndexedSpotsCount = await _dbContext.Spots.Where(s => s.IndexedAt == null).CountAsync();
+
+        if (unIndexedSpotsCount > 0)
         {
-            done = await IndexBatch(options);
-        } while (!done);
+            var batchCount = (unIndexedSpotsCount / options.ImportBatchSize) + 1;
+            
+            for (var i = 0; i < batchCount; i++)
+            {
+                _logger.SpotIndexingBatchStarted(i + 1, batchCount, DateTimeOffset.Now);
+                
+                var indexedSpots = await IndexBatch(options.ImportBatchSize);
+                
+                _logger.SpotIndexingBatchFinished(i + 1, batchCount, DateTimeOffset.Now, indexedSpots);
+            }
+        }
         
         _logger.SpotIndexingFinished(DateTimeOffset.Now);
     }
 
-    private async Task<bool> IndexBatch(SpotnetOptions options)
+    private async Task<int> IndexBatch(int batchSize)
     {
         var unIndexedSpots = await _dbContext.Spots.Where(s => s.IndexedAt == null)
             .AsNoTracking()
             .OrderBy(s => s.Id)
-            .Take(options.ImportBatchSize)
+            .Take(batchSize)
             .ToListAsync();
 
-        if (unIndexedSpots.Count == 0) return true;
+        if (unIndexedSpots.Count == 0) return unIndexedSpots.Count;
 
         var now = DateTimeOffset.Now;
         var fullTextIndexSpots = new List<FtsSpot>();
@@ -127,8 +137,7 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
             _logger.FailedToSaveSpots(ex);
         }
         
-        _logger.SpotIndexingBatchFinished(DateTimeOffset.Now, unIndexedSpots.Count);
-        return false;
+        return unIndexedSpots.Count;
     }
 
     [GeneratedRegex(@"(?<=\w)\.(?=\w)")]
