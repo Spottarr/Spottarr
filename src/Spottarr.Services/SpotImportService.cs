@@ -29,7 +29,7 @@ internal sealed class SpotImportService : ISpotImportService
     private readonly INntpClientPool _nntpClientPool;
     private readonly SpottarrDbContext _dbContext;
 
-    public SpotImportService(ILoggerFactory loggerFactory, ILogger<SpotImportService> logger,
+    public SpotImportService(ILogger<SpotImportService> logger,
         IOptions<UsenetOptions> usenetOptions, IOptions<SpotnetOptions> spotnetOptions,
         INntpClientPool nntpClientPool, SpottarrDbContext dbContext)
     {
@@ -38,9 +38,6 @@ internal sealed class SpotImportService : ISpotImportService
         _spotnetOptions = spotnetOptions;
         _nntpClientPool = nntpClientPool;
         _dbContext = dbContext;
-
-        // Enable NNTP client logging
-        Usenet.Logger.Factory = loggerFactory;
     }
 
     public async Task<MemoryStream?> RetrieveNzb(int spotId)

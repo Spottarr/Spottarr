@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spottarr.Services.Configuration;
@@ -23,12 +24,16 @@ internal class NntpClientPool : INntpClientPool, IDisposable
     private int _currentPoolSize;
     private bool _disposed;
 
-    public NntpClientPool(ILogger<NntpClientPool> logger, IOptions<UsenetOptions> usenetOptions)
+    public NntpClientPool(IHostEnvironment hostEnvironment, ILoggerFactory loggerFactory, ILogger<NntpClientPool> logger, IOptions<UsenetOptions> usenetOptions)
     {
         _logger = logger;
         _usenetOptions = usenetOptions;
         _maxPoolSize = usenetOptions.Value.MaxConnections;
         _semaphore = new SemaphoreSlim(_maxPoolSize, _maxPoolSize);
+        
+        // Enable NNTP client logging
+        if (hostEnvironment.IsDevelopment())
+            Usenet.Logger.Factory = loggerFactory;
 
         // Start the background monitoring task
         Task.Run(() => MonitorIdleClients(_cts.Token));
