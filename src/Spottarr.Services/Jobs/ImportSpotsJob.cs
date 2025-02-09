@@ -18,7 +18,7 @@ internal class ImportSpotsJob : IJob
     
     public async Task Execute(IJobExecutionContext context)
     {
-        await _spotImportService.Import();
+        await _spotImportService.Import(context.CancellationToken);
         await _spotIndexingService.Index();
     }
 }

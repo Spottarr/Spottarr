@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Data.Common;
 using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +23,6 @@ namespace Spottarr.Services;
 /// </summary>
 internal sealed class SpotImportService : ISpotImportService
 {
-    private const int XoverBatchSize = 1000;
     private readonly ILogger<SpotImportService> _logger;
     private readonly IOptions<UsenetOptions> _usenetOptions;
     private readonly IOptions<SpotnetOptions> _spotnetOptions;
@@ -43,82 +43,18 @@ internal sealed class SpotImportService : ISpotImportService
         Usenet.Logger.Factory = loggerFactory;
     }
 
-    public async Task Import()
-    {
-        _logger.SpotImportStarted(DateTimeOffset.Now);
-        
-        var usenetOptions = _usenetOptions.Value;
-        var spotnetOptions = _spotnetOptions.Value;
-        
-        // Get a client from the pool
-        var client = await _nntpClientPool.BorrowClient();
-
-        // Switch to the configured usenet group and verify that it exists.
-        var groupResponse = client.Group(spotnetOptions.SpotGroup);
-        if (!groupResponse.Success)
-        {
-            _logger.CouldNotRetrieveSpotGroup(spotnetOptions.SpotGroup, groupResponse.Code, groupResponse.Message);
-            return;
-        }
-        var group = groupResponse.Group;
-        
-        // Only fetch records after the last known record in the DB
-        var lastImportedMessage = _dbContext.Spots.Max(s => (int?)s.MessageNumber) ?? 0;
-        var lowWaterMark = Math.Max(lastImportedMessage + 1, group.LowWaterMark);
-        
-        if (lowWaterMark > group.HighWaterMark)
-        {
-            _nntpClientPool.ReturnClient(client);
-            return;
-        };
-        
-        // Prepare XOVER commands spanning the range of the newest message to the oldest message,
-        // limited by the maximum number of messages to retrieve
-        var headerBatches = GetXoverBatches(lowWaterMark, group.HighWaterMark, spotnetOptions.RetrieveCount).ToList();
-
-        var context = new SpotImportResult();
-        
-        // Execute the prepared XOVER commands, stop when we reach a message created before the retrieve after date.
-        foreach (var headerBatch in headerBatches)
-        {
-            var done = ParseHeaderBatch(context, client, headerBatch, spotnetOptions);
-            if (done) break;
-        }
-        
-        // Return the client to the pool
-        _nntpClientPool.ReturnClient(client);
-
-        // Fetch the article headers, we will do this in parallel to speed up the process
-        // Limit the number of jobs we run in parallel to the maximum number of connections to prevent
-        // waiting for a connection to become available in the pool
-        var parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = usenetOptions.MaxConnections };
-        await Parallel.ForEachAsync(context.Spots, parallelOptions, GetSpotDetails);
-        
-        // Save the fetched articles in bulk.
-        try
-        {
-            await _dbContext.BulkInsertAsync(context.Spots, progress: p => _logger.BulkInsertUpdateProgress(p));
-        }
-        catch (DbException ex)
-        {
-            _logger.FailedToSaveSpots(ex);
-        }
-        
-        _logger.SpotImportFinished(DateTimeOffset.Now, context.Spots.Count);
-    }
-
     public async Task<MemoryStream?> RetrieveNzb(int spotId)
     {
         var spot = await _dbContext.Spots.FirstOrDefaultAsync(s => s.Id == spotId);
         if (spot == null || string.IsNullOrEmpty(spot.NzbMessageId))
             return null;
 
-        NntpClientWrapper? client = null; 
+        NntpClientWrapper? client = null;
         try
         {
             client = await _nntpClientPool.BorrowClient();
             var nzbMessageId = spot.NzbMessageId;
-        
+
             // Fetch the article headers which contains the NZB payload
             var nzbArticleResponse = client.Article(new NntpMessageId(nzbMessageId));
             if (!nzbArticleResponse.Success)
@@ -133,84 +69,189 @@ internal sealed class SpotImportService : ISpotImportService
         catch (NntpException ex)
         {
             _logger.CouldNotRetrieveArticle(ex, spot.MessageId);
+            return null;
         }
         finally
         {
-            if(client != null) _nntpClientPool.ReturnClient(client);
+            if (client != null) _nntpClientPool.ReturnClient(client);
         }
-
-        return null;
     }
-    
+
     public Task<MemoryStream?> RetrieveImage(int spotId)
     {
         throw new NotImplementedException();
     }
 
-    private bool ParseHeaderBatch(SpotImportResult context, NntpClientWrapper client, NntpArticleRange batch, SpotnetOptions options)
+    public async Task Import(CancellationToken cancellationToken)
     {
-        var xOverResponse = client.Xover(batch);
-        if (!xOverResponse.Success)
-        {
-            _logger.CouldNotRetrieveArticleHeaders(batch.From, batch.To, xOverResponse.Code, xOverResponse.Message);
-            return true;
-        }
+        _logger.SpotImportStarted(DateTimeOffset.Now);
 
-        var done = false;
-        foreach (var header in xOverResponse.Lines)
-        {
-            try
-            {
-                var nntpHeader = NntpHeaderParser.Parse(header);
+        var usenetOptions = _usenetOptions.Value;
+        var spotnetOptions = _spotnetOptions.Value;
 
-                if (nntpHeader.Date < options.RetrieveAfter)
-                {
-                    // Even when we hit the retrieve after date, we have to keep reading the response, so the buffer is empty
-                    done = true;
-                    _logger.ReachedRetrieveAfter(options.RetrieveAfter);
-                }
-                
-                var spotnetHeader = SpotnetHeaderParser.Parse(nntpHeader);
+        var group = await GetGroup(spotnetOptions.SpotGroup);
+        if (group == null) return;
 
-                if (spotnetHeader is { KeyId: KeyId.Moderator, Command: ModerationCommand.Delete })
-                {
-                    context.AddDeletion(spotnetHeader);
-                    continue;
-                }
+        var articleRanges = GetArticleRangesToImport(spotnetOptions, group);
+        await Import(spotnetOptions, usenetOptions, articleRanges, cancellationToken);
 
-                var spot = spotnetHeader.ToSpot();
-
-                if (spot.IsAdultContent() && !options.ImportAdultContent) continue;
-                
-                context.AddSpot(spot);
-            }
-            catch (BadHeaderFormatException ex)
-            {
-                _logger.FailedToParseSpotHeader(ex.Header);
-            }
-        }
-
-        return done;
+        _logger.SpotImportFinished(DateTimeOffset.Now);
     }
 
-    private static IEnumerable<NntpArticleRange> GetXoverBatches(long lowWaterMark, long highWaterMark, int retrieveCount)
+    private async Task Import(SpotnetOptions spotnetOptions, UsenetOptions usenetOptions,
+        IReadOnlyList<NntpArticleRange> articleRanges, CancellationToken cancellationToken)
     {
-        var start = retrieveCount > 0 ? highWaterMark - retrieveCount : lowWaterMark;
-        var batchEnd = highWaterMark;
+        // The ranges only contains the article numbers to fetch, but no dates.
+        // This means that within each batch we need to check if we reached the maximum age (retrieve after date).
+        // We will stop fetching articles when we reach the retrieve after date or an error occurs.
+        // For each batch of articles we will fetch the spot details and save it to the database.
+        for (var i = 0; i < articleRanges.Count; i++)
+        {
+            _logger.SpotImportBatchStarted(i + 1, articleRanges.Count, DateTimeOffset.Now);
+
+            var spots = await FetchSpotHeaders(spotnetOptions, articleRanges[i]);
+            if (spots.Count > 0) await FetchAndSaveSpots(usenetOptions, spots, cancellationToken);
+
+            _logger.SpotImportBatchFinished(i + 1, articleRanges.Count, DateTimeOffset.Now, spots.Count);
+        }
+    }
+
+    private async Task<NntpGroup?> GetGroup(string group)
+    {
+        NntpClientWrapper? client = null;
+        try
+        {
+            client = await _nntpClientPool.BorrowClient();
+
+            // Switch to the configured usenet group to verify that it exists.
+            var groupResponse = client.Group(group);
+            if (groupResponse.Success && groupResponse.Group != null) return groupResponse.Group;
+
+            _logger.CouldNotRetrieveSpotGroup(group, groupResponse.Code, groupResponse.Message);
+        }
+        catch (NntpException ex)
+        {
+            _logger.CouldNotRetrieveSpotGroup(ex, group);
+        }
+        finally
+        {
+            if (client != null) _nntpClientPool.ReturnClient(client);
+        }
+
+        return null;
+    }
+
+    private async Task FetchAndSaveSpots(UsenetOptions usenetOptions, IReadOnlyList<Spot> spots,
+        CancellationToken cancellationToken)
+    {
+        // Fetch the article headers, we will do this in parallel to speed up the process
+        // Limit the number of jobs we run in parallel to the maximum number of connections to prevent
+        // waiting for a connection to become available in the pool
+        var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = usenetOptions.MaxConnections };
+        await Parallel.ForEachAsync(spots, parallelOptions, GetSpotDetails);
+
+        // Save the fetched articles in bulk.
+        try
+        {
+            await _dbContext.BulkInsertAsync(spots, progress: p => _logger.BulkInsertUpdateProgress(p),
+                cancellationToken: cancellationToken);
+        }
+        catch (DbException ex)
+        {
+            _logger.FailedToSaveSpots(ex);
+        }
+    }
+
+    /// <summary>
+    /// Get the ranges of article sequence numbers added since the last import.
+    /// If this is the first import, the range of the entire group is returned
+    /// </summary>
+    private IReadOnlyList<NntpArticleRange> GetArticleRangesToImport(SpotnetOptions spotnetOptions, NntpGroup group)
+    {
+        // Only fetch records after the last known record in the DB
+        var lastImportedMessage = _dbContext.Spots.Max(s => (int?)s.MessageNumber) ?? 0;
+        var lowWaterMark = Math.Max(lastImportedMessage + 1, group.LowWaterMark);
+        return lowWaterMark <= group.HighWaterMark
+            ? NntpArticleRangeFactory.GetBatches(lowWaterMark, group.HighWaterMark, spotnetOptions.ImportBatchSize)
+            : [];
+    }
+
+    private async Task<IReadOnlyList<Spot>> FetchSpotHeaders(SpotnetOptions options, NntpArticleRange batch)
+    {
+        NntpClientWrapper? client = null;
+        try
+        {
+            client = await _nntpClientPool.BorrowClient();
+
+            // Group is set for the lifetime of the connection
+            var groupResponse = client.Group(options.SpotGroup);
+            if (!groupResponse.Success)
+            {
+                _logger.CouldNotRetrieveSpotGroup(options.SpotGroup, groupResponse.Code, groupResponse.Message);
+                return [];
+            }
+
+            var xOverResponse = client.Xover(batch);
+            if (!xOverResponse.Success)
+            {
+                _logger.CouldNotRetrieveArticleHeaders(batch.From, batch.To, xOverResponse.Code, xOverResponse.Message);
+                return [];
+            }
+
+            // Always enumerate all lines from the response so the buffer is empty
+            var headers = xOverResponse.Lines.ToList();
+            
+            // Parallelize to speed up parsing
+            var spots = new ConcurrentBag<Spot>();
+            var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 10 };
+            Parallel.ForEach(headers, parallelOptions, spot =>
+                ParseSpotHeader(spot, spots, options.RetrieveAfter, options.ImportAdultContent)
+            );
+            
+            return spots.ToList();
+
+        }
+        catch (NntpException exception)
+        {
+            _logger.CouldNotRetrieveArticleHeaders(exception, batch.From, batch.To);
+            return [];
+        }
+        finally
+        {
+            if (client != null) _nntpClientPool.ReturnClient(client);
+        }
+    }
+
+    private void ParseSpotHeader(string header, ConcurrentBag<Spot> spots, DateTimeOffset retrieveAfter, bool importAdultContent)
+    {
+        var nntpHeaderResult = NntpHeaderParser.Parse(header);
+        if (nntpHeaderResult.HasError)
+        {
+            _logger.FailedToParseSpotHeader(header);
+            return;
+        }
         
-        while (batchEnd >= start)
+        var nntpHeader = nntpHeaderResult.Result;
+        
+        var spotnetHeaderResult = SpotnetHeaderParser.Parse(nntpHeader);
+        if (spotnetHeaderResult.HasError)
         {
-            var batchStart = Math.Max(start, batchEnd - (XoverBatchSize - 1));
-            
-            // Make sure that the final batch is inclusive
-            if (batchStart - 1 == start) batchStart = start;
-
-            yield return new NntpArticleRange(batchStart, batchEnd);
-            
-            batchEnd = batchStart - 1;
+            _logger.FailedToParseSpotHeader(nntpHeader.Subject);
+            return;
         }
+
+        var spotnetHeader = spotnetHeaderResult.Result;
+        
+        // For now, we ignore delete requests
+        if (spotnetHeader is { KeyId: KeyId.Moderator, Command: ModerationCommand.Delete })
+            return;
+        
+        var spot = spotnetHeader.ToSpot();
+        
+        if (spot.SpottedAt >= retrieveAfter && (importAdultContent || !spot.IsAdultContent()))
+            spots.Add(spot);
     }
-    
+
     private async ValueTask GetSpotDetails(Spot spot, CancellationToken ct)
     {
         NntpClientWrapper? client = null;
@@ -246,12 +287,12 @@ internal sealed class SpotImportService : ISpotImportService
             var spotDetails = SpotnetXmlParser.Parse(spotnetXml);
 
             spot.NzbMessageId = spotDetails.Posting.Nzb.Segment;
-            spot.ImageMessageId = spotDetails.Posting.Image.Segment;
+            spot.ImageMessageId = spotDetails.Posting.Image?.Segment;
             spot.Description = spotDetails.Posting.Description;
         }
-        catch (BadSpotFormatException ex)
+        catch (InvalidOperationException ex)
         {
-            _logger.ArticleContainsInvalidSpotXmlHeader(spot.MessageId, ex.Xml);
+            _logger.ArticleContainsInvalidSpotXmlHeader(spot.MessageId, ex.Message);
         }
         catch (NntpException ex)
         {
@@ -259,7 +300,7 @@ internal sealed class SpotImportService : ISpotImportService
         }
         finally
         {
-            if(client != null) _nntpClientPool.ReturnClient(client);
+            if (client != null) _nntpClientPool.ReturnClient(client);
         }
     }
 }

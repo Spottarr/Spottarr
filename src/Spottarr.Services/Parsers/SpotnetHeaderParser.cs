@@ -8,69 +8,61 @@ namespace Spottarr.Services.Parsers;
 internal static partial class SpotnetHeaderParser
 {
     private static readonly string[] DeleteModerationCommands =
-    {
+    [
         "delete",
         "dispose",
         "remove"
-    };
+    ];
     
-    public static SpotHeader Parse(NntpHeader header)
+    public static ParserResult<SpotHeader> Parse(NntpHeader header)
     {
-        try
+        var subjectAndTags = header.Subject.Split('|', 2,
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var subject = subjectAndTags[0];
+        var tag = subjectAndTags.Length == 2 ? subjectAndTags[1] : string.Empty;
+
+        var command = DeleteModerationCommands.Any(c => subject.StartsWith(c, StringComparison.OrdinalIgnoreCase))
+            ? ModerationCommand.Delete
+            : ModerationCommand.None;
+
+        var regex = SpotnetHeaderRegex();
+        var match = regex.Match(header.Author);
+
+        if (!match.Success) return new ParserResult<SpotHeader>($"Invalid Spotnet Author header '{header.Author}'");
+
+        var g = match.Groups;
+
+        var category = int.Parse(g["cat"].Value, CultureInfo.InvariantCulture);
+        var size = long.Parse(g["size"].Value, CultureInfo.InvariantCulture);
+        var unixTime = long.Parse(g["date"].Value, CultureInfo.InvariantCulture);
+        var keyId = Enum.Parse<KeyId>(g["kid"].Value);
+        var date = DateTimeOffset.FromUnixTimeSeconds(unixTime);
+
+        // Splits the sub category codes.
+        // While the category is not zero-indexed, the sub categories are.
+        // For example 27a00b00c07d01z00 has category 2 but subcategories A01,B01,C08,D02,Z01
+        var subCategories = g["scats"].Captures
+            .Select(c => (char.ToUpperInvariant(c.Value[0]), int.Parse(c.Value[1..3], CultureInfo.InvariantCulture)))
+            .ToList();
+
+        return new ParserResult<SpotHeader>(new SpotHeader
         {
-            var subjectAndTags = header.Subject.Split('|', 2,
-                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            var subject = subjectAndTags[0];
-            var tag = subjectAndTags.Length == 2 ? subjectAndTags[1] : string.Empty;
-
-            var command = DeleteModerationCommands.Any(c => subject.StartsWith(c, StringComparison.OrdinalIgnoreCase))
-                ? ModerationCommand.Delete
-                : ModerationCommand.None;
-
-            var regex = SpotnetHeaderRegex();
-            var match = regex.Match(header.Author);
-
-            if (!match.Success)
-                throw new InvalidOperationException($"Invalid Spotnet Author header '{header.Author}'");
-
-            var g = match.Groups;
-
-            var category = int.Parse(g["cat"].Value, CultureInfo.InvariantCulture);
-            var size = long.Parse(g["size"].Value, CultureInfo.InvariantCulture);
-            var unixTime = long.Parse(g["date"].Value, CultureInfo.InvariantCulture);
-            var keyId = Enum.Parse<KeyId>(g["kid"].Value);
-            var date = DateTimeOffset.FromUnixTimeSeconds(unixTime);
-
-            // Splits the sub category codes.
-            // While the category is not zero-indexed, the sub categories are.
-            // For example 27a00b00c07d01z00 has category 2 but subcategories A01,B01,C08,D02,Z01
-            var subCategories = g["scats"].Captures
-                .Select(c => (char.ToUpperInvariant(c.Value[0]), int.Parse(c.Value[1..3], CultureInfo.InvariantCulture)))
-                .ToList();
-
-            return new SpotHeader
-            {
-                Subject = subject,
-                Tag = tag,
-                Nickname = g["n"].Value,
-                UserModulus = g["umod"].Value,
-                UserSignature = g["usig"].Value,
-                Category = category,
-                KeyId = keyId,
-                Command = command,
-                SubCategories = subCategories,
-                Size = size,
-                Date = date,
-                CustomId = g["cid"].Value,
-                CustomValue = g["cv"].Value,
-                ServerSignature = g["ssig"].Value,
-                NntpHeader = header,
-            };
-        }
-        catch(Exception ex)
-        {
-            throw new BadHeaderFormatException(header.Author, ex);
-        }
+            Subject = subject,
+            Tag = tag,
+            Nickname = g["n"].Value,
+            UserModulus = g["umod"].Value,
+            UserSignature = g["usig"].Value,
+            Category = category,
+            KeyId = keyId,
+            Command = command,
+            SubCategories = subCategories,
+            Size = size,
+            Date = date,
+            CustomId = g["cid"].Value,
+            CustomValue = g["cv"].Value,
+            ServerSignature = g["ssig"].Value,
+            NntpHeader = header,
+        });
     }
 
     /*

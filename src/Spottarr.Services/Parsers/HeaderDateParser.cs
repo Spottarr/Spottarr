@@ -7,7 +7,7 @@ namespace Spottarr.Services.Parsers;
 /// This class was taken from https://raw.githubusercontent.com/keimpema/Usenet/master/Usenet/Nntp/Parsers/HeaderDateParser.cs
 /// and adjusted to pass analyzer rules
 /// </summary>
-internal static class HeaderDateParser
+internal static partial class HeaderDateParser
 {
     /// <summary>
     /// Parses header date/time strings as described in the
@@ -15,13 +15,11 @@ internal static class HeaderDateParser
     /// </summary>
     /// <param name="value"></param>
     /// <returns></returns>
-    internal static DateTimeOffset Parse(string value)
+    internal static ParserResult<DateTimeOffset> Parse(string value)
     {
-        ArgumentNullException.ThrowIfNull(value);
-        
         var valueParts = value.Split([','], StringSplitOptions.RemoveEmptyEntries);
         if (valueParts.Length > 2)
-            throw new BadHeaderDateFormatException();
+            return new ParserResult<DateTimeOffset>("Header date is not in the correct format");
 
         // skip day-of-week for now
         //string dayOfWeek = valueParts.Length == 2 ? valueParts[0] : null;
@@ -29,40 +27,49 @@ internal static class HeaderDateParser
         var dateTime = valueParts.Length == 2 ? valueParts[1] : valueParts[0];
 
         // remove obsolete whitespace from time part
-        dateTime = Regex.Replace(dateTime, @"\s+:\s+", ":");
+        dateTime = DateWhitespaceRegex().Replace(dateTime, ":");
 
         var dateTimeParts = dateTime.Split([' ', '\n', '\r', '\t'], StringSplitOptions.RemoveEmptyEntries);
         if (dateTimeParts.Length != 5 && dateTimeParts is not [_, _, _, _, _, "(UTC)"])
-            throw new BadHeaderDateFormatException();
+            return new ParserResult<DateTimeOffset>("Header date is not in the correct format");
 
-        ParseDate(dateTimeParts, out var year, out var month, out var day);
-        ParseTime(dateTimeParts[3], out var hour, out var minute, out var second);
-        var zone = ParseZone(dateTimeParts[4]);
+        var validDate = TryParseDate(dateTimeParts, out var year, out var month, out var day);
+        var validTime = TryParseTime(dateTimeParts[3], out var hour, out var minute, out var second);
+        var validZone = TryParseZone(dateTimeParts[4], out var zone);
+        
+        if(!validDate || !validTime || !validZone)
+            return new ParserResult<DateTimeOffset>("Header date is not in the correct format");
 
-        return new DateTimeOffset(year, month, day, hour, minute, second, 0, zone);
+        return new ParserResult<DateTimeOffset>(new DateTimeOffset(year, month, day, hour, minute, second, 0, zone));
     }
 
-    private static void ParseDate(string[] dateTimeParts, out int year, out int month, out int day)
+    private static bool TryParseDate(string[] dateTimeParts, out int year, out int month, out int day)
     {
+        year = 0;
+        month = 0;
+        day = 0;
+        
         if (dateTimeParts.Length < 3)
-            throw new BadHeaderDateFormatException();
+            return false;
         
         if (!int.TryParse(dateTimeParts[0], out day))
-            throw new BadHeaderDateFormatException();
+            return false;
         
         var monthString = dateTimeParts[1];
         var monthIndex = Array.FindIndex(DateTimeFormatInfo.InvariantInfo.AbbreviatedMonthNames,
             m => string.Equals(m, monthString, StringComparison.OrdinalIgnoreCase));
-        
+
         if (monthIndex < 0)
-            throw new BadHeaderDateFormatException();
+            return false;
         
         month = monthIndex + 1;
         if (!int.TryParse(dateTimeParts[2], out year))
-            throw new BadHeaderDateFormatException();
+            return false;
         
         if (dateTimeParts[2].Length <= 2) 
             year += 100 * GetCentury(year, month, day);
+
+        return true;
     }
 
     private static int GetCentury(int year, int month, int day)
@@ -74,43 +81,49 @@ internal static class HeaderDateParser
             : currentCentury;
     }
 
-    private static void ParseTime(string value, out int hour, out int minute, out int second)
+    private static bool TryParseTime(string value, out int hour, out int minute, out int second)
     {
+        hour = 0;
+        minute = 0;
+        second = 0;
+        
         var timeParts = value.Split([':'], StringSplitOptions.RemoveEmptyEntries);
         if (timeParts.Length is < 2 or > 3)
-            throw new BadHeaderDateFormatException();
+            return false;
         
         if (!int.TryParse(timeParts[0], out hour))
-            throw new BadHeaderDateFormatException();
+            return false;
         
         if (!int.TryParse(timeParts[1], out minute))
-            throw new BadHeaderDateFormatException();
-        
-        second = 0;
+            return false;
+
         if (timeParts.Length > 2 && !int.TryParse(timeParts[2], out second))
-            throw new BadHeaderDateFormatException();
+            return false;
+
+        return true;
     }
 
-    private static TimeSpan ParseZone(string value)
+    private static bool TryParseZone(string value, out TimeSpan result)
     {
         // The time zone must be as specified in RFC822, https://tools.ietf.org/html/rfc822#section-5
+        result = TimeSpan.Zero;
+        
+        if (!short.TryParse(value, out var zone) && !TryParseZoneText(value, out zone))
+            return false;
 
-        if (!short.TryParse(value, out var zone))
-        {
-            zone = ParseZoneText(value);
-        }
-        else if (zone is < -9999 or > 9999)
-        {
-            throw new BadHeaderDateFormatException();
-        }
+        if (zone is < -9999 or > 9999)
+            return false;
 
         var minute = zone % 100;
         var hour = zone / 100;
-        return TimeSpan.FromMinutes(hour * 60 + minute);
+        
+        result = TimeSpan.FromMinutes(hour * 60 + minute);
+        return true;
     }
 
-    private static short ParseZoneText(string value) =>
-        value switch
+    private static bool TryParseZoneText(string value, out short zone)
+    {
+        zone = value switch
         {
             // UTC is not specified in RFC822, but allowing it since it is commonly used
             "UTC" or "UT" or "GMT" or "Z" => 0000,
@@ -123,6 +136,12 @@ internal static class HeaderDateParser
             "N" => +0100,
             "M" => -1200,
             "Y" => +1200,
-            _ => throw new BadHeaderDateFormatException()
+            _ => 9999
         };
+
+        return zone != 9999;
+    }
+
+    [GeneratedRegex(@"\s+:\s+")]
+    private static partial Regex DateWhitespaceRegex();
 }
