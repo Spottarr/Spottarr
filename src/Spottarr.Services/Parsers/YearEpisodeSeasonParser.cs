@@ -45,6 +45,6 @@ internal partial class YearEpisodeSeasonParser
     }
 
     [GeneratedRegex(
-        @"(?:(?:^|\s|\p{P})\(?(?<year>\d{4})\)?(?:$|\s|\p{P}))|(?:S(?<sshort>\d{2})\s?E(?<eshort>\d{2}))|(?:(?:Season|Seizoen)\:?)\s*(?<slong>\d{1,2})|(?:(?:Episode|Aflevering)\:?)\s*(?<elong>\d{1,2})", RegexOptions.IgnoreCase)]
+        @"(?:(?:^|\s|\p{P})\(?(?<year>[0-9]{4})\)?(?:$|\s|\p{P}))|(?:S(?<sshort>[0-9]{2})\s?E(?<eshort>[0-9]{2}))|(?:(?:Season|Seizoen)\:?)\s*(?<slong>[0-9]{1,2})|(?:(?:Episode|Aflevering)\:?)\s*(?<elong>[0-9]{1,2})", RegexOptions.IgnoreCase)]
     private static partial Regex YearEpisodeSeasonRegex();
 }

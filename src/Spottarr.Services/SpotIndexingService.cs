@@ -3,8 +3,10 @@ using System.Text.RegularExpressions;
 using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Spottarr.Data;
 using Spottarr.Data.Entities;
+using Spottarr.Services.Configuration;
 using Spottarr.Services.Contracts;
 using Spottarr.Services.Helpers;
 using Spottarr.Services.Logging;
@@ -20,20 +22,48 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
 {
     private readonly ILogger<SpotIndexingService> _logger;
     private readonly SpottarrDbContext _dbContext;
+    private readonly IOptions<SpotnetOptions> _spotnetOptions;
 
-    public SpotIndexingService(ILogger<SpotIndexingService> logger, SpottarrDbContext dbContext)
+    public SpotIndexingService(ILogger<SpotIndexingService> logger, SpottarrDbContext dbContext, IOptions<SpotnetOptions> spotnetOptions)
     {
         _logger = logger;
         _dbContext = dbContext;
+        _spotnetOptions = spotnetOptions;
     }
 
     public async Task Index()
     {
         _logger.SpotIndexingStarted(DateTimeOffset.Now);
 
+        var options = _spotnetOptions.Value;
+        var unIndexedSpotsCount = await _dbContext.Spots.Where(s => s.IndexedAt == null).CountAsync();
+
+        if (unIndexedSpotsCount > 0)
+        {
+            var batchCount = (unIndexedSpotsCount / options.ImportBatchSize) + 1;
+            
+            for (var i = 0; i < batchCount; i++)
+            {
+                _logger.SpotIndexingBatchStarted(i + 1, batchCount, DateTimeOffset.Now);
+                
+                var indexedSpots = await IndexBatch(options.ImportBatchSize);
+                
+                _logger.SpotIndexingBatchFinished(i + 1, batchCount, DateTimeOffset.Now, indexedSpots);
+            }
+        }
+        
+        _logger.SpotIndexingFinished(DateTimeOffset.Now);
+    }
+
+    private async Task<int> IndexBatch(int batchSize)
+    {
         var unIndexedSpots = await _dbContext.Spots.Where(s => s.IndexedAt == null)
             .AsNoTracking()
+            .OrderBy(s => s.Id)
+            .Take(batchSize)
             .ToListAsync();
+
+        if (unIndexedSpots.Count == 0) return unIndexedSpots.Count;
 
         var now = DateTimeOffset.Now;
         var fullTextIndexSpots = new List<FtsSpot>();
@@ -106,8 +136,8 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
         {
             _logger.FailedToSaveSpots(ex);
         }
-
-        _logger.SpotIndexingFinished(DateTimeOffset.Now, fullTextIndexSpots.Count);
+        
+        return unIndexedSpots.Count;
     }
 
     [GeneratedRegex(@"(?<=\w)\.(?=\w)")]

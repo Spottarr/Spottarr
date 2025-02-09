@@ -32,6 +32,8 @@ services:
       - "USENET__USETLS=true"
       - "USENET__MAXCONNECTIONS=10"
       - "SPOTNET__RETRIEVEAFTER=2024-10-01T00:00:00Z"
+      - "SPOTNET__IMPORTBATCHSIZE=10000"
+      - "SPOTNET__IMPORTADULTCONTENT=false"
     volumes:
       - /path/to/spottarr/data:/data
     ports:
