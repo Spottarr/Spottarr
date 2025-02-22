@@ -13,13 +13,13 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@tanstack/vue-table": "^8.21.2",
     "@vueuse/core": "^12.5.0",
     "flowbite": "^3.1.1",
     "flowbite-vue": "^0.1.7",
     "mdi-vue3": "^7.4.47",
     "pinia": "^2.3.0",
     "pretty-bytes": "^6.1.1",
-    "simple-datatables": "^9.2.2",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
   },

@@ -1,11 +1,76 @@
 <script setup lang="ts">
-import { DownloadIcon, SortIcon } from 'mdi-vue3';
+import { DownloadIcon } from 'mdi-vue3';
 import prettyBytes from 'pretty-bytes';
 import useSpots from '@/composables/useSpots';
 import { useTimeAgo } from '@vueuse/core';
-import { onMounted } from 'vue';
+import { FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table';
+import type { ColumnDef, SortingState } from '@tanstack/vue-table';
+import { onMounted, ref, h, computed } from 'vue';
+import type { Ref } from 'vue';
+import type { SpotTableRowResponseDto } from '@/types/generated/spot-table-row-response-dto.ts';
+import ExternalLinkButton from '@/components/ExternalLinkButton.vue';
+import TableSortIcon from '@/components/TableSortIcon.vue';
 
 const { spots, error, loading, fetchSpots, nzbUrl } = useSpots();
+
+const columns: Ref<ColumnDef<SpotTableRowResponseDto>[]> = ref([
+  {
+    accessorKey: 'category',
+    header: 'Category',
+  },
+  {
+    accessorKey: 'title',
+    header: 'Title',
+  },
+  {
+    accessorKey: 'genre',
+    header: 'Genre',
+  },
+  {
+    accessorKey: 'spotter',
+    header: 'Spotter',
+  },
+  {
+    accessorKey: 'spottedAt',
+    header: 'Age',
+    cell: (props) => {
+      return useTimeAgo(props.getValue() as Date).value;
+    },
+  },
+  {
+    accessorKey: 'bytes',
+    header: 'Size',
+    cell: (props) => {
+      return prettyBytes(props.getValue() as number);
+    },
+  },
+  {
+    header: 'Actions',
+    cell: (props) =>
+      h(ExternalLinkButton, {
+        url: nzbUrl(props.row.original.id),
+        icon: DownloadIcon,
+      }),
+  },
+]);
+
+const sorting: Ref<SortingState> = ref([]);
+const table = useVueTable({
+  columns: columns.value,
+  data: spots,
+  getCoreRowModel: getCoreRowModel(),
+  state: {
+    sorting: sorting.value,
+  },
+  onSortingChange: (updater) => {
+    const res = (sorting.value = typeof updater === 'function' ? updater(sorting.value) : updater);
+    console.log(res);
+    return res;
+  },
+});
+
+const headers = computed(() => table.getFlatHeaders());
+const rows = computed(() => table.getRowModel().rows);
 
 onMounted(fetchSpots);
 </script>
@@ -17,67 +82,31 @@ onMounted(fetchSpots);
   <template v-else-if="spots.length">
     <div class="overflow-x-auto">
       <table class="border-collapse table-auto w-full">
-        <thead>
-          <tr
-            class="font-light border-b border-gray-200 dark:border-slate-600 bg-gray-100 dark:bg-slate-700 text-left"
-          >
-            <th class="">
-              <a class="flex items-center space-x-4 w-full p-4" href="#">
-                <span class="flex-1">Category</span>
-                <SortIcon class="size-5 flex-none fill-gray-400 dark:fill-slate-400" />
-              </a>
+        <thead class="font-light bg-gray-100 dark:bg-slate-700 text-left">
+          <tr class="border-b border-gray-200 dark:border-slate-600">
+            <th
+              v-for="header in headers"
+              :key="header.id"
+              :class="header.column.getCanSort() ? 'cursor-pointer select-none' : ''"
+              @click="header.column.getToggleSortingHandler()?.($event)"
+            >
+              <span class="flex items-center space-x-4 w-full p-4">
+                <span class="flex-1">
+                  <flex-render :render="header.column.getIsSorted()" :props="header.getContext()" />
+                </span>
+                <table-sort-icon class="flex-none" :is-sorted="header.column.getIsSorted()" />
+              </span>
             </th>
-            <th class="">
-              <a class="flex items-center space-x-4 w-full p-4" href="#">
-                <span class="flex-1">Title</span>
-                <SortIcon class="size-5 flex-none fill-gray-400 dark:fill-slate-400" />
-              </a>
-            </th>
-            <th class="">
-              <a class="flex items-center space-x-4 w-full p-4" href="#">
-                <span class="flex-1">Genre</span>
-                <SortIcon class="size-5 flex-none fill-gray-400 dark:fill-slate-400" />
-              </a>
-            </th>
-            <th class="">
-              <a class="flex items-center space-x-4 w-full p-4" href="#">
-                <span class="flex-1">Spotter</span>
-                <SortIcon class="size-5 flex-none fill-gray-400 dark:fill-slate-400" />
-              </a>
-            </th>
-            <th class="">
-              <a class="flex items-center space-x-4 w-full p-4" href="#">
-                <span class="flex-1">Age</span>
-                <SortIcon class="size-5 flex-none fill-gray-400 dark:fill-slate-400" />
-              </a>
-            </th>
-            <th class="">
-              <a class="flex items-center space-x-4 w-full p-4" href="#">
-                <span class="flex-1">Size</span>
-                <SortIcon class="size-5 flex-none fill-gray-400 dark:fill-slate-400" />
-              </a>
-            </th>
-            <th class="p-4">Links</th>
           </tr>
         </thead>
         <tbody>
           <tr
+            v-for="row in rows"
+            :key="row.id"
             class="border-b last:border-0 dark:border-slate-600 even:bg-gray-50 odd:bg-white dark:even:bg-slate-700 dark:odd:bg-slate-800"
-            v-for="spot in spots"
-            :key="spot.id"
           >
-            <td class="p-4">{{ spot.category }}</td>
-            <td class="p-4">{{ spot.title }}</td>
-            <td class="p-4">{{ spot.genre }}</td>
-            <td class="p-4">{{ spot.spotter }}</td>
-            <td class="p-4">{{ useTimeAgo(spot.spottedAt) }}</td>
-            <td class="p-4">{{ prettyBytes(spot.bytes) }}</td>
-            <td class="p-4">
-              <a class="" target="_blank" :href="nzbUrl(spot.id)">
-                <button class="rounded-md dark:bg-slate-600 dark:hover:bg-slate-500 p-2">
-                  <download-icon class="size-5" />
-                </button>
-              </a>
+            <td v-for="cell in row.getVisibleCells()" :key="cell.id" class="p-4">
+              <flex-render :render="cell.column.columnDef.cell" :props="cell.getContext()" />
             </td>
           </tr>
         </tbody>
