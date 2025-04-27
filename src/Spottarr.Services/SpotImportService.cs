@@ -14,6 +14,7 @@ using Spottarr.Services.Nntp;
 using Spottarr.Services.Parsers;
 using Spottarr.Services.Spotnet;
 using Usenet.Exceptions;
+using Usenet.Nntp;
 using Usenet.Nntp.Models;
 
 namespace Spottarr.Services;
@@ -160,6 +161,108 @@ internal sealed class SpotImportService : ISpotImportService
     }
 
     /// <summary>
+    /// NNTP does not offer a way to get the closest article number for a specific date.
+    /// This makes performing a full import starting at a specific date challenging.
+    /// Instead of fetching all headers, this method works around that limitation by performing a binary search.
+    /// </summary>
+    /// <example>
+    /// For range 0 - 10000, check date for 5000, if the date of message 5000 is after the given date,
+    /// the given date it must fall in the range of range 0 - 5000.
+    /// For range 0 - 5000, check date for 2500, if the date of message 2500 is before the given date,
+    /// the given date it must fall in the range of range 2500 - 5000.
+    /// For range 2500 - 5000, check date for 3750, if the date of message 3750 is after the given date,
+    /// the given date it must fall in the range of range 2500 - 3759.
+    /// etc.
+    /// </example>
+    /// <param name="options"></param>
+    /// <returns></returns>
+    private async Task<long> GetArticleNumberByDate(SpotnetOptions options)
+    {
+        var articleNumber = 0L;
+        var attempts = 0;
+        DateTimeOffset? date = null;
+
+        NntpClientWrapper? client = null;
+        try
+        {
+            client = await _nntpClientPool.BorrowClient();
+
+            // Group is set for the lifetime of the connection
+            var groupResponse = client.Group(options.SpotGroup);
+            if (!groupResponse.Success)
+            {
+                _logger.CouldNotRetrieveSpotGroup(options.SpotGroup, groupResponse.Code, groupResponse.Message);
+                return articleNumber;
+            }
+
+            var group = groupResponse.Group;
+
+            // Perform the binary search
+            var low = group.LowWaterMark;
+            var high = group.HighWaterMark;
+
+            while (low <= high)
+            {
+                date = null;
+                var mid = (low + high) / 2L;
+                var articleToCheck = mid;
+
+                while (date == null)
+                {
+                    date = GetArticleDate(client, articleToCheck);
+                    attempts++;
+
+                    // Sometimes articles will just be unavailable
+                    // In this case retry the next closest article
+                    if (date == null) articleToCheck--;
+                }
+
+                if (date < options.RetrieveAfter) low = mid + 1;
+                else high = mid - 1;
+
+                articleNumber = low;
+            }
+
+            _logger.FoundArticleNumberForRetrieveAfter(articleNumber, date, group.LowWaterMark, group.HighWaterMark,
+                options.RetrieveAfter, attempts);
+            return articleNumber;
+        }
+        catch (NntpException exception)
+        {
+            _logger.CouldNotRetrieveArticle(exception, string.Empty);
+            return articleNumber;
+        }
+        finally
+        {
+            if (client != null) _nntpClientPool.ReturnClient(client);
+        }
+    }
+
+    private DateTimeOffset? GetArticleDate(NntpClientWrapper client, long mid)
+    {
+        var dateResponse = client.Xhdr(NntpHeaders.Date, new NntpArticleRange(mid, mid));
+
+        if (!dateResponse.Success)
+        {
+            _logger.CouldNotRetrieveDateHeader(mid, dateResponse.Code, dateResponse.Message);
+            return null;
+        }
+
+        // Xhdr can return headers for multiple articles, but we only need the first one
+        // The header is in the format: <article number> <header value>, strip the article number.
+        var dateHeader = dateResponse.Lines.ToList()
+            .FirstOrDefault(string.Empty)
+            .Replace($"{mid} ", string.Empty, StringComparison.Ordinal);
+
+        var date = HeaderDateParser.Parse(dateHeader);
+
+        if (!date.HasError) return date.Result;
+
+        _logger.CouldNotParseDateHeader(mid, date.Error);
+        return null;
+    }
+
+    /// <summary>
     /// Get the ranges of article sequence numbers added since the last import.
     /// If this is the first import, the range of the entire group is returned
     /// </summary>
@@ -197,16 +300,15 @@ internal sealed class SpotImportService : ISpotImportService
 
             // Always enumerate all lines from the response so the buffer is empty
             var headers = xOverResponse.Lines.ToList();
-            
+
             // Parallelize to speed up parsing
             var spots = new ConcurrentBag<Spot>();
             var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 10 };
             Parallel.ForEach(headers, parallelOptions, spot =>
                 ParseSpotHeader(spot, spots, options.RetrieveAfter, options.ImportAdultContent)
             );
-            
-            return spots.ToList();
 
+            return spots.ToList();
         }
         catch (NntpException exception)
         {
@@ -219,7 +321,8 @@ internal sealed class SpotImportService : ISpotImportService
         }
     }
 
-    private void ParseSpotHeader(string header, ConcurrentBag<Spot> spots, DateTimeOffset retrieveAfter, bool importAdultContent)
+    private void ParseSpotHeader(string header, ConcurrentBag<Spot> spots, DateTimeOffset retrieveAfter,
+        bool importAdultContent)
     {
         var nntpHeaderResult = NntpHeaderParser.Parse(header);
         if (nntpHeaderResult.HasError)
@@ -227,9 +330,9 @@ internal sealed class SpotImportService : ISpotImportService
             _logger.FailedToParseSpotHeader(header);
             return;
         }
-        
+
         var nntpHeader = nntpHeaderResult.Result;
-        
+
         var spotnetHeaderResult = SpotnetHeaderParser.Parse(nntpHeader);
         if (spotnetHeaderResult.HasError)
         {
@@ -238,13 +341,13 @@ internal sealed class SpotImportService : ISpotImportService
         }
 
         var spotnetHeader = spotnetHeaderResult.Result;
-        
+
         // For now, we ignore delete requests
         if (spotnetHeader is { KeyId: KeyId.Moderator, Command: ModerationCommand.Delete })
             return;
-        
+
         var spot = spotnetHeader.ToSpot();
-        
+
         if (spot.SpottedAt >= retrieveAfter && (importAdultContent || !spot.IsAdultContent()))
             spots.Add(spot);
     }
