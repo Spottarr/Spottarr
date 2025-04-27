@@ -6,17 +6,19 @@ namespace Spottarr.Tests;
 
 public class SpotnetHeaderParserTests
 {
-    [Fact]
-    public void ParsesHeaderValidVariant1()
+    [Theory]
+    [InlineData("")]
+    [InlineData("Test subject")]
+    public void ParsesHeaderValidVariant1(string subjectAndTags)
     {
         const string spotnetHeader =
             "solem <pizlw58KFSC94SUdwAIMBzRNxmCZrhEnZb4ihCLAX9p6ViN9s2vf-pwFFZqPKwzFF.dpeyw-ssEYgAUebInWNwvjKu6irDwuJCTpgDL7Y1k6lBQj1j4YE-sl99LqQ-sjg7fUf@17a09b04d11b11c00c11z01.3366259428.20.1727723059.1.NL.OmepU20o1i7VxNRhQkAxC1MU8UH4fuOy-pmcHCSgOyCv71Qi-pKuuyPFADcZSY2JqI>";
-        var nntpHeader = PrepareNntpHeader(spotnetHeader);
+        var nntpHeader = PrepareNntpHeader(spotnetHeader, subjectAndTags);
 
         var parsingResult = SpotnetHeaderParser.Parse(nntpHeader);
-        
+
         Assert.False(parsingResult.HasError);
-        
+
         var result = parsingResult.Result;
 
         Assert.Equal("solem", result.Nickname);
@@ -68,9 +70,9 @@ public class SpotnetHeaderParserTests
         var nntpHeader = PrepareNntpHeader(spotnetHeader);
 
         var parsingResult = SpotnetHeaderParser.Parse(nntpHeader);
-        
+
         Assert.False(parsingResult.HasError);
-        
+
         var result = parsingResult.Result;
 
         Assert.Equal("Krid", result.Nickname);
@@ -98,15 +100,15 @@ public class SpotnetHeaderParserTests
         var nntpHeader = PrepareNntpHeader(spotnetHeader);
 
         var parsingResult = SpotnetHeaderParser.Parse(nntpHeader);
-        
+
         Assert.True(parsingResult.HasError);
     }
-    
-    private static NntpHeader PrepareNntpHeader(string spotnetHeader) =>
+
+    private static NntpHeader PrepareNntpHeader(string spotnetHeader, string subjectAndTags = "Test subject") =>
         new()
         {
             ArticleNumber = 1,
-            Subject = "Test subject",
+            Subject = subjectAndTags,
             Author = spotnetHeader,
             Date = default,
             MessageId = "message123@spot.net",
