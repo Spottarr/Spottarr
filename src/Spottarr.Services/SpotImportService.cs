@@ -215,6 +215,10 @@ internal sealed class SpotImportService : ISpotImportService
                     // Sometimes articles will just be unavailable
                     // In this case retry the next closest article
                     if (date == null) articleToCheck--;
+
+                    // If no article is available when hitting the low watermark, give up. 
+                    if (articleToCheck < group.LowWaterMark)
+                        throw new InvalidOperationException("No articles available");
                 }
 
                 if (date < options.RetrieveAfter) low = mid + 1;
@@ -228,6 +232,11 @@ internal sealed class SpotImportService : ISpotImportService
             return articleNumber;
         }
         catch (NntpException exception)
+        {
+            _logger.CouldNotRetrieveArticle(exception, string.Empty);
+            return articleNumber;
+        }
+        catch (InvalidOperationException exception)
         {
             _logger.CouldNotRetrieveArticle(exception, string.Empty);
             return articleNumber;
