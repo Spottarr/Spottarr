@@ -13,12 +13,12 @@ internal static partial class SpotnetHeaderParser
         "dispose",
         "remove"
     ];
-    
+
     public static ParserResult<SpotHeader> Parse(NntpHeader header)
     {
-        var subjectAndTags = header.Subject.Split('|', 2,
-            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        var subject = subjectAndTags[0];
+        var subjectAndTags =
+            header.Subject.Split('|', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var subject = subjectAndTags.Length >= 1 ? subjectAndTags[0] : string.Empty;
         var tag = subjectAndTags.Length == 2 ? subjectAndTags[1] : string.Empty;
 
         var command = DeleteModerationCommands.Any(c => subject.StartsWith(c, StringComparison.OrdinalIgnoreCase))

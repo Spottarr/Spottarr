@@ -1,4 +1,7 @@
 using Scalar.AspNetCore;
+using Microsoft.Extensions.Configuration.Json;
+using Microsoft.Extensions.FileProviders;
+using Spottarr.Data.Helpers;
 using Spottarr.Services;
 using Spottarr.Web.Helpers;
 using Spottarr.Web.Logging;
