@@ -90,7 +90,7 @@ internal sealed class SpotImportService : ISpotImportService
         var group = await GetGroup(spotnetOptions.SpotGroup);
         if (group == null) return;
 
-        var articleRanges = GetArticleRangesToImport(spotnetOptions, group);
+        var articleRanges = await GetArticleRangesToImport(spotnetOptions, group);
         await Import(spotnetOptions, usenetOptions, articleRanges, cancellationToken);
 
         _logger.SpotImportFinished(DateTimeOffset.Now);
@@ -266,11 +266,17 @@ internal sealed class SpotImportService : ISpotImportService
     /// Get the ranges of article sequence numbers added since the last import.
     /// If this is the first import, the range of the entire group is returned
     /// </summary>
-    private IReadOnlyList<NntpArticleRange> GetArticleRangesToImport(SpotnetOptions spotnetOptions, NntpGroup group)
+    private async Task<IReadOnlyList<NntpArticleRange>> GetArticleRangesToImport(SpotnetOptions spotnetOptions,
+        NntpGroup group)
     {
         // Only fetch records after the last known record in the DB
-        var lastImportedMessage = _dbContext.Spots.Max(s => (int?)s.MessageNumber) ?? 0;
-        var lowWaterMark = Math.Max(lastImportedMessage + 1, group.LowWaterMark);
+        var lastImportedMessage = await _dbContext.Spots.MaxAsync(s => (long?)s.MessageNumber) ?? 0L;
+
+        // No imports yet, determine the article number closest to the given retrieve after date
+        var lowWaterMark = lastImportedMessage == 0
+            ? await GetArticleNumberByDate(spotnetOptions)
+            : Math.Max(lastImportedMessage + 1, group.LowWaterMark);
+
         return lowWaterMark <= group.HighWaterMark
             ? NntpArticleRangeFactory.GetBatches(lowWaterMark, group.HighWaterMark, spotnetOptions.ImportBatchSize)
             : [];
