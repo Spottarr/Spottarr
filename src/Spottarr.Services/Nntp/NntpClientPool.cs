@@ -4,12 +4,13 @@ using Microsoft.Extensions.Options;
 using Spottarr.Services.Configuration;
 using Spottarr.Services.Contracts;
 using Spottarr.Services.Logging;
+using Usenet;
 
 namespace Spottarr.Services.Nntp;
 
 internal class NntpClientPool : INntpClientPool, IDisposable
 {
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private readonly Queue<NntpClientWrapper> _availableClients = [];
     private readonly TimeSpan _monitorInterval = TimeSpan.FromSeconds(10);
     private readonly TimeSpan _idleTimeout = TimeSpan.FromSeconds(30);
@@ -24,16 +25,17 @@ internal class NntpClientPool : INntpClientPool, IDisposable
     private int _currentPoolSize;
     private bool _disposed;
 
-    public NntpClientPool(IHostEnvironment hostEnvironment, ILoggerFactory loggerFactory, ILogger<NntpClientPool> logger, IOptions<UsenetOptions> usenetOptions)
+    public NntpClientPool(IHostEnvironment hostEnvironment, ILoggerFactory loggerFactory,
+        ILogger<NntpClientPool> logger, IOptions<UsenetOptions> usenetOptions)
     {
         _logger = logger;
         _usenetOptions = usenetOptions;
         _maxPoolSize = usenetOptions.Value.MaxConnections;
         _semaphore = new SemaphoreSlim(_maxPoolSize, _maxPoolSize);
-        
+
         // Enable NNTP client logging
         if (hostEnvironment.IsDevelopment())
-            Usenet.Logger.Factory = loggerFactory;
+            Logger.Factory = loggerFactory;
 
         // Start the background monitoring task
         Task.Run(() => MonitorIdleClients(_cts.Token));
