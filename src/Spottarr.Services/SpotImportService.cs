@@ -15,6 +15,7 @@ using Spottarr.Services.Parsers;
 using Spottarr.Services.Spotnet;
 using Usenet.Exceptions;
 using Usenet.Nntp;
+using Usenet.Nntp.Contracts;
 using Usenet.Nntp.Models;
 
 namespace Spottarr.Services;
@@ -47,7 +48,7 @@ internal sealed class SpotImportService : ISpotImportService
         if (spot == null || string.IsNullOrEmpty(spot.NzbMessageId))
             return null;
 
-        NntpClientWrapper? client = null;
+        IPooledNntpClient? client = null;
         try
         {
             client = await _nntpClientPool.BorrowClient();
@@ -116,7 +117,7 @@ internal sealed class SpotImportService : ISpotImportService
 
     private async Task<NntpGroup?> GetGroup(string group)
     {
-        NntpClientWrapper? client = null;
+        IPooledNntpClient? client = null;
         try
         {
             client = await _nntpClientPool.BorrowClient();
@@ -182,7 +183,7 @@ internal sealed class SpotImportService : ISpotImportService
         var attempts = 0;
         DateTimeOffset? date = null;
 
-        NntpClientWrapper? client = null;
+        IPooledNntpClient? client = null;
         try
         {
             client = await _nntpClientPool.BorrowClient();
@@ -247,7 +248,7 @@ internal sealed class SpotImportService : ISpotImportService
         }
     }
 
-    private DateTimeOffset? GetArticleDate(NntpClientWrapper client, long mid)
+    private DateTimeOffset? GetArticleDate(IPooledNntpClient client, long mid)
     {
         var dateResponse = client.Xhdr(NntpHeaders.Date, new NntpArticleRange(mid, mid));
 
@@ -293,7 +294,7 @@ internal sealed class SpotImportService : ISpotImportService
 
     private async Task<IReadOnlyList<Spot>> FetchSpotHeaders(SpotnetOptions options, NntpArticleRange batch)
     {
-        NntpClientWrapper? client = null;
+        IPooledNntpClient? client = null;
         try
         {
             client = await _nntpClientPool.BorrowClient();
@@ -319,7 +320,7 @@ internal sealed class SpotImportService : ISpotImportService
             // Parallelize to speed up parsing
             var spots = new ConcurrentBag<Spot>();
             var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 10 };
-            Parallel.ForEach(headers, parallelOptions, spot =>
+            Parallel.ForEach(xOverResponse.Lines, parallelOptions, spot =>
                 ParseSpotHeader(spot, spots, options.RetrieveAfter, options.ImportAdultContent)
             );
 
@@ -369,7 +370,7 @@ internal sealed class SpotImportService : ISpotImportService
 
     private async ValueTask GetSpotDetails(Spot spot, CancellationToken ct)
     {
-        NntpClientWrapper? client = null;
+        IPooledNntpClient? client = null;
         try
         {
             client = await _nntpClientPool.BorrowClient();
