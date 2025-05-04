@@ -1,4 +1,5 @@
 using Spottarr.Services.Nntp;
+using Xunit;
 
 namespace Spottarr.Tests;
 
@@ -22,7 +23,7 @@ public class NntpArticleRangeTests
             Assert.Equal(3010, r3.To);
         });
     }
-    
+
     [Fact]
     public void RangeIsClampedToEnd()
     {

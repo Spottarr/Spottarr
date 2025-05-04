@@ -19,10 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="Xunit" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\src\Spottarr.Services\Spottarr.Services.csproj" />
   </ItemGroup>
 
