@@ -1,4 +1,5 @@
 using Spottarr.Services.Parsers;
+using Xunit;
 
 namespace Spottarr.Tests;
 
@@ -13,7 +14,7 @@ public class YearEpisodeSeasonParserTests
         Assert.Single(result.Episodes, 1);
         Assert.Single(result.Years, 2024);
     }
-    
+
     [Fact]
     public void ParsesEpisodeSeasonYearShorthandLowercase()
     {
@@ -23,7 +24,7 @@ public class YearEpisodeSeasonParserTests
         Assert.Single(result.Episodes, 1);
         Assert.Single(result.Years, 2024);
     }
-    
+
     [Fact]
     public void ParsesEpisodeSeasonYearFullEnglish()
     {
@@ -33,7 +34,7 @@ public class YearEpisodeSeasonParserTests
         Assert.Single(result.Episodes, 1);
         Assert.Single(result.Years, 2024);
     }
-    
+
     [Fact]
     public void ParsesEpisodeSeasonYearFullDutch()
     {
@@ -43,7 +44,7 @@ public class YearEpisodeSeasonParserTests
         Assert.Single(result.Episodes, 1);
         Assert.Single(result.Years, 2024);
     }
-    
+
     [Fact]
     public void ParsesEpisodeSeasonYearFullDutchLowercase()
     {
@@ -53,7 +54,7 @@ public class YearEpisodeSeasonParserTests
         Assert.Single(result.Episodes, 1);
         Assert.Single(result.Years, 2024);
     }
-    
+
     [Fact]
     public void ParsesEpisodeSeasonYearShorthandMultiple()
     {

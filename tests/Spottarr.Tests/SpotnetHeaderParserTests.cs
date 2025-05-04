@@ -1,6 +1,7 @@
 ﻿using Spottarr.Services.Nntp;
 using Spottarr.Services.Parsers;
 using Spottarr.Services.Spotnet;
+using Xunit;
 
 namespace Spottarr.Tests;
 
