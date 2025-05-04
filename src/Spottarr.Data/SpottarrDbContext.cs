@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Spottarr.Data.Configuration;
 using Spottarr.Data.Entities;
 using Spottarr.Data.Helpers;
 
@@ -10,18 +12,21 @@ public class SpottarrDbContext : DbContext
 {
     private readonly IHostEnvironment _environment;
     private readonly ILoggerFactory _loggerFactory;
+    private readonly IOptions<DatabaseOptions> _options;
 
     public DbSet<Spot> Spots { get; set; }
     public DbSet<FtsSpot> FtsSpots { get; set; }
 
-    public SpottarrDbContext(IHostEnvironment environment, ILoggerFactory loggerFactory)
+    public SpottarrDbContext(IHostEnvironment environment, ILoggerFactory loggerFactory,
+        IOptions<DatabaseOptions> options)
     {
         _environment = environment;
         _loggerFactory = loggerFactory;
+        _options = options;
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
-        optionsBuilder.UseSqlite($"Data Source={DbPathHelper.GetDbPath()}")
+        optionsBuilder.GetBuilder(_options.Value)
             .UseLoggerFactory(_loggerFactory)
             .EnableDetailedErrors(_environment.IsDevelopment())
             .EnableSensitiveDataLogging(_environment.IsDevelopment());
@@ -42,7 +47,7 @@ public class SpottarrDbContext : DbContext
             x.HasIndex(s => s.MessageId).IsUnique();
             x.HasIndex(s => s.MessageNumber);
         });
-        
+
         modelBuilder.Entity<FtsSpot>(x =>
         {
             // Pluralize, since we won't be adding a DbSet for it

@@ -10,12 +10,13 @@ namespace Spottarr.Services;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddSpottarrServices(this IServiceCollection services, IConfiguration configuration, bool runOnce = false)
+    public static IServiceCollection AddSpottarrServices(this IServiceCollection services, IConfiguration configuration,
+        bool runOnce = false)
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
         return services
-            .AddSpottarrData()
+            .AddSpottarrData(configuration)
             .AddSpottarrJobs(runOnce)
             .AddSingleton<INntpClientPool, NntpClientPool>()
             .AddSingleton<IApplicationVersionService, ApplicationVersionService>()
