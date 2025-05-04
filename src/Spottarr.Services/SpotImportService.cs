@@ -260,7 +260,7 @@ internal sealed class SpotImportService : ISpotImportService
 
         // Xhdr can return headers for multiple articles, but we only need the first one
         // The header is in the format: <article number> <header value>, strip the article number.
-        var dateHeader = dateResponse.Lines.ToList()
+        var dateHeader = dateResponse.Lines
             .FirstOrDefault(string.Empty)
             .Replace($"{mid} ", string.Empty, StringComparison.Ordinal);
 
@@ -313,9 +313,6 @@ internal sealed class SpotImportService : ISpotImportService
                 _logger.CouldNotRetrieveArticleHeaders(batch.From, batch.To, xOverResponse.Code, xOverResponse.Message);
                 return [];
             }
-
-            // Always enumerate all lines from the response so the buffer is empty
-            var headers = xOverResponse.Lines.ToList();
 
             // Parallelize to speed up parsing
             var spots = new ConcurrentBag<Spot>();
@@ -385,7 +382,6 @@ internal sealed class SpotImportService : ISpotImportService
 
             var spotArticle = spotArticleResponse.Article;
 
-            // Header and body values are enumerable and lazy, we need to enumerate them to clear the read buffer on the usenet client.
             // Usenet headers are not cases sensitive, but the Usenet library assumes they are.
             var headers = spotArticle.Headers.ToDictionary(h => h.Key, h => string.Concat(h.Value),
                 StringComparer.OrdinalIgnoreCase);
