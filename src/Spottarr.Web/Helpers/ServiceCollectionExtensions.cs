@@ -22,7 +22,11 @@ internal static class ServiceCollectionExtensions
 
         services.Configure<ForwardedHeadersOptions>(options =>
         {
-            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            // Assuming that Spottarr runs in docker without being publicly exposed directly,
+            // we trust any IP as a safe reverse proxy
+            options.KnownNetworks.Clear();
+            options.KnownProxies.Clear();
+            options.ForwardedHeaders = ForwardedHeaders.All;
         });
 
         return services;
