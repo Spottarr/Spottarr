@@ -16,7 +16,7 @@
         <img src="logo.svg" width="200" height="200" alt="Spottarr"/>
         <h1>Spottarr</h1>
         <a class="btn" href="/newznab/api?t=caps">Newznab API</a>
-        <p class="stats">Spots indexed: @Model.SpotCount</p>
+        <p class="stats">Spots indexed: @Model.SpotCount.ToString("N0")</p>
         <p class="stats">Version: @Model.Version</p>
     </div>
 </main>
