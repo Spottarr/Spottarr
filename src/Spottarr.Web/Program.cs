@@ -34,7 +34,12 @@ if (builder.Environment.IsDevelopment() || builder.Environment.IsContainerFastMo
         configRoot.Reload();
 }
 
-builder.Services.AddControllersWithViews().AddXmlSerializerFormatters();
+var mvcBuilder = builder.Services.AddControllersWithViews()
+    .AddXmlSerializerFormatters();
+
+if (builder.Environment.IsDevelopment())
+    mvcBuilder.AddRazorRuntimeCompilation();
+
 builder.Services.Configure<RouteOptions>(options =>
 {
     options.LowercaseQueryStrings = true;
