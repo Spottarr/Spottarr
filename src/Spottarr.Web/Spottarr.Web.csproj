@@ -3,10 +3,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4"/>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.4"/>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.XmlSerializer.Generator" Version="9.0.4" />
     <PackageReference Include="System.ServiceModel.Syndication" Version="9.0.4" />
   </ItemGroup>

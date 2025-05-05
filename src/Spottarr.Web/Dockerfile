@@ -22,7 +22,7 @@ RUN dotnet build "Spottarr.Web.csproj" -c $BUILD_CONFIGURATION -o /app/build -p:
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "Spottarr.Web.csproj" -c $BUILD_CONFIGURATION -o /app/publish -p:UseAppHost=false
+RUN dotnet publish "Spottarr.Web.csproj" -c $BUILD_CONFIGURATION -o /app/publish -p:UseAppHost=false -p:Version=${BUILD_VERSION#v}
 
 FROM base AS final
 ENV DOTNET_ENVIRONMENT=Production
