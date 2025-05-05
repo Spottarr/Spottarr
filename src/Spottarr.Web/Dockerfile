@@ -8,6 +8,7 @@ EXPOSE 8383
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
+ARG BUILD_VERSION=v1.0.0
 WORKDIR /src
 COPY ["src/Spottarr.Web/Spottarr.Web.csproj", "src/Spottarr.Web/"]
 COPY ["src/Spottarr.Data/Spottarr.Data.csproj", "src/Spottarr.Data/"]
@@ -17,11 +18,11 @@ COPY ./Directory.Build.props ./
 RUN dotnet restore "src/Spottarr.Web/Spottarr.Web.csproj"
 COPY . .
 WORKDIR "/src/src/Spottarr.Web"
-RUN dotnet build "Spottarr.Web.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "Spottarr.Web.csproj" -c $BUILD_CONFIGURATION -o /app/build -p:Version=${BUILD_VERSION#v}
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "Spottarr.Web.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "Spottarr.Web.csproj" -c $BUILD_CONFIGURATION -o /app/publish -p:UseAppHost=false
 
 FROM base AS final
 ENV DOTNET_ENVIRONMENT=Production
