@@ -47,7 +47,7 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
 
-      - name: Build and pushdock
+      - name: Build and push
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64 #,linux/arm64
@@ -55,3 +55,6 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            BUILD_CONFIGURATION=Release
+            ${{ startsWith(github.ref_name, 'v') && format('BUILD_VERSION={0}', github.ref_name) || '' }}

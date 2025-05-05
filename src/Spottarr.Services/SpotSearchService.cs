@@ -56,18 +56,20 @@ public class SpotSearchService : ISpotSearchService
 
             query = query.Where(s => ftsResults.Contains(s.Id));
         }
-        
+
         var totalCount = await query.CountAsync();
         var spots = await query
             .OrderByDescending(s => s.SpottedAt)
             .Skip(filter.Offset)
             .Take(filter.Limit)
             .ToListAsync();
-        
+
         return new SpotSearchResponse()
         {
             Spots = spots,
             TotalCount = totalCount
         };
     }
+
+    public Task<int> Count() => _dbContext.Spots.CountAsync();
 }

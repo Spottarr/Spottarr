@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Spottarr.Tests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -9,7 +10,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.4"/>
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.4"/>
     <PackageReference Include="Quartz.Extensions.Hosting" Version="3.14.0" />
-    <PackageReference Include="Spottarr.Usenet" Version="4.0.2"/>
+    <PackageReference Include="Spottarr.Usenet" Version="4.1.0"/>
   </ItemGroup>
 
   <ItemGroup>
