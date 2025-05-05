@@ -1,3 +1,4 @@
+using Scalar.AspNetCore;
 using Spottarr.Data.Helpers;
 using Spottarr.Services;
 using Spottarr.Web.Helpers;
@@ -22,6 +23,8 @@ app.UseStaticFiles();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapOpenApi();
+app.MapScalarApiReference();
 
 app.UseMiddleware<NewsznabQueryActionMiddleware>();
 app.UseRouting();

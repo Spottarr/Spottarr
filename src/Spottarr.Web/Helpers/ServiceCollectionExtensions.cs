@@ -12,6 +12,8 @@ internal static class ServiceCollectionExtensions
         if (environment.IsDevelopment())
             mvcBuilder.AddRazorRuntimeCompilation();
 
+        services.AddOpenApi(options => options.AddDocumentTransformer<NewznabOperationTransformer>());
+
         services.Configure<RouteOptions>(options =>
         {
             options.LowercaseQueryStrings = true;
