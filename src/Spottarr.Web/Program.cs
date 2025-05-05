@@ -15,6 +15,7 @@ var app = builder.Build();
 
 await app.MigrateDatabase();
 
+app.UseForwardedHeaders();
 app.UseHttpsRedirection();
 app.UseDefaultFiles();
 app.UseStaticFiles();

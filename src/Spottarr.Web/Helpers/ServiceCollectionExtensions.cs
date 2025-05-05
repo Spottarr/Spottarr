@@ -1,10 +1,12 @@
+using Microsoft.AspNetCore.HttpOverrides;
+
 namespace Spottarr.Web.Helpers;
 
 internal static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddSpottarrWeb(this IServiceCollection services, IHostEnvironment environment)
     {
-        var mvcBuilder = services.AddControllers()
+        var mvcBuilder = services.AddControllersWithViews()
             .AddXmlSerializerFormatters();
 
         if (environment.IsDevelopment())
@@ -14,6 +16,11 @@ internal static class ServiceCollectionExtensions
         {
             options.LowercaseQueryStrings = true;
             options.LowercaseUrls = true;
+        });
+
+        services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
         });
 
         return services;
