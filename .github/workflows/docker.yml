@@ -57,4 +57,4 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             BUILD_CONFIGURATION=Release
-            ${{ github.event.release.tag_name != '' && format('BUILD_VERSION={0}', github.event.release.tag_name) || '' }}
+            ${{ startsWith(github.ref_name, 'v') && format('BUILD_VERSION={0}', github.ref_name) || '' }}
