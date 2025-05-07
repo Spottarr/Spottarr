@@ -33,7 +33,7 @@ public sealed class NewznabController : Controller
     }
 
     [HttpGet("caps")]
-    [Produces("application/xml")]
+    [Produces(MediaTypeNames.Application.Xml)]
     public Capabilities Capabilities() =>
         CapabilitiesHelper.GetCapabilities(GetApiUri().Uri, GetLogoUri().Uri, _hostEnvironment.ApplicationName,
             _applicationVersionService.Version, DefaultPageSize);
@@ -45,38 +45,29 @@ public sealed class NewznabController : Controller
     [HttpGet("book")]
     [HttpGet("pc")]
     [Produces(MediaTypeNames.Text.Xml)]
-    public async Task<ActionResult> Search(
-        string? q,
-        int limit = DefaultPageSize,
-        int offset = 0,
-        int? ep = null,
-        int? season = null,
-        int? year = null,
-        [FromQuery, ModelBinder<CommaSeparatedEnumBinder>]
-        NewznabCategory[]? cat = null
+    public Task<ActionResult> Search(
+        [FromQuery(Name = "limit")] int limit = DefaultPageSize,
+        [FromQuery(Name = "imdbid")] string? imdbId = null,
+        [FromQuery(Name = "cat"), ModelBinder<CommaSeparatedEnumBinder>]
+        NewznabCategory[]? categories = null,
+        [FromQuery(Name = "q")] string? query = null,
+        [FromQuery(Name = "ep")] int? episode = null,
+        [FromQuery(Name = "season")] int? season = null,
+        [FromQuery(Name = "year")] int? year = null,
+        [FromQuery(Name = "offset")] int offset = 0
     )
     {
         var clampedLimit = Math.Clamp(limit, 0, DefaultPageSize);
-        var results = await _spotSearchService.Search(new SpotSearchFilter
+        return Search(new SpotSearchFilter
         {
             Offset = offset,
             Limit = clampedLimit,
-            Query = q,
-            Categories = cat?.ToHashSet(),
+            Query = query,
+            Categories = categories?.ToHashSet(),
             Years = year.HasValue ? [year.Value] : null,
-            Episodes = ep.HasValue ? [ep.Value] : null,
+            Episodes = episode.HasValue ? [episode.Value] : null,
             Seasons = season.HasValue ? [season.Value] : null,
         });
-
-        var items = results.Spots.Select(s => s.ToSyndicationItem(GetNzbUri(s.Id).Uri)).ToList();
-
-        var feed = new SyndicationFeed(_hostEnvironment.ApplicationName, _hostEnvironment.ApplicationName,
-                GetApiUri().Uri, items)
-            .AddLogo(GetLogoUri().Uri)
-            .AddNewznabNamespace()
-            .AddNewznabResponseInfo(offset, results.TotalCount);
-
-        return File(NewznabRssSerializer.Serialize(feed), MediaTypeNames.Text.Xml);
     }
 
     [HttpGet("get")]
@@ -87,6 +78,20 @@ public sealed class NewznabController : Controller
         if (result == null) return NotFound();
 
         return File(result, "application/x-nzb", $"{id}.nzb");
+    }
+
+    private async Task<ActionResult> Search(SpotSearchFilter filter)
+    {
+        var results = await _spotSearchService.Search(filter);
+        var items = results.Spots.Select(s => s.ToSyndicationItem(GetNzbUri(s.Id).Uri)).ToList();
+
+        var feed = new SyndicationFeed(_hostEnvironment.ApplicationName, _hostEnvironment.ApplicationName,
+                GetApiUri().Uri, items)
+            .AddLogo(GetLogoUri().Uri)
+            .AddNewznabNamespace()
+            .AddNewznabResponseInfo(filter.Offset, results.TotalCount);
+
+        return File(NewznabRssSerializer.Serialize(feed), MediaTypeNames.Text.Xml);
     }
 
     private UriBuilder GetApiUri()
