@@ -63,10 +63,10 @@ public sealed class NewznabController : Controller
             Offset = offset,
             Limit = clampedLimit,
             Query = query,
-            Categories = categories?.ToHashSet(),
-            Years = year.HasValue ? [year.Value] : null,
-            Episodes = episode.HasValue ? [episode.Value] : null,
-            Seasons = season.HasValue ? [season.Value] : null,
+            Categories = categories?.ToHashSet() ?? [],
+            Years = year.HasValue ? [year.Value] : [],
+            Episodes = episode.HasValue ? [episode.Value] : [],
+            Seasons = season.HasValue ? [season.Value] : [],
         });
     }
 
