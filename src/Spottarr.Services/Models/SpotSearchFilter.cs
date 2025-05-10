@@ -4,9 +4,9 @@ namespace Spottarr.Services.Models;
 
 public class SpotSearchFilter
 {
-    public int Offset { get; set; }
-    public int Limit { get; set; }
-    public string? Query { get; set; }
+    public int Offset { get; init; }
+    public int Limit { get; init; }
+    public string? Query { get; init; }
     public HashSet<NewznabCategory> Categories { get; init; } = [];
     public HashSet<SpotType> Types { get; init; } = [];
     public HashSet<ImageType> ImageTypes { get; init; } = [];
@@ -16,4 +16,5 @@ public class SpotSearchFilter
     public HashSet<int> Years { get; init; } = [];
     public HashSet<int> Seasons { get; init; } = [];
     public HashSet<int> Episodes { get; init; } = [];
+    public string? ImdbId { get; init; }
 }

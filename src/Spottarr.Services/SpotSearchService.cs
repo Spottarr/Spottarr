@@ -51,6 +51,9 @@ public class SpotSearchService : ISpotSearchService
         if (filter.Episodes.Count > 0)
             query = query.Where(s => s.Episodes.Any(y => filter.Episodes.Contains(y)));
 
+        if (!string.IsNullOrEmpty(filter.ImdbId))
+            query = query.Where(s => s.ImdbId == filter.ImdbId);
+
         if (!string.IsNullOrEmpty(filter.Query))
         {
             // EF core creates broken queries when we join the full text search table
