@@ -106,8 +106,10 @@ public static partial class LoggerExtensions
     [LoggerMessage(Level = LogLevel.Debug, Message = "Disposing idle NNTP client ({CurrentPoolSize}/{MaxPoolSize})")]
     public static partial void DisposingIdleNntpClient(this ILogger logger, int currentPoolSize, int maxPoolSize);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "Spot cleanup started at {DateTime}.")]
-    public static partial void SpotCleanupStarted(this ILogger logger, DateTimeOffset dateTime);
+    [LoggerMessage(Level = LogLevel.Information,
+        Message = "Spot cleanup started at {DateTime}. Cleaning up spots older than {CleanUpBefore}.")]
+    public static partial void SpotCleanupStarted(this ILogger logger, DateTimeOffset dateTime,
+        DateTimeOffset cleanUpBefore);
 
     [LoggerMessage(Level = LogLevel.Information,
         Message =
