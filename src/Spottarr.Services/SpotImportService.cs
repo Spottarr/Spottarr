@@ -401,6 +401,10 @@ internal sealed class SpotImportService : ISpotImportService
             spot.NzbMessageId = spotDetails.Posting.Nzb.Segment;
             spot.ImageMessageId = spotDetails.Posting.Image?.Segment;
             spot.Description = spotDetails.Posting.Description;
+            spot.Tag = spotDetails.Posting.Tag;
+            spot.Url = Uri.TryCreate(spotDetails.Posting.Website, UriKind.Absolute, out var uri) ? uri : null;
+            spot.Filename = spotDetails.Posting.Filename;
+            spot.Newsgroup = spotDetails.Posting.Newsgroup;
         }
         catch (InvalidOperationException ex)
         {
