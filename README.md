@@ -23,7 +23,8 @@ Spottarr can easily be integrated in your existing *Arrs using docker compose:
 services:
   spottarr:
     image: ghcr.io/spottarr/spottarr:latest
-    container_name: spottarr    
+    container_name: spottarr
+    user: "1654:1654" # Make sure to set the correct UID and GID for your system
     environment:
       - "USENET__HOSTNAME=my.news.server.com"
       - "USENET__USERNAME=username"
@@ -33,6 +34,7 @@ services:
       - "USENET__MAXCONNECTIONS=10"
       - "SPOTNET__RETRIEVEAFTER=2024-10-01T00:00:00Z"
       - "SPOTNET__IMPORTBATCHSIZE=10000"
+      - "SPOTNET__RETENTIONDAYS=365" # Use 0 for unlimited
       - "SPOTNET__IMPORTADULTCONTENT=false"
     volumes:
       - /path/to/spottarr/data:/data
@@ -40,9 +42,15 @@ services:
       - "8383:8383"
     restart: unless-stopped
 ```
-**Note** Make sure to properly escape special characters like `$` in your password.
 
-**Note** Spottarr runs as the non-privileged user `app` with the uid `1654`. It might be necessary to grant this user permissions to the mounted data directory on the host machine. 
+> [!NOTE]
+> Make sure to properly escape special characters like `$` in your password.
+
+> [!NOTE]
+> By default, Spottarr runs as the non-privileged user `app` with the UID `1654`.
+>
+> Make sure to either give this UID access to the mounted directory, or change the UID using the docker-compose `user`
+> directive.
 
 Once the Spottarr is up and running, it will automatically start indexing the spotnet messages starting from the provided `SPOTNET_RETRIEVEAFTER` date.
 

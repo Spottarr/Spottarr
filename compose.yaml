@@ -5,6 +5,7 @@ services:
       context: .
       dockerfile: ./src/Spottarr.Web/Dockerfile
     image: ghcr.io/spottarr/spottarr:latest
+    user: "1654:1654"
     environment:
       - "USENET__HOSTNAME=my.news.server.com"
       - "USENET__USERNAME=username"
@@ -14,6 +15,7 @@ services:
       - "USENET__MAXCONNECTIONS=10"
       - "SPOTNET__RETRIEVEAFTER=2024-10-01T00:00:00Z"
       - "SPOTNET__IMPORTBATCHSIZE=10000"
+      - "SPOTNET__RETENTIONDAYS=365"
       - "SPOTNET__IMPORTADULTCONTENT=false"
     ports:
       - "8383:8383"
