@@ -33,6 +33,7 @@ services:
       - "USENET__MAXCONNECTIONS=10"
       - "SPOTNET__RETRIEVEAFTER=2024-10-01T00:00:00Z"
       - "SPOTNET__IMPORTBATCHSIZE=10000"
+      - "SPOTNET__RETENTIONDAYS=365" # Use 0 for unlimited
       - "SPOTNET__IMPORTADULTCONTENT=false"
     volumes:
       - /path/to/spottarr/data:/data
@@ -40,9 +41,13 @@ services:
       - "8383:8383"
     restart: unless-stopped
 ```
-**Note** Make sure to properly escape special characters like `$` in your password.
 
-**Note** Spottarr runs as the non-privileged user `app` with the uid `1654`. It might be necessary to grant this user permissions to the mounted data directory on the host machine. 
+> [!NOTE]
+> Make sure to properly escape special characters like `$` in your password.
+
+> [!NOTE]
+> Spottarr runs as the non-privileged user `app` with the uid `1654`. It might be necessary to grant this user
+> permissions to the mounted data directory on the host machine.
 
 Once the Spottarr is up and running, it will automatically start indexing the spotnet messages starting from the provided `SPOTNET_RETRIEVEAFTER` date.
 
