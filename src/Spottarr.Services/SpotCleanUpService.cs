@@ -27,7 +27,7 @@ internal sealed class SpotCleanUpService : ISpotCleanUpService
         var spotnetOptions = _spotnetOptions.Value;
         if (spotnetOptions.RetentionDays <= 0) return;
 
-        var retentionCutoff = DateTime.UtcNow.AddDays(-spotnetOptions.RetentionDays);
+        var retentionCutoff = DateTimeOffset.Now.AddDays(-spotnetOptions.RetentionDays);
 
         _logger.SpotCleanupStarted(DateTimeOffset.Now, retentionCutoff);
 
