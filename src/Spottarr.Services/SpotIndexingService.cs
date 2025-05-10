@@ -32,12 +32,12 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
         _spotnetOptions = spotnetOptions;
     }
 
-    public async Task Index()
+    public async Task Index(CancellationToken cancellationToken)
     {
         _logger.SpotIndexingStarted(DateTimeOffset.Now);
 
         var options = _spotnetOptions.Value;
-        var unIndexedSpotsCount = await _dbContext.Spots.Where(s => s.IndexedAt == null).CountAsync();
+        var unIndexedSpotsCount = await _dbContext.Spots.Where(s => s.IndexedAt == null).CountAsync(cancellationToken);
 
         if (unIndexedSpotsCount > 0)
         {
