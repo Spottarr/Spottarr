@@ -37,6 +37,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<ISpotImportService, SpotImportService>()
             .AddScoped<ISpotIndexingService, SpotIndexingService>()
             .AddScoped<ISpotSearchService, SpotSearchService>()
+            .AddScoped<ISpotCleanUpService, SpotCleanUpService>()
             .Configure<UsenetOptions>(configuration.GetSection(UsenetOptions.Section))
             .Configure<SpotnetOptions>(configuration.GetSection(SpotnetOptions.Section));
     }

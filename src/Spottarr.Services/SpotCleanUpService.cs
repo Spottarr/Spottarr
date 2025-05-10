@@ -1,0 +1,44 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Spottarr.Data;
+using Spottarr.Services.Configuration;
+using Spottarr.Services.Contracts;
+using Spottarr.Services.Logging;
+
+namespace Spottarr.Services;
+
+internal sealed class SpotCleanUpService : ISpotCleanUpService
+{
+    private readonly ILogger<SpotCleanUpService> _logger;
+    private readonly IOptions<SpotnetOptions> _spotnetOptions;
+    private readonly SpottarrDbContext _dbContext;
+
+    public SpotCleanUpService(ILogger<SpotCleanUpService> logger, IOptions<SpotnetOptions> spotnetOptions,
+        SpottarrDbContext dbContext)
+    {
+        _logger = logger;
+        _spotnetOptions = spotnetOptions;
+        _dbContext = dbContext;
+    }
+
+    public async Task CleanUp(CancellationToken cancellationToken)
+    {
+        var spotnetOptions = _spotnetOptions.Value;
+        if (spotnetOptions.RetentionDays <= 0) return;
+
+        _logger.SpotCleanupStarted(DateTimeOffset.Now);
+
+        var retentionCutoff = DateTime.UtcNow.AddDays(-spotnetOptions.RetentionDays);
+
+        var ftsRowCount = await _dbContext.FtsSpots
+            .Where(s => s.Spot != null && s.Spot.SpottedAt < retentionCutoff)
+            .ExecuteDeleteAsync(cancellationToken);
+
+        var rowCount = await _dbContext.Spots
+            .Where(s => s.SpottedAt < retentionCutoff)
+            .ExecuteDeleteAsync(cancellationToken);
+
+        _logger.SpotCleanupFinished(DateTimeOffset.Now, rowCount, ftsRowCount);
+    }
+}

@@ -9,13 +9,20 @@ public class SpotnetOptions
     public required string ReportGroup { get; init; }
     public required string NzbGroup { get; init; }
     public required bool ImportAdultContent { get; init; }
+
     /// <summary>
     /// The maximum age of spots to retrieve
     /// Defaults to 30 days
     /// </summary>
     public required DateTimeOffset RetrieveAfter { get; init; } = DateTimeOffset.Now.AddDays(-30);
+
     /// <summary>
     /// The maximum number of spots to retrieve per batch during import
     /// </summary>
     public required int ImportBatchSize { get; init; }
+
+    /// <summary>
+    /// The number of days to keep spots in the database
+    /// </summary>
+    public required int RetentionDays { get; set; }
 }
