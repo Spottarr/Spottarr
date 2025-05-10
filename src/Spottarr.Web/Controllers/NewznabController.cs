@@ -58,7 +58,7 @@ public sealed class NewznabController : Controller
     )
     {
         var clampedLimit = Math.Clamp(limit, 0, DefaultPageSize);
-        return Search(new SpotSearchFilter
+        return ExecuteSearch(new SpotSearchFilter
         {
             Offset = offset,
             Limit = clampedLimit,
@@ -81,7 +81,7 @@ public sealed class NewznabController : Controller
         return File(result, "application/x-nzb", $"{id}.nzb");
     }
 
-    private async Task<ActionResult> Search(SpotSearchFilter filter)
+    private async Task<ActionResult> ExecuteSearch(SpotSearchFilter filter)
     {
         var results = await _spotSearchService.Search(filter);
         var items = results.Spots.Select(s => s.ToSyndicationItem(GetNzbUri(s.Id).Uri)).ToList();
