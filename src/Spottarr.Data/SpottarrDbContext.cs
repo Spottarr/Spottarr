@@ -33,16 +33,26 @@ public class SpottarrDbContext : DbContext
         modelBuilder.Entity<Spot>(x =>
         {
             x.ToTable("Spots");
+
             x.Property(s => s.Title).HasMaxLength(256);
             x.Property(s => s.ReleaseTitle).HasMaxLength(256);
             x.Property(s => s.Spotter).HasMaxLength(128);
             x.Property(s => s.MessageId).HasMaxLength(128);
             x.Property(s => s.NzbMessageId).HasMaxLength(128);
             x.Property(s => s.ImageMessageId).HasMaxLength(128);
+            x.Property(s => s.Tag).HasMaxLength(128);
+            x.Property(s => s.Url).HasMaxLength(512);
+            x.Property(s => s.Filename).HasMaxLength(128);
+            x.Property(s => s.Newsgroup).HasMaxLength(128);
+            x.Property(s => s.ImdbId).HasMaxLength(16);
+            x.Property(s => s.TvdbId).HasMaxLength(16);
+
             x.HasIndex(s => s.MessageId).IsUnique();
             x.HasIndex(s => s.MessageNumber);
+            x.HasIndex(s => s.ImdbId);
+            x.HasIndex(s => s.TvdbId);
         });
-        
+
         modelBuilder.Entity<FtsSpot>(x =>
         {
             // Pluralize, since we won't be adding a DbSet for it

@@ -7,6 +7,10 @@ public class Spot : BaseEntity
     public required string Title { get; set; }
     public string? ReleaseTitle { get; set; }
     public string? Description { get; set; }
+    public string? Tag { get; set; }
+    public Uri? Url { get; set; }
+    public string? Filename { get; set; }
+    public string? Newsgroup { get; set; }
     public required string Spotter { get; set; }
     public required long Bytes { get; set; }
     public required string MessageId { get; set; }
@@ -35,6 +39,8 @@ public class Spot : BaseEntity
     public ICollection<int> Years { get; init; } = [];
     public ICollection<int> Seasons { get; init; } = [];
     public ICollection<int> Episodes { get; init; } = [];
+    public string? ImdbId { get; set; }
+    public string? TvdbId { get; set; }
     public FtsSpot? FtsSpot { get; set; }
     public required DateTime SpottedAt { get; set; }
     public DateTime? IndexedAt { get; set; }
