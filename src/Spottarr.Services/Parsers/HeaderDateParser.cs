@@ -11,6 +11,10 @@ internal static class HeaderDateParser
                 ? new ParserResult<DateTimeOffset>(result.Value)
                 : new ParserResult<DateTimeOffset>($"Header date '{value}' is not in the correct format");
         }
+        catch (FormatException fex)
+        {
+            return new ParserResult<DateTimeOffset>(fex.Message);
+        }
         catch (InvalidOperationException ex)
         {
             return new ParserResult<DateTimeOffset>(ex.Message);
