@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Spottarr.Data;
+using Spottarr.Data.Entities;
 using Spottarr.Services.Contracts;
 using Spottarr.Services.Models;
 using Spottarr.Services.Parsers;
@@ -54,31 +55,57 @@ public class SpotSearchService : ISpotSearchService
         if (!string.IsNullOrEmpty(filter.ImdbId))
             query = query.Where(s => s.ImdbId == filter.ImdbId);
 
-        if (!string.IsNullOrEmpty(filter.Query))
-        {
-            // EF core creates broken queries when we join the full text search table
-            // To prevent this we query it separately and filter the main query accordingly
-            var ftsResults = await _dbContext.FtsSpots
-                .Where(s => s.Match == filter.Query)
-                .OrderBy(s => s.Rank)
-                .Select(s => s.RowId)
-                .ToListAsync();
-
-            query = query.Where(s => ftsResults.Contains(s.Id));
-        }
-
-        var totalCount = await query.CountAsync();
-        var spots = await query
-            .OrderByDescending(s => s.SpottedAt)
-            .Skip(filter.Offset)
-            .Take(filter.Limit)
-            .ToListAsync();
+        var (spots, totalCount) = !string.IsNullOrEmpty(filter.Query)
+            ? await ExecuteFullTextSearch(query, filter)
+            : await ExecuteSearch(query, filter);
 
         return new SpotSearchResponse()
         {
             Spots = spots,
             TotalCount = totalCount
         };
+    }
+
+    private static async Task<(IList<Spot>, int)> ExecuteSearch(IQueryable<Spot> query, SpotSearchFilter filter)
+    {
+        var spotTask = query
+            .OrderByDescending(s => s.SpottedAt)
+            .Skip(filter.Offset)
+            .Take(filter.Limit)
+            .ToListAsync();
+
+        var countTask = query.CountAsync();
+
+        await Task.WhenAll(spotTask, countTask);
+
+        return (await spotTask, await countTask);
+    }
+
+    private async Task<(IList<Spot>, int)> ExecuteFullTextSearch(IQueryable<Spot> query, SpotSearchFilter filter)
+    {
+        // Force inner join on FTS table
+        var ftsQuery = query.Join(_dbContext.FtsSpots,
+                spot => spot.Id,
+                fts => fts.RowId,
+                (spot, fts) => new
+                {
+                    Spot = spot,
+                    Fts = fts
+                })
+            .Where(x => x.Fts.Match == filter.Query);
+
+        var spotTask = ftsQuery.OrderBy(x => x.Fts.Rank)
+            .ThenByDescending(x => x.Spot.SpottedAt)
+            .Select(x => x.Spot)
+            .Skip(filter.Offset)
+            .Take(filter.Limit)
+            .ToListAsync();
+
+        var countTask = ftsQuery.CountAsync();
+
+        await Task.WhenAll(spotTask, countTask);
+
+        return (await spotTask, await countTask);
     }
 
     public Task<int> Count() => _dbContext.Spots.CountAsync();
