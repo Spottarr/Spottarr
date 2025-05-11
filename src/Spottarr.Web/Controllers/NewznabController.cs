@@ -67,7 +67,9 @@ public sealed class NewznabController : Controller
             Years = year.HasValue ? [year.Value] : [],
             Episodes = episode.HasValue ? [episode.Value] : [],
             Seasons = season.HasValue ? [season.Value] : [],
-            ImdbId = imdbId
+            ImdbId = imdbId == null || imdbId.StartsWith("tt", StringComparison.OrdinalIgnoreCase)
+                ? imdbId
+                : $"tt{imdbId}"
         });
     }
 

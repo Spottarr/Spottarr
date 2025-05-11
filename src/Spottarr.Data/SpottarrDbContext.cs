@@ -48,9 +48,13 @@ public class SpottarrDbContext : DbContext
             x.Property(s => s.TvdbId).HasMaxLength(16);
 
             x.HasIndex(s => s.MessageId).IsUnique();
-            x.HasIndex(s => s.MessageNumber);
-            x.HasIndex(s => s.ImdbId);
-            x.HasIndex(s => s.TvdbId);
+            x.HasIndex(s => s.MessageNumber).IsUnique();
+
+            // Non-unique indexes should contain SpottedAt
+            // Most queries will be ordered by descending date
+            x.HasIndex(s => s.SpottedAt).IsDescending(true);
+            x.HasIndex(s => new { s.ImdbId, s.SpottedAt }).IsDescending(false, true);
+            x.HasIndex(s => new { s.TvdbId, s.SpottedAt }).IsDescending(false, true);
         });
 
         modelBuilder.Entity<FtsSpot>(x =>
