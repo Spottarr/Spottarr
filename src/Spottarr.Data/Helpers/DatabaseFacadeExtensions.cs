@@ -7,4 +7,7 @@ public static class DatabaseFacadeExtensions
 {
     public static Task Vacuum(this DatabaseFacade databaseFacade)
         => databaseFacade.ExecuteSqlAsync($"VACUUM");
+
+    public static Task Analyze(this DatabaseFacade databaseFacade)
+        => databaseFacade.ExecuteSqlAsync($"ANALYZE");
 }

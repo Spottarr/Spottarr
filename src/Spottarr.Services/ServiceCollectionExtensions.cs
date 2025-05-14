@@ -13,13 +13,13 @@ namespace Spottarr.Services;
 public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddSpottarrServices(this IServiceCollection services, IConfiguration configuration,
-        bool runOnce = false)
+        bool startJobs = true)
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
         return services
             .AddSpottarrData()
-            .AddSpottarrJobs(runOnce)
+            .AddSpottarrJobs(configuration, startJobs)
             .AddSingleton<INntpClientPool, NntpClientPool>(s =>
             {
                 var options = s.GetRequiredService<IOptions<UsenetOptions>>();
@@ -38,6 +38,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<ISpotIndexingService, SpotIndexingService>()
             .AddScoped<ISpotSearchService, SpotSearchService>()
             .AddScoped<ISpotCleanUpService, SpotCleanUpService>()
+            .AddScoped<IDatabaseMaintenanceService, DatabaseMaintenanceService>()
             .Configure<UsenetOptions>(configuration.GetSection(UsenetOptions.Section))
             .Configure<SpotnetOptions>(configuration.GetSection(SpotnetOptions.Section));
     }

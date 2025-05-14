@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spottarr.Data;
-using Spottarr.Data.Helpers;
 using Spottarr.Services.Configuration;
 using Spottarr.Services.Contracts;
 using Spottarr.Services.Logging;
@@ -39,9 +38,6 @@ internal sealed class SpotCleanUpService : ISpotCleanUpService
         var rowCount = await _dbContext.Spots
             .Where(s => s.SpottedAt < retentionCutoff.UtcDateTime)
             .ExecuteDeleteAsync(cancellationToken);
-
-        // Run SQLite vacuum command to shrink the database file size
-        await _dbContext.Database.Vacuum();
 
         _logger.SpotCleanupFinished(DateTimeOffset.Now, rowCount, ftsRowCount);
     }
