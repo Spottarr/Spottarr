@@ -116,4 +116,10 @@ public static partial class LoggerExtensions
             "Spot cleanup finished at {DateTime}. Cleaned up {RowCount} spots, {FtsRowCount} full text index records.")]
     public static partial void SpotCleanupFinished(this ILogger logger, DateTimeOffset dateTime, int rowCount,
         int ftsRowCount);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Database optimization started at {DateTime}.")]
+    public static partial void DatabaseOptimizationStarted(this ILogger logger, DateTimeOffset dateTime);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Database optimization finished at {DateTime}.")]
+    public static partial void DatabaseOptimizationFinished(this ILogger logger, DateTimeOffset dateTime);
 }

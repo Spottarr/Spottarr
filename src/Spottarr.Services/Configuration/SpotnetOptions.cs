@@ -24,5 +24,15 @@ public class SpotnetOptions
     /// <summary>
     /// The number of days to keep spots in the database
     /// </summary>
-    public required int RetentionDays { get; set; }
+    public required int RetentionDays { get; init; }
+
+    /// <summary>
+    /// The cron schedule for the spot import and index job
+    /// </summary>
+    public required string ImportSpotsSchedule { get; init; }
+
+    /// <summary>
+    /// The cron schedule for the spot clean up and database maintenance job
+    /// </summary>
+    public required string CleanUpSpotsSchedule { get; init; }
 }
