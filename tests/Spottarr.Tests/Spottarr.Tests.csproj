@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Spottarr.Services\Spottarr.Services.csproj" />
+    <ProjectReference Include="..\..\src\Spottarr.Web\Spottarr.Web.csproj"/>
   </ItemGroup>
 
 </Project>
