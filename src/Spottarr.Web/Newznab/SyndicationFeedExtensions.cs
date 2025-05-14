@@ -3,6 +3,7 @@ using System.ServiceModel.Syndication;
 using System.Xml;
 using System.Xml.Linq;
 using Spottarr.Data.Entities.Enums;
+using Spottarr.Web.Helpers;
 
 namespace Spottarr.Web.Newznab;
 
@@ -12,15 +13,16 @@ internal static class SyndicationFeedExtensions
 
     public static SyndicationItem AddNewznabAttribute(this SyndicationItem item, string name, string? value)
     {
-        if(value == null) return item;
-        
+        if (value == null) return item;
+
         item.ElementExtensions.Add(new XElement(Namespace.GetName("attr"), new XAttribute("name", name),
-            new XAttribute("value", value)));
+            new XAttribute("value", value.SanitizeXmlString())));
 
         return item;
     }
-    
-    public static SyndicationItem AddNewznabAttributes(this SyndicationItem item, string name, IEnumerable<string> values)
+
+    public static SyndicationItem AddNewznabAttributes(this SyndicationItem item, string name,
+        IEnumerable<string> values)
     {
         foreach (var value in values)
         {
@@ -29,23 +31,23 @@ internal static class SyndicationFeedExtensions
 
         return item;
     }
-    
+
     public static SyndicationItem AddNewznabNzbUrl(this SyndicationItem item, Uri url, long bytes)
     {
         item.Links.Add(SyndicationLink.CreateMediaEnclosureLink(url, "application/x-nzb", bytes));
         return item;
     }
-    
+
     public static SyndicationItem AddCategories(this SyndicationItem item, IEnumerable<NewznabCategory> categories)
     {
         foreach (int category in categories)
         {
             item.Categories.Add(new SyndicationCategory(category.ToString(CultureInfo.InvariantCulture)));
         }
-        
+
         return item;
     }
-    
+
     public static SyndicationItem AddPublishDate(this SyndicationItem item, DateTimeOffset date)
     {
         item.PublishDate = date;
@@ -57,7 +59,7 @@ internal static class SyndicationFeedExtensions
         feed.ImageUrl = uri;
         return feed;
     }
-    
+
     public static SyndicationFeed AddNewznabNamespace(this SyndicationFeed feed)
     {
         feed.AttributeExtensions.Add(new XmlQualifiedName("newznab", XNamespace.Xmlns.NamespaceName),
@@ -65,7 +67,7 @@ internal static class SyndicationFeedExtensions
 
         return feed;
     }
-    
+
     public static SyndicationFeed AddNewznabResponseInfo(this SyndicationFeed feed, int offset, int total)
     {
         feed.ElementExtensions.Add(new XElement(Namespace.GetName("response"), new XAttribute("offset", offset),

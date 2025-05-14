@@ -2,6 +2,7 @@ using System.Globalization;
 using System.ServiceModel.Syndication;
 using Spottarr.Data.Entities;
 using Spottarr.Data.Entities.Enums;
+using Spottarr.Web.Helpers;
 
 namespace Spottarr.Web.Newznab;
 
@@ -38,7 +39,8 @@ internal static class NewznabMapper
     /// Adds attributes valid for all categories
     /// </summary>
     private static SyndicationItem MapSpot(Spot spot, Uri spotUri) =>
-        new SyndicationItem(spot.Title, spot.Description, spotUri, spot.Id.ToString(CultureInfo.InvariantCulture),
+        new SyndicationItem(spot.Title.SanitizeXmlString(), spot.Description?.SanitizeXmlString(), spotUri,
+                spot.Id.ToString(CultureInfo.InvariantCulture),
                 spot.UpdatedAt)
             .AddNewznabAttribute("size", spot.Bytes.ToString(CultureInfo.InvariantCulture))
             .AddNewznabAttributes("category",
