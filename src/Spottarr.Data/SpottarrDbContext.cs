@@ -47,6 +47,11 @@ public class SpottarrDbContext : DbContext
             x.Property(s => s.ImdbId).HasMaxLength(16);
             x.Property(s => s.TvdbId).HasMaxLength(16);
 
+            x.Property(s => s.CreatedAt).HasConversion(DateConverters.UtcConverter);
+            x.Property(s => s.UpdatedAt).HasConversion(DateConverters.UtcConverter);
+            x.Property(s => s.SpottedAt).HasConversion(DateConverters.UtcConverter);
+            x.Property(s => s.IndexedAt).HasConversion(DateConverters.UtcNullableConverter);
+
             x.HasIndex(s => s.MessageId).IsUnique();
             x.HasIndex(s => s.MessageNumber).IsUnique();
 

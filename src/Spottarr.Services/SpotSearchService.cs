@@ -83,6 +83,8 @@ public class SpotSearchService : ISpotSearchService
 
     private async Task<(IList<Spot>, int)> ExecuteFullTextSearch(IQueryable<Spot> query, SpotSearchFilter filter)
     {
+        var keywords = QueryExclusionParser.Parse(filter.Query);
+
         // Force inner join on FTS table
         var ftsQuery = query.Join(_dbContext.FtsSpots,
                 spot => spot.Id,
@@ -92,7 +94,7 @@ public class SpotSearchService : ISpotSearchService
                     Spot = spot,
                     Fts = fts
                 })
-            .Where(x => x.Fts.Match == filter.Query);
+            .Where(x => x.Fts.Match == keywords);
 
         var spotTask = ftsQuery.OrderBy(x => x.Fts.Rank)
             .ThenByDescending(x => x.Spot.SpottedAt)
