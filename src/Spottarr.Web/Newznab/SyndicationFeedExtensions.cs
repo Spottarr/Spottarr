@@ -11,6 +11,15 @@ internal static class SyndicationFeedExtensions
 {
     private static readonly XNamespace Namespace = XNamespace.Get("https://www.newznab.com/DTD/2010/feeds/attributes/");
 
+    public static SyndicationItem AddElement(this SyndicationItem item, string name, string? value)
+    {
+        if (value == null) return item;
+
+        item.ElementExtensions.Add(new XElement(name, value.SanitizeXmlString()));
+
+        return item;
+    }
+
     public static SyndicationItem AddNewznabAttribute(this SyndicationItem item, string name, string? value)
     {
         if (value == null) return item;
@@ -50,7 +59,12 @@ internal static class SyndicationFeedExtensions
 
     public static SyndicationItem AddPublishDate(this SyndicationItem item, DateTimeOffset date)
     {
-        item.PublishDate = date;
+        // Force RFC 1123 date formats for the pubDate property.
+        // When using PublishDate the date is formatted with Z instead of GMT for the zone specifier.
+        // This is not accepted by some clients.
+        item.AddElement("pubDate", date.ToUniversalTime().ToString("r"));
+
+        // item.PublishDate = date;
         return item;
     }
 
