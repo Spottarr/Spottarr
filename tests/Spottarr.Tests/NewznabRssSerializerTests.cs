@@ -23,9 +23,9 @@ public class NewznabRssSerializerTests
                 ImageMessageId = null,
                 MessageNumber = 1234,
                 Type = SpotType.None,
-                SpottedAt = new DateTime(2025, 1, 1, 12, 0, 0),
-                CreatedAt = new DateTime(2025, 1, 1, 12, 0, 0),
-                UpdatedAt = new DateTime(2025, 1, 1, 12, 0, 0),
+                SpottedAt = new DateTime(2025, 1, 1, 12, 0, 0, DateTimeKind.Utc),
+                CreatedAt = new DateTime(2025, 1, 1, 12, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 12, 0, 0, DateTimeKind.Utc),
             }
         ];
 
@@ -56,7 +56,6 @@ public class NewznabRssSerializerTests
                              <guid isPermaLink="false">0</guid>
                              <link>https://example.com/nzb</link>
                              <title>Testspot大</title>
-                             <pubDate>Wed, 01 Jan 2025 12:00:00 +0100</pubDate>
                              <enclosure url="https://example.com/nzb" type="application/x-nzb" length="1000" />
                              <newznab:attr name="size" value="1000" />
                              <newznab:attr name="guid" value="0" />
@@ -64,6 +63,7 @@ public class NewznabRssSerializerTests
                              <newznab:attr name="team" value="Testspotter" />
                              <newznab:attr name="usenetdate" value="Wed, 01 Jan 2025 12:00:00 GMT" />
                              <newznab:attr name="year" value="" />
+                             <pubDate>Wed, 01 Jan 2025 12:00:00 GMT</pubDate>
                            </item>
                          </channel>
                        </rss>
@@ -89,9 +89,9 @@ public class NewznabRssSerializerTests
                 ImageMessageId = null,
                 MessageNumber = 1234,
                 Type = SpotType.None,
-                SpottedAt = new DateTime(2025, 1, 1, 12, 0, 0),
-                CreatedAt = new DateTime(2025, 1, 1, 12, 0, 0),
-                UpdatedAt = new DateTime(2025, 1, 1, 12, 0, 0),
+                SpottedAt = new DateTime(2025, 1, 1, 12, 0, 0, DateTimeKind.Utc),
+                CreatedAt = new DateTime(2025, 1, 1, 12, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 12, 0, 0, DateTimeKind.Utc),
             }
         ];
 
@@ -122,7 +122,6 @@ public class NewznabRssSerializerTests
                              <guid isPermaLink="false">0</guid>
                              <link>https://example.com/nzb</link>
                              <title>Testspot?</title>
-                             <pubDate>Wed, 01 Jan 2025 12:00:00 +0100</pubDate>
                              <enclosure url="https://example.com/nzb" type="application/x-nzb" length="1000" />
                              <newznab:attr name="size" value="1000" />
                              <newznab:attr name="guid" value="0" />
@@ -130,6 +129,7 @@ public class NewznabRssSerializerTests
                              <newznab:attr name="team" value="Testspotter" />
                              <newznab:attr name="usenetdate" value="Wed, 01 Jan 2025 12:00:00 GMT" />
                              <newznab:attr name="year" value="" />
+                             <pubDate>Wed, 01 Jan 2025 12:00:00 GMT</pubDate>
                            </item>
                          </channel>
                        </rss>
