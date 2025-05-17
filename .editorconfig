@@ -1,3 +1,28 @@
+[*.{js,jsx,mjs,cjs,ts,tsx,mts,cts,vue}]
+charset = utf-8
+indent_size = 2
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.cs]
+# CA5394: Do not use insecure randomness
+dotnet_diagnostic.CA5394.severity = none
+
+# CA2007: Do not directly await a Task
+dotnet_diagnostic.CA2007.severity = none
+
+# CA1812: Avoid uninstantiated internal classes
+dotnet_diagnostic.CA1812.severity = none
+
+# Disable primary constructors
+dotnet_diagnostic.IDE0290.severity = none
+csharp_style_prefer_primary_constructors = false
+resharper_convert_to_primary_constructor_highlighting = none 
+
+# Disable checks in generated migrations
+dotnet_code_quality.CA1062.excluded_symbol_names = N:Spottarr.Data.Migrations
+
 # Disable checks in generated migrations
 [src/Spottarr.Data/Migrations/*.cs]
 dotnet_diagnostic.CA1861.severity = none

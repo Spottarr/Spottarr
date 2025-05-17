@@ -11,7 +11,7 @@ using Spottarr.Web.Newznab.Models;
 namespace Spottarr.Web.Controllers;
 
 [ApiController]
-[Route("[controller]/api")]
+[Route(PathPrefix)]
 public sealed class NewznabController : Controller
 {
     public const string PathPrefix = "/newznab/api";

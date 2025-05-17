@@ -20,11 +20,11 @@ app.MapStaticAssets();
 app.MapControllers();
 app.MapOpenApi();
 app.MapScalarApiReference();
+app.MapFallbackToFile("/index.html");
 
 // Middleware pipeline, order matters here
 app.UseForwardedHeaders();
 app.UseHttpsRedirection();
-app.UseDefaultFiles();
 app.UseMiddleware<NewsznabQueryActionMiddleware>();
 app.UseRouting();
 app.UseCors();

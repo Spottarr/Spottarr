@@ -25,10 +25,13 @@
 *.user
 .vs/
 [Bb]in/
-[Oo]bj/
+[Oo]bj*/
 _UpgradeReport_Files/
 [Pp]ackages/
 
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+node_modules/
+dist/
