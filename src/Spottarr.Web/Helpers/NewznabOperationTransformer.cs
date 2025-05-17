@@ -7,7 +7,7 @@ namespace Spottarr.Web.Helpers;
 
 internal sealed partial class NewznabOperationTransformer : IOpenApiDocumentTransformer
 {
-    [GeneratedRegex($"^(/{NewznabController.Name}/api)/(?<action>[^/]+)", RegexOptions.IgnoreCase)]
+    [GeneratedRegex($"^({NewznabController.PathPrefix})/(?<action>[^/]+)", RegexOptions.IgnoreCase)]
     private static partial Regex NewznabPathRegex();
 
     public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context,
