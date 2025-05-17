@@ -3,17 +3,17 @@ import { DownloadIcon } from 'mdi-vue3';
 import prettyBytes from 'pretty-bytes';
 import useSpots from '@/composables/useSpots';
 import { useTimeAgo } from '@vueuse/core';
-import { FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table';
 import type { ColumnDef, SortingState } from '@tanstack/vue-table';
-import { onMounted, ref, h, computed } from 'vue';
+import { FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table';
 import type { Ref } from 'vue';
-import type { SpotTableRowResponseDto } from '@/types/generated/spot-table-row-response-dto.ts';
+import { computed, h, onMounted, ref } from 'vue';
+import type { SpotResponseDto } from '@/types/generated/spot-response-dto.ts';
 import ExternalLinkButton from '@/components/ExternalLinkButton.vue';
 import TableSortIcon from '@/components/TableSortIcon.vue';
 
 const { spots, error, loading, fetchSpots, nzbUrl } = useSpots();
 
-const columns: Ref<ColumnDef<SpotTableRowResponseDto>[]> = ref([
+const columns: Ref<ColumnDef<SpotResponseDto>[]> = ref([
   {
     accessorKey: 'category',
     header: 'Category',

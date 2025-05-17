@@ -1,9 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
 using Spottarr.Data.Entities;
 using Spottarr.Web.Helpers;
+using TypeGen.Core.TypeAnnotations;
 
 namespace Spottarr.Web.Models;
 
+[ExportTsInterface]
 public class SpotResponseDto
 {
     [SetsRequiredMembers]

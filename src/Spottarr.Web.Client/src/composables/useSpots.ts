@@ -1,9 +1,9 @@
-import { ref } from 'vue';
 import type { Ref } from 'vue';
-import type { SpotTableRowResponseDto } from '@/types/generated/spot-table-row-response-dto';
+import { ref } from 'vue';
+import type { SpotResponseDto } from '@/types/generated/spot-response-dto';
 import reviver from '@/helpers/reviver';
 
-const spots: Ref<SpotTableRowResponseDto[]> = ref([]);
+const spots: Ref<SpotResponseDto[]> = ref([]);
 const loading: Ref<boolean> = ref(false);
 const error: Ref<Error | null> = ref(null);
 
