@@ -1,11 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 using Spottarr.Data.Entities;
 using Spottarr.Web.Helpers;
-using TypeGen.Core.TypeAnnotations;
 
 namespace Spottarr.Web.Models;
 
-[ExportTsInterface]
 public class SpotTableRowResponseDto
 {
     [SetsRequiredMembers]
@@ -21,7 +19,7 @@ public class SpotTableRowResponseDto
         SpottedAt = spot.SpottedAt;
         Bytes = spot.Bytes;
     }
-    
+
     public required int Id { get; init; }
     public required string Category { get; init; }
     public required string Title { get; init; }

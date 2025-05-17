@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using Spottarr.Data.Entities.Enums;
 using Spottarr.Services.Contracts;
@@ -11,8 +12,13 @@ namespace Spottarr.Web.Controllers;
 public sealed class SpotsController : Controller
 {
     private readonly ISpotSearchService _spotSearchService;
+    private readonly ISpotImportService _spotImportService;
 
-    public SpotsController(ISpotSearchService spotSearchService) => _spotSearchService = spotSearchService;
+    public SpotsController(ISpotSearchService spotSearchService, ISpotImportService spotImportService)
+    {
+        _spotSearchService = spotSearchService;
+        _spotImportService = spotImportService;
+    }
 
     [HttpGet]
     public async Task<IActionResult> Index(
@@ -29,12 +35,22 @@ public sealed class SpotsController : Controller
             Offset = page,
             Limit = 100,
             Query = query,
-            Categories = newznabCategories?.ToHashSet(),
-            Years = year.HasValue ? [year.Value] : null,
-            Episodes = episode.HasValue ? [episode.Value] : null,
-            Seasons = season.HasValue ? [season.Value] : null,
+            Categories = newznabCategories?.ToHashSet() ?? [],
+            Years = year.HasValue ? [year.Value] : [],
+            Episodes = episode.HasValue ? [episode.Value] : [],
+            Seasons = season.HasValue ? [season.Value] : [],
         });
 
         return Json(results.Spots.Select(s => new SpotTableRowResponseDto(s)));
+    }
+
+    [HttpGet("{id:int}/nzb")]
+    [Produces(MediaTypeNames.Text.Xml)]
+    public async Task<ActionResult> Nzb(int id)
+    {
+        var result = await _spotImportService.RetrieveNzb(id);
+        if (result == null) return NotFound();
+
+        return File(result, "application/x-nzb", $"{id}.nzb");
     }
 }
