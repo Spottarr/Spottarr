@@ -41,7 +41,7 @@ public sealed class SpotsController : Controller
             Seasons = season.HasValue ? [season.Value] : [],
         });
 
-        return Json(results.Spots.Select(s => new SpotTableRowResponseDto(s)));
+        return Json(results.Spots.Select(s => new SpotResponseDto(s)));
     }
 
     [HttpGet("{id:int}/nzb")]

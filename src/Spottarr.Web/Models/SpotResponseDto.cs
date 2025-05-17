@@ -4,10 +4,10 @@ using Spottarr.Web.Helpers;
 
 namespace Spottarr.Web.Models;
 
-public class SpotTableRowResponseDto
+public class SpotResponseDto
 {
     [SetsRequiredMembers]
-    public SpotTableRowResponseDto(Spot spot)
+    public SpotResponseDto(Spot spot)
     {
         ArgumentNullException.ThrowIfNull(spot);
 
