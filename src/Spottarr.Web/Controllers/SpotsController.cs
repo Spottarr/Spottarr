@@ -1,4 +1,3 @@
-using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using Spottarr.Data.Entities.Enums;
 using Spottarr.Services.Contracts;
@@ -9,6 +8,7 @@ namespace Spottarr.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[ApiExplorerSettings(IgnoreApi = true)]
 public sealed class SpotsController : Controller
 {
     private readonly ISpotSearchService _spotSearchService;
@@ -21,6 +21,7 @@ public sealed class SpotsController : Controller
     }
 
     [HttpGet]
+    [Produces(typeof(SpotResponseDto))]
     public async Task<IActionResult> Index(
         string? query,
         int page = 0,
@@ -41,11 +42,11 @@ public sealed class SpotsController : Controller
             Seasons = season.HasValue ? [season.Value] : [],
         });
 
-        return Json(results.Spots.Select(s => new SpotTableRowResponseDto(s)));
+        return Json(results.Spots.Select(s => new SpotResponseDto(s)));
     }
 
     [HttpGet("{id:int}/nzb")]
-    [Produces(MediaTypeNames.Text.Xml)]
+    [Produces("application/x-nzb")]
     public async Task<ActionResult> Nzb(int id)
     {
         var result = await _spotImportService.RetrieveNzb(id);

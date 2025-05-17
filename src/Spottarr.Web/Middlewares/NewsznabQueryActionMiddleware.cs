@@ -15,11 +15,11 @@ internal sealed class NewsznabQueryActionMiddleware
     {
         _next = next;
     }
-    
+
     public async Task InvokeAsync(HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        
+
         var path = context.Request.Path;
 
         if (!path.StartsWithSegments(NewznabController.PathPrefix, StringComparison.OrdinalIgnoreCase))

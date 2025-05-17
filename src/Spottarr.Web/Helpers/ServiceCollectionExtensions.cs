@@ -29,6 +29,7 @@ internal static class ServiceCollectionExtensions
             options.ForwardedHeaders = ForwardedHeaders.All;
         });
 
+        services.AddAntiforgery();
         services.AddCors(c => c.AddDefaultPolicy(p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
 
         return services;
