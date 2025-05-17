@@ -24,34 +24,35 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
     private readonly SpottarrDbContext _dbContext;
     private readonly IOptions<SpotnetOptions> _spotnetOptions;
 
-    public SpotIndexingService(ILogger<SpotIndexingService> logger, SpottarrDbContext dbContext, IOptions<SpotnetOptions> spotnetOptions)
+    public SpotIndexingService(ILogger<SpotIndexingService> logger, SpottarrDbContext dbContext,
+        IOptions<SpotnetOptions> spotnetOptions)
     {
         _logger = logger;
         _dbContext = dbContext;
         _spotnetOptions = spotnetOptions;
     }
 
-    public async Task Index()
+    public async Task Index(CancellationToken cancellationToken)
     {
         _logger.SpotIndexingStarted(DateTimeOffset.Now);
 
         var options = _spotnetOptions.Value;
-        var unIndexedSpotsCount = await _dbContext.Spots.Where(s => s.IndexedAt == null).CountAsync();
+        var unIndexedSpotsCount = await _dbContext.Spots.Where(s => s.IndexedAt == null).CountAsync(cancellationToken);
 
         if (unIndexedSpotsCount > 0)
         {
             var batchCount = (unIndexedSpotsCount / options.ImportBatchSize) + 1;
-            
+
             for (var i = 0; i < batchCount; i++)
             {
                 _logger.SpotIndexingBatchStarted(i + 1, batchCount, DateTimeOffset.Now);
-                
+
                 var indexedSpots = await IndexBatch(options.ImportBatchSize);
-                
+
                 _logger.SpotIndexingBatchFinished(i + 1, batchCount, DateTimeOffset.Now, indexedSpots);
             }
         }
-        
+
         _logger.SpotIndexingFinished(DateTimeOffset.Now);
     }
 
@@ -76,7 +77,7 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
                 .Replace("[br]", "\n", StringComparison.OrdinalIgnoreCase);
 
             var titleAndDescription = string.Join('\n', spot.Title, description);
-            
+
             // Extract release title
             var releaseMatch = releaseTitleRegex.Match(titleAndDescription);
             if (releaseMatch.Success)
@@ -93,6 +94,7 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
             spot.Seasons.Replace(seasons);
             spot.Episodes.Replace(episodes);
             spot.NewznabCategories.Replace(newznabCategories);
+            spot.ImdbId = ImdbIdParser.Parse(spot.Url);
             spot.IndexedAt = now.UtcDateTime;
             spot.UpdatedAt = now.UtcDateTime;
 
@@ -100,7 +102,7 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
             // e.g. "Show.S01E04.Poster.1080p.DDP5.1.Atmos.H.264" -> "Show S01E04 Poster 1080p DDP5 1 Atmos H 264"
             var ftsTitle = CleanTitleRegex()
                 .Replace(spot.Title, " ");
-            
+
             var ftsSpot = new FtsSpot()
             {
                 RowId = spot.Id,
@@ -136,13 +138,13 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
         {
             _logger.FailedToSaveSpots(ex);
         }
-        
+
         return unIndexedSpots.Count;
     }
 
     [GeneratedRegex(@"(?<=\w)\.(?=\w)")]
     private static partial Regex CleanTitleRegex();
-    
+
     [GeneratedRegex(@"\b(\w+\.)+\w+-\w+\b", RegexOptions.IgnoreCase)]
     private static partial Regex ReleaseTitleRegex();
 }

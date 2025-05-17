@@ -1,6 +1,4 @@
 using Scalar.AspNetCore;
-using Microsoft.Extensions.Configuration.Json;
-using Microsoft.Extensions.FileProviders;
 using Spottarr.Data.Helpers;
 using Spottarr.Services;
 using Spottarr.Web.Helpers;
@@ -11,34 +9,21 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.AddConsole(builder.Environment);
 builder.Configuration.MapConfigurationSources(builder.Environment);
-
-builder.Services.AddOpenApi();
-builder.Services.AddAntiforgery();
-builder.Services.AddControllers().AddXmlSerializerFormatters();
 builder.Services.AddSpottarrServices(builder.Configuration);
-
-builder.Services.Configure<RouteOptions>(options =>
-{
-    options.LowercaseQueryStrings = true;
-    options.LowercaseUrls = true;
-});
-
-builder.Services.AddCors(c => c.AddDefaultPolicy(p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
+builder.Services.AddSpottarrWeb(builder.Environment);
 
 var app = builder.Build();
 
 await app.MigrateDatabase();
 
-if (!app.Environment.IsDevelopment())
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
-
 app.MapStaticAssets();
+app.MapControllers();
 app.MapOpenApi();
 app.MapScalarApiReference();
-app.MapControllers();
 app.MapFallbackToFile("/index.html");
 
 // Middleware pipeline, order matters here
+app.UseForwardedHeaders();
 app.UseHttpsRedirection();
 app.UseMiddleware<NewsznabQueryActionMiddleware>();
 app.UseRouting();

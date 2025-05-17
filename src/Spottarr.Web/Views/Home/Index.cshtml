@@ -10,13 +10,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" href="/logo.svg" type="image/svg+xml">
 </head>
 <body>
 <main id="main">
     <div id="content">
         <img src="logo.svg" width="200" height="200" alt="Spottarr"/>
         <h1>Spottarr</h1>
-        <a class="btn" href="/newznab/api?t=caps">Newznab API</a>
+        <a class="btn" href="/scalar/">Newznab API</a>
         <p class="stats">Spots indexed: @Model.SpotCount.ToString("N0")</p>
         <p class="stats">Version: @Model.Version.Split('+').FirstOrDefault()</p>
         <a href="https://github.com/Spottarr/Spottarr" target="_blank" class="github">

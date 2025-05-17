@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Spottarr.Data;
 
@@ -10,9 +11,11 @@ using Spottarr.Data;
 namespace Spottarr.Data.Migrations
 {
     [DbContext(typeof(SpottarrDbContext))]
-    partial class SpottarrDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250510094213_AddFtdFieldsAndExternalIdsToSpot")]
+    partial class AddFtdFieldsAndExternalIdsToSpot
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
@@ -209,20 +212,14 @@ namespace Spottarr.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ImdbId");
+
                     b.HasIndex("MessageId")
                         .IsUnique();
 
-                    b.HasIndex("MessageNumber")
-                        .IsUnique();
+                    b.HasIndex("MessageNumber");
 
-                    b.HasIndex("SpottedAt")
-                        .IsDescending();
-
-                    b.HasIndex("ImdbId", "SpottedAt")
-                        .IsDescending(false, true);
-
-                    b.HasIndex("TvdbId", "SpottedAt")
-                        .IsDescending(false, true);
+                    b.HasIndex("TvdbId");
 
                     b.ToTable("Spots", (string)null);
                 });

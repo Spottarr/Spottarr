@@ -152,8 +152,11 @@ internal sealed class SpotImportService : ISpotImportService
         // Save the fetched articles in bulk.
         try
         {
-            await _dbContext.BulkInsertAsync(spots, progress: p => _logger.BulkInsertUpdateProgress(p),
-                cancellationToken: cancellationToken);
+            await _dbContext.BulkInsertOrUpdateAsync(spots, c =>
+            {
+                c.UpdateByProperties = [nameof(Spot.MessageId)];
+                c.PropertiesToIncludeOnUpdate = [];
+            }, progress: p => _logger.BulkInsertUpdateProgress(p), cancellationToken: cancellationToken);
         }
         catch (DbException ex)
         {
@@ -401,6 +404,10 @@ internal sealed class SpotImportService : ISpotImportService
             spot.NzbMessageId = spotDetails.Posting.Nzb.Segment;
             spot.ImageMessageId = spotDetails.Posting.Image?.Segment;
             spot.Description = spotDetails.Posting.Description;
+            spot.Tag = spotDetails.Posting.Tag;
+            spot.Url = Uri.TryCreate(spotDetails.Posting.Website, UriKind.Absolute, out var uri) ? uri : null;
+            spot.Filename = spotDetails.Posting.Filename;
+            spot.Newsgroup = spotDetails.Posting.Newsgroup;
         }
         catch (InvalidOperationException ex)
         {

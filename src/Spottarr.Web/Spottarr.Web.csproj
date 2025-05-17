@@ -1,4 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Spottarr.Tests"/>
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2"/>
+  </ItemGroup>
   
   <PropertyGroup>
     <SpaRoot>..\Spottarr.Web.Client</SpaRoot>
@@ -8,13 +13,14 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="9.0.4"/>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="9.0.4"/>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.4" />
     <PackageReference Include="Microsoft.XmlSerializer.Generator" Version="9.0.4" />
     <PackageReference Include="TypeGen" Version="6.0.2" GeneratePathProperty="true" />
-    <PackageReference Include="Scalar.AspNetCore" Version="1.2.72" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.2.7" />
     <PackageReference Include="System.ServiceModel.Syndication" Version="9.0.4" />
   </ItemGroup>
 
