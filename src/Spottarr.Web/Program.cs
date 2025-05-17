@@ -16,17 +16,19 @@ var app = builder.Build();
 
 await app.MigrateDatabase();
 
-app.UseForwardedHeaders();
-app.UseHttpsRedirection();
-app.UseDefaultFiles();
-app.UseStaticFiles();
-app.UseAuthorization();
-
+app.MapStaticAssets();
 app.MapControllers();
 app.MapOpenApi();
 app.MapScalarApiReference();
 
+// Middleware pipeline, order matters here
+app.UseForwardedHeaders();
+app.UseHttpsRedirection();
+app.UseDefaultFiles();
 app.UseMiddleware<NewsznabQueryActionMiddleware>();
 app.UseRouting();
+app.UseCors();
+app.UseAntiforgery();
+app.UseAuthorization();
 
 await app.RunAsync();

@@ -12,10 +12,13 @@ internal static class EnumExtensions
         var attributes = memInfo?.GetCustomAttributes<T>(false);
         return attributes?.FirstOrDefault();
     }
-    
+
     public static string GetDisplayName(this Enum enumValue)
     {
         var attribute = enumValue.GetAttributeOfType<DisplayAttribute>();
         return (attribute == null ? enumValue.ToString() : attribute.Name) ?? string.Empty;
     }
+
+    public static string GetDisplayNames<T>(this IEnumerable<T> enumValues) where T : Enum =>
+        string.Join(", ", enumValues.Select(e => e.GetDisplayName()));
 }

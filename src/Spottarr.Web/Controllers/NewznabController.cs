@@ -14,7 +14,7 @@ namespace Spottarr.Web.Controllers;
 [Route("[controller]/api")]
 public sealed class NewznabController : Controller
 {
-    public const string Name = "newznab";
+    public const string PathPrefix = "/newznab/api";
     public const string ActionParameter = "t";
     private const int DefaultPageSize = 100;
 
@@ -100,7 +100,7 @@ public sealed class NewznabController : Controller
     private UriBuilder GetApiUri()
     {
         var b = GetBaseUri();
-        b.Path = "/newznab/api";
+        b.Path = PathPrefix;
         return b;
     }
 
@@ -118,8 +118,5 @@ public sealed class NewznabController : Controller
         return b;
     }
 
-    private UriBuilder GetBaseUri() => new(Request.Scheme, Request.Host.Host, Request.Host.Port ?? -1)
-    {
-        Path = "/newznab/api",
-    };
+    private UriBuilder GetBaseUri() => new(Request.Scheme, Request.Host.Host, Request.Host.Port ?? -1);
 }
