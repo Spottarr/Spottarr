@@ -1,5 +1,4 @@
 using Scalar.AspNetCore;
-using Spottarr.Data.Helpers;
 using Spottarr.Services;
 using Spottarr.Web.Helpers;
 using Spottarr.Web.Logging;
