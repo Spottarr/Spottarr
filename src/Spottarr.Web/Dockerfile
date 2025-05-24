@@ -1,5 +1,6 @@
 ﻿FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS base
 RUN mkdir -p /data && chown -R $APP_UID /data && chmod -R 755 /data
+RUN apk add --no-cache curl
 USER $APP_UID
 WORKDIR /app
 ENV DOTNET_RUNNING_IN_CONTAINER_FAST_MODE=true
@@ -30,4 +31,5 @@ ENV DOTNET_RUNNING_IN_CONTAINER_FAST_MODE=false
 WORKDIR /app
 COPY --from=publish /app/publish .
 COPY --from=publish /src/appsettings*.json .
+HEALTHCHECK CMD curl --fail http://localhost:8383/healthz || exit 1
 ENTRYPOINT ["dotnet", "Spottarr.Web.dll"]
