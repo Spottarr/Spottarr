@@ -5,6 +5,7 @@
 
   <ItemGroup>
     <PackageReference Include="EFCore.BulkExtensions.Sqlite" Version="9.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="9.0.5"/>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.5" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.5" />
   </ItemGroup>
