@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Spottarr.Data.Entities;
@@ -6,13 +7,14 @@ using Spottarr.Data.Helpers;
 
 namespace Spottarr.Data;
 
-public class SpottarrDbContext : DbContext
+public class SpottarrDbContext : DbContext, IDataProtectionKeyContext
 {
     private readonly IHostEnvironment _environment;
     private readonly ILoggerFactory _loggerFactory;
 
     public DbSet<Spot> Spots { get; set; }
     public DbSet<FtsSpot> FtsSpots { get; set; }
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
     public SpottarrDbContext(IHostEnvironment environment, ILoggerFactory loggerFactory)
     {
