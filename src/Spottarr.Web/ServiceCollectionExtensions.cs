@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.HttpOverrides;
+using Spottarr.Web.Helpers;
 
-namespace Spottarr.Web.Helpers;
+namespace Spottarr.Web;
 
 internal static class ServiceCollectionExtensions
 {
@@ -31,6 +32,7 @@ internal static class ServiceCollectionExtensions
 
         services.AddAntiforgery();
         services.AddCors(c => c.AddDefaultPolicy(p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
+        services.AddHealthChecks();
 
         return services;
     }

@@ -1,6 +1,7 @@
 using Scalar.AspNetCore;
 using Spottarr.Data.Helpers;
 using Spottarr.Services;
+using Spottarr.Web;
 using Spottarr.Web.Helpers;
 using Spottarr.Web.Logging;
 using Spottarr.Web.Middlewares;
@@ -16,6 +17,7 @@ var app = builder.Build();
 
 await app.MigrateDatabase();
 
+app.MapHealthChecks("/healthz");
 app.MapStaticAssets();
 app.MapControllers();
 app.MapOpenApi();
