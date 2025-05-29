@@ -9,6 +9,7 @@
         <AnalysisMode>All</AnalysisMode>
         <TargetFramework>net9.0</TargetFramework>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <DebugType>embedded</DebugType>
     </PropertyGroup>
     
     <!--
