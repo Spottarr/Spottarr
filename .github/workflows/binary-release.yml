@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        language: [ "win-x64", "linux-x64", "osx-x64" ]
+        platform: [ "win-x64", "linux-x64", "osx-x64" ]
         
     steps:
       - name: Checkout repository
@@ -22,13 +22,10 @@ jobs:
         with:
           dotnet-version: 9.0.x
 
-      - name: Restore packages
-        run: dotnet restore
-
       - name: Publish for ${{ matrix.platform }}
         run: >
           dotnet publish
-          --no-build
+          src/Spottarr.Web/Spottarr.Web.csproj
           --configuration Release
           --runtime ${{ matrix.platform }}
           --output publish/${{ matrix.platform }}
