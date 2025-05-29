@@ -1,0 +1,43 @@
+name: Binary build and release
+on:
+  release:
+    types: [ "created" ]
+permissions:
+  contents: read
+  packages: write
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        language: [ "win-x64", "linux-x64", "osx-x64" ]
+        
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Restore packages
+        run: dotnet restore
+
+      - name: Publish for ${{ matrix.platform }}
+        run: >
+          dotnet publish
+          --no-build
+          --configuration Release
+          --runtime ${{ matrix.platform }}
+          --output publish/${{ matrix.platform }}
+          --self-contained true
+
+      - name: Attach binaries to release
+          uses: actions/upload-release-asset@v1
+          with:
+            upload_url: ${{ github.event.release.upload_url }}
+            asset_path: publish/${{ matrix.platform }}
+            asset_name: spottarr-${{ matrix.platform }}.zip
+            asset_content_type: application/zip
