@@ -18,7 +18,6 @@ var app = builder.Build();
 await app.MigrateDatabase();
 
 app.MapHealthChecks("/healthz");
-app.MapStaticAssets();
 app.MapControllers();
 app.MapOpenApi();
 app.MapScalarApiReference();
@@ -27,6 +26,7 @@ app.MapScalarApiReference();
 app.UseForwardedHeaders();
 app.UseHttpsRedirection();
 app.UseDefaultFiles();
+app.UseStaticFiles();
 app.UseMiddleware<NewsznabQueryActionMiddleware>();
 app.UseRouting();
 app.UseCors();

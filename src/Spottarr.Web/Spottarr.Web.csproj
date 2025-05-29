@@ -1,11 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(SingleBinary)' == 'true'">
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(SingleBinary)' == 'true'">
+    <!-- Embed all static files in the final executable for easy deployment -->
+    <Content Update="wwwroot\**\*" CopyToPublishDirectory="Never"/>
+    <EmbeddedResource Include="wwwroot\**" CopyToOutputDirectory="PreserveNewest"/>
+  </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Spottarr.Tests"/>
@@ -16,6 +25,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="9.0.5"/>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.5"/>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.5"/>
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.5"/>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.5"/>
     <PackageReference Include="Microsoft.XmlSerializer.Generator" Version="9.0.5" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.4.3"/>

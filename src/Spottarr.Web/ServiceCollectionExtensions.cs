@@ -1,4 +1,6 @@
+using System.Reflection;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.FileProviders;
 using Spottarr.Web.Helpers;
 
 namespace Spottarr.Web;
@@ -19,6 +21,15 @@ internal static class ServiceCollectionExtensions
         {
             options.LowercaseQueryStrings = true;
             options.LowercaseUrls = true;
+        });
+
+        services.Configure<StaticFileOptions>(options =>
+        {
+            var assembly = Assembly.GetEntryAssembly()!;
+            var embeddedFileProvider = new ManifestEmbeddedFileProvider(assembly, "wwwroot");
+
+            options.FileProvider = embeddedFileProvider;
+            options.RequestPath = string.Empty;
         });
 
         services.Configure<ForwardedHeadersOptions>(options =>
