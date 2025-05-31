@@ -1,4 +1,4 @@
-using Spottarr.Web.Controllers;
+using Spottarr.Web.Endpoints;
 using Spottarr.Web.Helpers;
 
 namespace Spottarr.Web.Middlewares;
@@ -22,7 +22,7 @@ internal sealed class NewsznabQueryActionMiddleware
 
         var path = context.Request.Path;
 
-        if (!path.StartsWithSegments(NewznabController.PathPrefix, StringComparison.OrdinalIgnoreCase))
+        if (!path.StartsWithSegments(NewznabEndpoints.PathPrefix, StringComparison.OrdinalIgnoreCase))
         {
             await _next.Invoke(context);
             return;
@@ -30,7 +30,7 @@ internal sealed class NewsznabQueryActionMiddleware
 
         var query = new WriteableQueryCollection(context.Request.Query);
 
-        if (!query.Remove(NewznabController.ActionParameter, out var action))
+        if (!query.Remove(NewznabEndpoints.ActionParameter, out var action))
         {
             await _next.Invoke(context);
             return;

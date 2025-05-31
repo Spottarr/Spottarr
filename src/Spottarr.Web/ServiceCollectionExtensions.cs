@@ -7,12 +7,13 @@ internal static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddSpottarrWeb(this IServiceCollection services, IHostEnvironment environment)
     {
-        var mvcBuilder = services.AddControllersWithViews()
-            .AddXmlSerializerFormatters();
+        services.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.TypeInfoResolverChain.Insert(0, SpottarrJsonSerializerContext.Default);
+        });
 
-        if (environment.IsDevelopment())
-            mvcBuilder.AddRazorRuntimeCompilation();
-
+        // Remove MVC and Razor registrations for Native AOT
+        // Only register OpenAPI, CORS, health checks, static files, etc.
         services.AddOpenApi(options => options.AddDocumentTransformer<NewznabOperationTransformer>());
 
         services.Configure<RouteOptions>(options =>
