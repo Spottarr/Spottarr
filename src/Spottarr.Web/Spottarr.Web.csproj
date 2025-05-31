@@ -11,7 +11,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.5"/>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.5"/>
     <PackageReference Include="Microsoft.XmlSerializer.Generator" Version="9.0.5" />
-    <PackageReference Include="Scalar.AspNetCore" Version="2.4.3"/>
+    <PackageReference Include="Scalar.AspNetCore" Version="2.4.7"/>
     <PackageReference Include="System.ServiceModel.Syndication" Version="9.0.5" />
   </ItemGroup>
 
