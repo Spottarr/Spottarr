@@ -29,7 +29,7 @@ app.MapScalarApiReference();
 // Middleware pipeline, order matters here
 app.UseForwardedHeaders();
 app.UseDefaultFiles();
-app.UseMiddleware<NewsznabQueryActionMiddleware>();
+app.UseMiddleware<NewznabQueryActionMiddleware>();
 app.UseRouting();
 app.UseCors();
 app.UseAntiforgery();
