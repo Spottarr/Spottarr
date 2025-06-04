@@ -1,4 +1,4 @@
-using Spottarr.Web.Controllers;
+using Spottarr.Web.Endpoints;
 using Spottarr.Web.Helpers;
 
 namespace Spottarr.Web.Middlewares;
@@ -7,11 +7,11 @@ namespace Spottarr.Web.Middlewares;
 /// Newznab uses the ?t=action query string to determine the action.
 /// This middleware converts it to path based routing
 /// </summary>
-internal sealed class NewsznabQueryActionMiddleware
+internal sealed class NewznabQueryActionMiddleware
 {
     private readonly RequestDelegate _next;
 
-    public NewsznabQueryActionMiddleware(RequestDelegate next)
+    public NewznabQueryActionMiddleware(RequestDelegate next)
     {
         _next = next;
     }
@@ -22,7 +22,7 @@ internal sealed class NewsznabQueryActionMiddleware
 
         var path = context.Request.Path;
 
-        if (!path.StartsWithSegments(NewznabController.PathPrefix, StringComparison.OrdinalIgnoreCase))
+        if (!path.StartsWithSegments(NewznabEndpoints.PathPrefix, StringComparison.OrdinalIgnoreCase))
         {
             await _next.Invoke(context);
             return;
@@ -30,7 +30,7 @@ internal sealed class NewsznabQueryActionMiddleware
 
         var query = new WriteableQueryCollection(context.Request.Query);
 
-        if (!query.Remove(NewznabController.ActionParameter, out var action))
+        if (!query.Remove(NewznabEndpoints.ActionParameter, out var action))
         {
             await _next.Invoke(context);
             return;
