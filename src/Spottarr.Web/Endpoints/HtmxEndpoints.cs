@@ -9,6 +9,7 @@ internal static class HtmxEndpoints
 
     public static void MapHtmx(this IEndpointRouteBuilder app) =>
         app.MapGroup(PathPrefix)
+            .ExcludeFromDescription()
             .MapStats();
 
     private static void MapStats(this RouteGroupBuilder group) =>
