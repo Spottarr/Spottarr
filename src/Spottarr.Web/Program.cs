@@ -13,6 +13,7 @@ builder.Logging.AddConsole(builder.Environment);
 builder.Configuration.MapConfigurationSources(builder.Environment);
 builder.Services.AddSpottarrServices(builder.Configuration);
 builder.Services.AddSpottarrWeb(builder.Environment);
+builder.WebHost.UseStaticWebAssets();
 
 var app = builder.Build();
 
