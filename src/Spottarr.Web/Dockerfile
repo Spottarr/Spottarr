@@ -16,6 +16,7 @@ COPY ["src/Spottarr.Data/Spottarr.Data.csproj", "src/Spottarr.Data/"]
 COPY ["src/Spottarr.Services/Spottarr.Services.csproj", "src/Spottarr.Services/"]
 COPY ./appsettings*.json ./
 COPY ./Directory.Build.props ./
+COPY ./Directory.Packages.props ./
 RUN dotnet restore "src/Spottarr.Web/Spottarr.Web.csproj"
 COPY . .
 WORKDIR "/src/src/Spottarr.Web"
