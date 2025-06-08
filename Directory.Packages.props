@@ -23,11 +23,11 @@
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
     <PackageVersion Include="PhenX.EntityFrameworkCore.BulkInsert.Sqlite" Version="0.3.2" />
     <PackageVersion Include="Quartz.Extensions.Hosting" Version="3.14.0" />
-    <PackageVersion Include="Scalar.AspNetCore" Version="2.4.8" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.4.13" />
     <PackageVersion Include="Spottarr.Usenet" Version="4.1.0" />
     <PackageVersion Include="System.ServiceModel.Syndication" Version="9.0.5" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.0" />
-    <PackageVersion Include="xunit.v3" Version="2.0.2" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.1" />
+    <PackageVersion Include="xunit.v3" Version="2.0.3" />
   </ItemGroup>
 </Project>
