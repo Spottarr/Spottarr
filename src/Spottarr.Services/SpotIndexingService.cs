@@ -1,9 +1,10 @@
 using System.Data.Common;
 using System.Text.RegularExpressions;
-using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using PhenX.EntityFrameworkCore.BulkInsert.Extensions;
+using PhenX.EntityFrameworkCore.BulkInsert.Options;
 using Spottarr.Data;
 using Spottarr.Data.Entities;
 using Spottarr.Services.Configuration;
@@ -47,7 +48,7 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
             {
                 _logger.SpotIndexingBatchStarted(i + 1, batchCount, DateTimeOffset.Now);
 
-                var indexedSpots = await IndexBatch(options.ImportBatchSize);
+                var indexedSpots = await IndexBatch(options.ImportBatchSize, cancellationToken);
 
                 _logger.SpotIndexingBatchFinished(i + 1, batchCount, DateTimeOffset.Now, indexedSpots);
             }
@@ -56,13 +57,13 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
         _logger.SpotIndexingFinished(DateTimeOffset.Now);
     }
 
-    private async Task<int> IndexBatch(int batchSize)
+    private async Task<int> IndexBatch(int batchSize, CancellationToken cancellationToken)
     {
         var unIndexedSpots = await _dbContext.Spots.Where(s => s.IndexedAt == null)
             .AsNoTracking()
             .OrderBy(s => s.Id)
             .Take(batchSize)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         if (unIndexedSpots.Count == 0) return unIndexedSpots.Count;
 
@@ -115,24 +116,24 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
 
         try
         {
-            await using var transaction = await _dbContext.Database.BeginTransactionAsync();
-            await _dbContext.BulkInsertAsync(fullTextIndexSpots, progress: p => _logger.BulkInsertUpdateProgress(p));
-            await _dbContext.BulkUpdateAsync(unIndexedSpots, c =>
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+            await _dbContext.ExecuteBulkInsertAsync(fullTextIndexSpots, cancellationToken: cancellationToken);
+            await _dbContext.ExecuteBulkInsertAsync(unIndexedSpots, new OnConflictOptions<Spot>
             {
-                c.PropertiesToIncludeOnUpdate =
-                [
-                    nameof(Spot.Title),
-                    nameof(Spot.ReleaseTitle),
-                    nameof(Spot.Description),
-                    nameof(Spot.Years),
-                    nameof(Spot.Seasons),
-                    nameof(Spot.Episodes),
-                    nameof(Spot.NewznabCategories),
-                    nameof(Spot.IndexedAt),
-                    nameof(Spot.UpdatedAt)
-                ];
-            }, progress: p => _logger.BulkInsertUpdateProgress(p));
-            await transaction.CommitAsync();
+                Update = (existing, inserted) => new Spot
+                {
+                    ReleaseTitle = inserted.ReleaseTitle,
+                    Years = inserted.Years,
+                    Seasons = inserted.Seasons,
+                    Episodes = inserted.Episodes,
+                    NewznabCategories = inserted.NewznabCategories,
+                    ImdbId = inserted.ImdbId,
+                    TvdbId = inserted.TvdbId,
+                    IndexedAt = inserted.IndexedAt,
+                    UpdatedAt = inserted.UpdatedAt,
+                }
+            }, cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
         }
         catch (DbException ex)
         {
