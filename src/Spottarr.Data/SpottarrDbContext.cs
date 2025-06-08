@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using PhenX.EntityFrameworkCore.BulkInsert.Sqlite;
 using Spottarr.Data.Entities;
 using Spottarr.Data.Helpers;
 
@@ -26,7 +27,8 @@ public class SpottarrDbContext : DbContext, IDataProtectionKeyContext
         optionsBuilder.UseSqlite($"Data Source={DbPathHelper.GetDbPath()}")
             .UseLoggerFactory(_loggerFactory)
             .EnableDetailedErrors(_environment.IsDevelopment())
-            .EnableSensitiveDataLogging(_environment.IsDevelopment());
+            .EnableSensitiveDataLogging(_environment.IsDevelopment())
+            .UseBulkInsertSqlite();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

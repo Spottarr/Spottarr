@@ -1,9 +1,10 @@
 using System.Collections.Concurrent;
 using System.Data.Common;
-using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using PhenX.EntityFrameworkCore.BulkInsert.Extensions;
+using PhenX.EntityFrameworkCore.BulkInsert.Options;
 using Spottarr.Data;
 using Spottarr.Data.Entities;
 using Spottarr.Services.Configuration;
@@ -152,11 +153,10 @@ internal sealed class SpotImportService : ISpotImportService
         // Save the fetched articles in bulk.
         try
         {
-            await _dbContext.BulkInsertOrUpdateAsync(spots, c =>
+            await _dbContext.ExecuteBulkInsertAsync(spots, new OnConflictOptions<Spot>
             {
-                c.UpdateByProperties = [nameof(Spot.MessageId)];
-                c.PropertiesToIncludeOnUpdate = [];
-            }, progress: p => _logger.BulkInsertUpdateProgress(p), cancellationToken: cancellationToken);
+                Match = spot => spot.MessageId
+            }, cancellationToken);
         }
         catch (DbException ex)
         {
