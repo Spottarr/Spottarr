@@ -1,4 +1,4 @@
-﻿FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS base
+﻿FROM mcr.microsoft.com/dotnet/aspnet:10.0-preview-alpine AS base
 RUN mkdir -p /data && chown -R $APP_UID /data && chmod -R 755 /data
 RUN apk add --no-cache curl
 USER $APP_UID
@@ -7,7 +7,7 @@ ENV DOTNET_RUNNING_IN_CONTAINER_FAST_MODE=true
 ENV ASPNETCORE_HTTP_PORTS=8383
 EXPOSE 8383
 
-FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0-preview-alpine AS build
 ARG BUILD_CONFIGURATION=Release
 ARG BUILD_VERSION=v1.0.0
 WORKDIR /src
