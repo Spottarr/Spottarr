@@ -36,6 +36,7 @@ services:
       - "SPOTNET__IMPORTBATCHSIZE=10000"
       - "SPOTNET__RETENTIONDAYS=365" # Use 0 for unlimited
       - "SPOTNET__IMPORTADULTCONTENT=false"
+      - "TZ=Etc/GMT" # Set your timezone, e.g. Europe/Amsterdam
     volumes:
       - /path/to/spottarr/data:/data
     ports:

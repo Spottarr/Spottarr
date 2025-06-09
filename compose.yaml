@@ -17,6 +17,7 @@ services:
       - "SPOTNET__IMPORTBATCHSIZE=10000"
       - "SPOTNET__RETENTIONDAYS=365"
       - "SPOTNET__IMPORTADULTCONTENT=false"
+      - "TZ=Etc/GMT"
     ports:
       - "8383:8383"
     volumes:
