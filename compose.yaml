@@ -1,10 +1,7 @@
 services:
   spottarr:
-    container_name: spottarr
-    build: 
-      context: .
-      dockerfile: ./src/Spottarr.Web/Dockerfile
     image: ghcr.io/spottarr/spottarr:latest
+    container_name: spottarr
     user: "1654:1654"
     environment:
       - "USENET__HOSTNAME=my.news.server.com"
@@ -18,9 +15,17 @@ services:
       - "SPOTNET__RETENTIONDAYS=365"
       - "SPOTNET__IMPORTADULTCONTENT=false"
       - "TZ=Etc/GMT"
-    ports:
-      - "8383:8383"
     volumes:
       - spottarr-data:/data
+    ports:
+      - "8383:8383"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 200M
+    build:
+      context: .
+      dockerfile: ./src/Spottarr.Web/Dockerfile
 volumes:
   spottarr-data:
