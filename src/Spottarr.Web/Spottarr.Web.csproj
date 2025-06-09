@@ -1,5 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
+  <PropertyGroup>
+    <!--
+    ASP.NET uses server GC by default.
+    Server GC assumes the application is the main resource user on a machine, but Resources in docker are usually shared and constrained.
+    In addition Spottarr uses most resourced for imports and indexing, not for high throughput web requests.
+    Workstation GC is a better fit.
+    -->
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+  </PropertyGroup>
+
   <ItemGroup>
     <InternalsVisibleTo Include="Spottarr.Tests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
