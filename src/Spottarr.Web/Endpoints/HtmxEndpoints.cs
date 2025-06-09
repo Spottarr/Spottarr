@@ -20,7 +20,7 @@ internal static class HtmxEndpoints
                 var version = versionService.Version.Split('+').FirstOrDefault();
 
                 return new HtmlResult($"""
-                                       <p class="stats">Spots indexed: {totalCount}</p>
+                                       <p class="stats">Spots indexed: {totalCount:N}</p>
                                        <p class="stats">Version: {version}</p>
                                        """);
             });
