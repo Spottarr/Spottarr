@@ -388,12 +388,11 @@ internal sealed class SpotImportService : ISpotImportService
             // Usenet headers are not cases sensitive, but the Usenet library assumes they are.
             var headers = spotArticle.Headers.ToDictionary(h => h.Key, h => string.Concat(h.Value),
                 StringComparer.OrdinalIgnoreCase);
-            var body = string.Concat(spotArticle.Body);
 
             if (!headers.TryGetValue(SpotnetXml.HeaderName, out var spotnetXmlValues))
             {
                 // No spot XML header, fall back to plaintext body
-                spot.Description = body;
+                spot.Description = string.Concat(spotArticle.Body);
                 _logger.ArticleIsMissingSpotXmlHeader(spot.MessageId);
                 return;
             }
