@@ -343,7 +343,7 @@ internal sealed class SpotImportService : ISpotImportService
         var nntpHeaderResult = NntpHeaderParser.Parse(header);
         if (nntpHeaderResult.HasError)
         {
-            _logger.FailedToParseSpotHeader(header);
+            _logger.FailedToParseSpotHeader("-", header);
             return;
         }
 
@@ -352,7 +352,7 @@ internal sealed class SpotImportService : ISpotImportService
         var spotnetHeaderResult = SpotnetHeaderParser.Parse(nntpHeader);
         if (spotnetHeaderResult.HasError)
         {
-            _logger.FailedToParseSpotHeader(nntpHeader.Subject);
+            _logger.FailedToParseSpotHeader(nntpHeader.MessageId, header);
             return;
         }
 
