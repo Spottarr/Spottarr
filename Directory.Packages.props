@@ -24,7 +24,7 @@
     <PackageVersion Include="PhenX.EntityFrameworkCore.BulkInsert.Sqlite" Version="0.3.2" />
     <PackageVersion Include="Quartz.Extensions.Hosting" Version="3.14.0" />
     <PackageVersion Include="Scalar.AspNetCore" Version="2.4.13" />
-    <PackageVersion Include="Spottarr.Usenet" Version="4.1.1" />
+    <PackageVersion Include="Spottarr.Usenet" Version="4.2.0" />
     <PackageVersion Include="System.ServiceModel.Syndication" Version="10.0.0-preview.5.25277.114" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.1" />

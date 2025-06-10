@@ -385,24 +385,19 @@ internal sealed class SpotImportService : ISpotImportService
 
             var spotArticle = spotArticleResponse.Article;
 
-            // Usenet headers are not cases sensitive, but the Usenet library assumes they are.
-            var headers = spotArticle.Headers.ToDictionary(h => h.Key, h => string.Concat(h.Value),
-                StringComparer.OrdinalIgnoreCase);
-
-            if (!headers.TryGetValue(SpotnetXml.HeaderName, out var spotnetXmlValues))
+            if (!spotArticle.Headers.TryGetValue(SpotnetXml.HeaderName, out var spotnetXmlValues))
             {
                 // No spot XML header, fall back to plaintext body
-                spot.Description = string.Concat(spotArticle.Body);
+                spot.Description = string.Concat(spotArticle.Body).Truncate(Spot.DescriptionMaxLength);
                 _logger.ArticleIsMissingSpotXmlHeader(spot.MessageId);
                 return;
             }
 
-            var spotnetXml = string.Concat(spotnetXmlValues);
-            var spotDetails = SpotnetXmlParser.Parse(spotnetXml);
+            var spotDetails = SpotnetXmlParser.Parse(spotnetXmlValues);
 
             spot.NzbMessageId = spotDetails.Posting.Nzb.Segment;
             spot.ImageMessageId = spotDetails.Posting.Image?.Segment;
-            spot.Description = spotDetails.Posting.Description;
+            spot.Description = spotDetails.Posting.Description.Truncate(Spot.DescriptionMaxLength);
             spot.Tag = spotDetails.Posting.Tag;
             spot.Url = Uri.TryCreate(spotDetails.Posting.Website, UriKind.Absolute, out var uri) ? uri : null;
             spot.Filename = spotDetails.Posting.Filename;
