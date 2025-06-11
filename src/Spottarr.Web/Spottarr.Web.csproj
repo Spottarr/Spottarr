@@ -17,8 +17,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.XmlSerializer.Generator" />
     <PackageReference Include="Scalar.AspNetCore" />
     <PackageReference Include="System.ServiceModel.Syndication" />
