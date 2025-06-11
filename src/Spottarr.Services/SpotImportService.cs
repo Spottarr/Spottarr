@@ -364,8 +364,10 @@ internal sealed class SpotImportService : ISpotImportService
 
         var spot = spotnetHeader.ToSpot();
 
-        if (spot.SpottedAt >= retrieveAfter && (importAdultContent || !spot.IsAdultContent()))
-            spots.Add(spot);
+        if (spot.SpottedAt < retrieveAfter || (!importAdultContent && spot.IsAdultContent()) || spot.IsTest())
+            return;
+
+        spots.Add(spot);
     }
 
     private async ValueTask GetSpotDetails(Spot spot, CancellationToken ct)
