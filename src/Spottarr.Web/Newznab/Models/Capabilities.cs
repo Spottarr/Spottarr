@@ -6,11 +6,14 @@ namespace Spottarr.Web.Newznab.Models;
 [XmlRoot("caps")]
 public sealed class Capabilities
 {
-    [XmlElement("server")] public required ServerInfo ServerInfo { get; init; }
-    [XmlElement("limits")] public required Limits Limits { get; init; }
-    [XmlElement("registration")] public required Registration Registration { get; init; }
-    [XmlElement("searching")] public required Searching Searching { get; init; }
-    
+    [XmlElement("server")] public ServerInfo ServerInfo { get; set; } = null!;
+    [XmlElement("limits")] public Limits Limits { get; set; } = null!;
+    [XmlElement("registration")] public Registration Registration { get; set; } = null!;
+    [XmlElement("searching")] public Searching Searching { get; set; } = null!;
+
     [XmlArray("categories"), XmlArrayItem("category")]
-    public required Collection<MainCategory> Categories { get; init; }
+    public Collection<MainCategory> Categories { get; } = [];
 }
+
+[XmlSerializable(typeof(Capabilities))]
+internal static partial class XmlSerializers;

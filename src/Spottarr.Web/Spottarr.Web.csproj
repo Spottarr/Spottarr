@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
-    <PackageReference Include="Microsoft.XmlSerializer.Generator" />
     <PackageReference Include="Scalar.AspNetCore" />
     <PackageReference Include="System.ServiceModel.Syndication" />
   </ItemGroup>

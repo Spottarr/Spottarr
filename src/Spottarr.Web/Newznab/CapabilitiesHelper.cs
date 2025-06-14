@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using Spottarr.Data.Entities.Enums;
+using Spottarr.Services.Helpers;
 using Spottarr.Web.Helpers;
 using Spottarr.Web.Newznab.Models;
 
@@ -10,7 +11,7 @@ internal static class CapabilitiesHelper
     // https://github.com/Prowlarr/Prowlarr/blob/develop/src/NzbDrone.Core/Indexers/IndexerCapabilities.cs
     public static Capabilities GetCapabilities(Uri uri, Uri imageUri, string name, string version, int limit)
     {
-        return new Capabilities
+        var caps = new Capabilities
         {
             ServerInfo = new ServerInfo
             {
@@ -65,8 +66,10 @@ internal static class CapabilitiesHelper
                     SupportedParams = "q,title",
                 }
             },
-            Categories = GetCategories()
         };
+        caps.Categories.Replace(GetCategories());
+
+        return caps;
     }
 
     private static Collection<MainCategory> GetCategories()
@@ -86,15 +89,21 @@ internal static class CapabilitiesHelper
             mainCats[key].Add(cat);
         }
 
-        return new Collection<MainCategory>(mainCats.Select(kvp => new MainCategory
+        return new Collection<MainCategory>(mainCats.Select(kvp =>
         {
-            Id = (int)kvp.Key,
-            Name = kvp.Key.GetDisplayName(),
-            SubCategories = new Collection<Category>(kvp.Value.Select(v => new Category
+            var cat = new MainCategory
+            {
+                Id = (int)kvp.Key,
+                Name = kvp.Key.GetDisplayName()
+            };
+
+            cat.SubCategories.Replace(kvp.Value.Select(v => new Category
             {
                 Id = (int)v,
                 Name = v.GetDisplayName()
-            }).ToList())
+            }));
+
+            return cat;
         }).ToList());
     }
 }

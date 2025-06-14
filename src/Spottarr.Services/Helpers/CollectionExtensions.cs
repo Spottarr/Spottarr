@@ -1,9 +1,12 @@
 namespace Spottarr.Services.Helpers;
 
-internal static class CollectionExtensions
+public static class CollectionExtensions
 {
     public static ICollection<T> Replace<T>(this ICollection<T> target, IEnumerable<T> newValues)
     {
+        ArgumentNullException.ThrowIfNull(target);
+        ArgumentNullException.ThrowIfNull(newValues);
+
         target.Clear();
         if (target is List<T> listTarget)
         {

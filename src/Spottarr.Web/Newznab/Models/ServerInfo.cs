@@ -4,11 +4,11 @@ namespace Spottarr.Web.Newznab.Models;
 
 public sealed class ServerInfo
 {
-    [XmlAttribute("version")] public required string Version { get; init; }
-    [XmlAttribute("title")] public required string Title { get; init; }
-    [XmlAttribute("strapline")] public required string Tagline { get; init; }
-    [XmlAttribute("email")] public required string Email { get; init; }
-    [XmlAttribute("url")] public required string Host { get; init; }
-    [XmlAttribute("image")] public required string Image { get; init; }
-    [XmlAttribute("type")] public required string Type { get; init; }
+    [XmlAttribute("version")] public string Version { get; set; } = "";
+    [XmlAttribute("title")] public string Title { get; set; } = "";
+    [XmlAttribute("strapline")] public string Tagline { get; set; } = "";
+    [XmlAttribute("email")] public string Email { get; set; } = "";
+    [XmlAttribute("url")] public string Host { get; set; } = "";
+    [XmlAttribute("image")] public string Image { get; set; } = "";
+    [XmlAttribute("type")] public string Type { get; set; } = "";
 }

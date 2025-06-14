@@ -4,6 +4,6 @@ namespace Spottarr.Web.Newznab.Models;
 
 public sealed class Registration
 {
-    [XmlAttribute("available")] public required string Available { get; init; }
-    [XmlAttribute("open")] public required string Open { get; init; }
+    [XmlAttribute("available")] public string Available { get; set; } = "";
+    [XmlAttribute("open")] public string Open { get; set; } = "";
 }

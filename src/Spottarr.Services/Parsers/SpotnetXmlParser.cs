@@ -1,5 +1,4 @@
 using System.Xml;
-using System.Xml.Serialization;
 using Spottarr.Services.Helpers;
 using Spottarr.Services.Spotnet;
 
@@ -7,8 +6,6 @@ namespace Spottarr.Services.Parsers;
 
 internal class SpotnetXmlParser
 {
-    private static readonly XmlSerializer Serializer = new(typeof(SpotnetXml));
-
     private static readonly XmlReaderSettings XmlReaderSettings = new()
     {
         Async = true,
@@ -35,7 +32,7 @@ internal class SpotnetXmlParser
         try
         {
             using var xmlReader = XmlReader.Create(reader, XmlReaderSettings);
-            result = Serializer.Deserialize(xmlReader) as SpotnetXml;
+            result = XmlSerializers.SpotnetXml.Deserialize(xmlReader) as SpotnetXml;
         }
         catch (InvalidOperationException ex)
         {
