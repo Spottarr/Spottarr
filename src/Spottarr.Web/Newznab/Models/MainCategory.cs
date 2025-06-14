@@ -5,5 +5,5 @@ namespace Spottarr.Web.Newznab.Models;
 
 public sealed class MainCategory : Category
 {
-    [XmlElement("subcat")] public required Collection<Category> SubCategories { get; init; }
+    [XmlElement("subcat")] public Collection<Category> SubCategories { get; } = [];
 }

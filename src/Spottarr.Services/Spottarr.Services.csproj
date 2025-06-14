@@ -11,6 +11,7 @@
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
     <PackageReference Include="Quartz.Extensions.Hosting" />
     <PackageReference Include="Spottarr.Usenet" />
+    <PackageReference Include="Swick.XmlSerializer.Generator" />
   </ItemGroup>
 
   <ItemGroup>

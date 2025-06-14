@@ -4,6 +4,6 @@ namespace Spottarr.Web.Newznab.Models;
 
 public sealed class Limits
 {
-    [XmlAttribute("max")] public int Max { get; init; }
-    [XmlAttribute("default")] public int Default { get; init; }
+    [XmlAttribute("max")] public int Max { get; set; }
+    [XmlAttribute("default")] public int Default { get; set; }
 }

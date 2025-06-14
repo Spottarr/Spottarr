@@ -31,16 +31,21 @@ services:
       - "USENET__PASSWORD=somep@ssw0rd"
       - "USENET__PORT=563"
       - "USENET__USETLS=true"
-      - "USENET__MAXCONNECTIONS=10"
+      - "USENET__MAXCONNECTIONS=10" # Adjust based on your usenet provider and other download clients
       - "SPOTNET__RETRIEVEAFTER=2024-10-01T00:00:00Z"
-      - "SPOTNET__IMPORTBATCHSIZE=10000"
+      - "SPOTNET__IMPORTBATCHSIZE=10000" # Adjust based on available memory
       - "SPOTNET__RETENTIONDAYS=365" # Use 0 for unlimited
       - "SPOTNET__IMPORTADULTCONTENT=false"
+      - "TZ=Etc/GMT" # Set your timezone, e.g. Europe/Amsterdam
     volumes:
       - /path/to/spottarr/data:/data
     ports:
       - "8383:8383"
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 200M # Adjust based on available memory
 ```
 
 > [!NOTE]

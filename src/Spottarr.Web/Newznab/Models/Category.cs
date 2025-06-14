@@ -4,6 +4,6 @@ namespace Spottarr.Web.Newznab.Models;
 
 public class Category
 {
-    [XmlAttribute("id")] public int Id { get; init; }
-    [XmlAttribute("name")] public required string Name { get; init; }
+    [XmlAttribute("id")] public int Id { get; set; }
+    [XmlAttribute("name")] public string Name { get; set; } = "";
 }

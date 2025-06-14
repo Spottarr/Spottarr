@@ -13,9 +13,9 @@ public class SpottarrDbContext : DbContext, IDataProtectionKeyContext
     private readonly IHostEnvironment _environment;
     private readonly ILoggerFactory _loggerFactory;
 
-    public DbSet<Spot> Spots { get; set; }
-    public DbSet<FtsSpot> FtsSpots { get; set; }
-    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
+    public DbSet<Spot> Spots { get; set; } = null!;
+    public DbSet<FtsSpot> FtsSpots { get; set; } = null!;
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
 
     public SpottarrDbContext(IHostEnvironment environment, ILoggerFactory loggerFactory)
     {

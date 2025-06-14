@@ -4,6 +4,8 @@ namespace Spottarr.Data.Entities;
 
 public class Spot : BaseEntity
 {
+    public const int DescriptionMaxLength = 32768;
+
     public string Title { get; set; } = string.Empty;
     public string? ReleaseTitle { get; set; }
     public string? Description { get; set; }
