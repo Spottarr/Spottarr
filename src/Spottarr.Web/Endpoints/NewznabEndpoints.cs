@@ -46,7 +46,7 @@ public static class NewznabEndpoints
                 var xml = CapabilitiesHelper.GetCapabilities(request.GetApiUri().Uri, request.GetLogoUri().Uri,
                     env.ApplicationName, versionService.Version, DefaultPageSize);
 
-                return new XmlResult<Capabilities>(xml);
+                return new XmlResult<Capabilities>("caps", xml);
             })
             .Produces<Capabilities>(contentType: MediaTypeNames.Application.Xml)
             .WithDescription("Get the Newznab capabilities that Spottarr supports.");
