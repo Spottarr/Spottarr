@@ -4,5 +4,5 @@ namespace Spottarr.Services.Spotnet;
 
 public class NzbSegment
 {
-    [XmlElement(ElementName = "Segment")] public required string Segment { get; init; }
+    [XmlElement(ElementName = "Segment")] public string Segment { get; set; } = string.Empty;
 }

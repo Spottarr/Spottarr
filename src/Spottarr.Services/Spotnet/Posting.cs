@@ -4,26 +4,26 @@ namespace Spottarr.Services.Spotnet;
 
 public sealed class Posting
 {
-    [XmlElement(ElementName = "Key")] public int Key { get; init; }
-    [XmlElement(ElementName = "Created")] public int Created { get; init; }
-    [XmlElement(ElementName = "Poster")] public required string Poster { get; init; }
-    [XmlElement(ElementName = "Title")] public required string Title { get; init; }
+    [XmlElement(ElementName = "Key")] public int Key { get; set; }
+    [XmlElement(ElementName = "Created")] public int Created { get; set; }
+    [XmlElement(ElementName = "Poster")] public string Poster { get; set; } = string.Empty;
+    [XmlElement(ElementName = "Title")] public string Title { get; set; } = string.Empty;
 
     [XmlElement(ElementName = "Description")]
-    public required string Description { get; init; }
+    public string Description { get; set; } = string.Empty;
 
-    [XmlElement(ElementName = "Tag")] public required string Tag { get; init; }
-    [XmlElement(ElementName = "Website")] public required string Website { get; init; }
-    [XmlElement(ElementName = "Image")] public required ImageSegment Image { get; init; }
-    [XmlElement(ElementName = "Size")] public long Size { get; init; }
-    [XmlElement(ElementName = "Category")] public required Category Category { get; init; }
-    [XmlElement(ElementName = "NZB")] public required NzbSegment Nzb { get; init; }
+    [XmlElement(ElementName = "Tag")] public string Tag { get; set; } = string.Empty;
+    [XmlElement(ElementName = "Website")] public string Website { get; set; } = string.Empty;
+    [XmlElement(ElementName = "Image")] public ImageSegment Image { get; set; } = new();
+    [XmlElement(ElementName = "Size")] public long Size { get; set; }
+    [XmlElement(ElementName = "Category")] public Category Category { get; set; } = new();
+    [XmlElement(ElementName = "NZB")] public NzbSegment Nzb { get; set; } = new();
 
     /* Optional fields
      not listed on https://github.com/spotnet/spotnet/wiki/Spot-Xml-format
      but present in https://github.com/spotweb/spotweb/blob/develop/lib/services/Format/Services_Format_Parsing.php */
-    [XmlElement(ElementName = "Filename")] public required string Filename { get; init; }
+    [XmlElement(ElementName = "Filename")] public string Filename { get; set; } = string.Empty;
 
     [XmlElement(ElementName = "Newsgroup")]
-    public required string Newsgroup { get; init; }
+    public string Newsgroup { get; set; } = string.Empty;
 }

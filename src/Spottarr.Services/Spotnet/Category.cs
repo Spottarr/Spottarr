@@ -5,6 +5,6 @@ namespace Spottarr.Services.Spotnet;
 
 public sealed class Category
 {
-    [XmlText] public required string Text { get; init; }
-    [XmlElement(ElementName = "Sub")] public required Collection<string> Sub { get; init; }
+    [XmlText] public string Text { get; set; } = string.Empty;
+    [XmlElement(ElementName = "Sub")] public Collection<string> Sub { get; } = [];
 }

@@ -395,7 +395,7 @@ internal sealed class SpotImportService : ISpotImportService
                 return;
             }
 
-            var spotDetails = SpotnetXmlParser.Parse(spotnetXmlValues);
+            var spotDetails = await SpotnetXmlParser.Parse(spotnetXmlValues);
 
             spot.NzbMessageId = spotDetails.Posting.Nzb.Segment;
             spot.ImageMessageId = spotDetails.Posting.Image?.Segment;

@@ -6,6 +6,6 @@ namespace Spottarr.Services.Spotnet;
 public sealed class SpotnetXml
 {
     public const string HeaderName = "X-XML";
-    
-    [XmlElement(ElementName = "Posting")] public required Posting Posting { get; init; }
+
+    [XmlElement(ElementName = "Posting")] public Posting Posting { get; set; } = new Posting();
 }

@@ -1,3 +1,4 @@
+using System.Xml;
 using Spottarr.Services.Parsers;
 using Xunit;
 
@@ -6,7 +7,7 @@ namespace Spottarr.Tests;
 public class SpotnetXmlParserTests
 {
     [Fact]
-    public void ParsesXmlValidVariant1()
+    public async Task ParsesXmlValidVariant1()
     {
         const string xml = """
                            <Spotnet>
@@ -29,7 +30,7 @@ public class SpotnetXmlParserTests
                                </Posting>
                            </Spotnet>
                            """;
-        var result = SpotnetXmlParser.Parse(xml);
+        var result = await SpotnetXmlParser.Parse(xml);
 
         Assert.Equal("SomePoster", result.Posting.Poster);
         Assert.Equal("Echoes of Tomorrow - S04E01: A New Dawn", result.Posting.Title);
@@ -40,7 +41,7 @@ public class SpotnetXmlParserTests
     }
 
     [Fact]
-    public void ParsesXmlValidVariant2()
+    public async Task ParsesXmlValidVariant2()
     {
         const string xml = """
                            <Spotnet>
@@ -65,7 +66,7 @@ public class SpotnetXmlParserTests
                            </Spotnet>
                            """;
 
-        var result = SpotnetXmlParser.Parse(xml);
+        var result = await SpotnetXmlParser.Parse(xml);
 
         Assert.Equal("SomePoster", result.Posting.Poster);
         Assert.Equal("Midnight Requiem - S01E09: The Final Note", result.Posting.Title);
@@ -76,7 +77,7 @@ public class SpotnetXmlParserTests
     }
 
     [Fact]
-    public void ParsesXmlInvalidCharacters()
+    public async Task ParsesXmlInvalidCharacters()
     {
         const string xml = """
                            <Spotnet>
@@ -101,7 +102,7 @@ public class SpotnetXmlParserTests
                            </Spotnet>
                            """;
 
-        var result = SpotnetXmlParser.Parse(xml);
+        var result = await SpotnetXmlParser.Parse(xml);
 
         Assert.Equal("SomePoster", result.Posting.Poster);
         Assert.Equal("Midnight Requiem - S01E09: The Final Note", result.Posting.Title);
@@ -113,7 +114,7 @@ public class SpotnetXmlParserTests
     }
 
     [Fact]
-    public void DoesNotParseXmlInvalidImageTag()
+    public async Task DoesNotParseXmlInvalidImageTag()
     {
         const string xml = """
                            <Spotnet>
@@ -137,11 +138,11 @@ public class SpotnetXmlParserTests
                            </Spotnet>
                            """;
 
-        Assert.Throws<InvalidOperationException>(() => SpotnetXmlParser.Parse(xml));
+        await Assert.ThrowsAsync<XmlException>(() => SpotnetXmlParser.Parse(xml));
     }
 
     [Fact]
-    public void ParsesXmlValidLines()
+    public async Task ParsesXmlValidLines()
     {
         const string xml = """
                            <Spotnet>
@@ -165,7 +166,7 @@ public class SpotnetXmlParserTests
                            </Spotnet>
                            """;
         var lines = xml.Split("\n", StringSplitOptions.RemoveEmptyEntries).ToList();
-        var result = SpotnetXmlParser.Parse(lines);
+        var result = await SpotnetXmlParser.Parse(lines);
 
         Assert.Equal("SomePoster", result.Posting.Poster);
         Assert.Equal("Echoes of Tomorrow - S04E01: A New Dawn", result.Posting.Title);
