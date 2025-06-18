@@ -1,5 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+  </PropertyGroup>
+
   <ItemGroup>
     <InternalsVisibleTo Include="Spottarr.Tests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
