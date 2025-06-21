@@ -15,12 +15,27 @@ public sealed class Category : IXmlReadable<Category>
         ArgumentNullException.ThrowIfNull(reader);
 
         var result = new Category();
+        var depth = reader.Depth;
 
         result.Text = await reader.ReadContentAsStringAsync();
-        while (reader.IsStartElement("Sub"))
+        while (reader.Depth >= depth)
         {
-            var sub = await reader.ReadElementContentAsStringAsync();
-            result.Sub.Add(sub);
+            if (reader.NodeType != XmlNodeType.Element)
+            {
+                await reader.ReadAsync();
+                continue;
+            }
+
+            switch (reader.Name)
+            {
+                case "Sub":
+                    var sub = await reader.ReadElementContentAsStringAsync();
+                    result.Sub.Add(sub);
+                    break;
+                default:
+                    await reader.SkipAsync(); // Skip unknown elements
+                    break;
+            }
         }
 
         return result;

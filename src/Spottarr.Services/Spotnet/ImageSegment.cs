@@ -25,8 +25,26 @@ public sealed class ImageSegment : IXmlReadable<ImageSegment>
         if (int.TryParse(reader.GetAttribute("Height"), out var height))
             result.Height = height;
 
-        if (reader.IsStartElement("Segment"))
-            result.Segment = await reader.ReadElementContentAsStringAsync();
+        var depth = reader.Depth;
+
+        while (reader.Depth >= depth)
+        {
+            if (reader.NodeType != XmlNodeType.Element)
+            {
+                await reader.ReadAsync();
+                continue;
+            }
+
+            switch (reader.Name)
+            {
+                case "Segment":
+                    result.Segment = await reader.ReadElementContentAsStringAsync();
+                    break;
+                default:
+                    await reader.SkipAsync(); // Skip unknown elements
+                    break;
+            }
+        }
 
         return result;
     }

@@ -40,7 +40,6 @@ public sealed class Posting : IXmlReadable<Posting>
         // Since the XML elements are not guaranteed to be in order, so we need to loop
         while (reader.Depth >= depth)
         {
-            Console.WriteLine(reader.Depth);
             if (reader.NodeType != XmlNodeType.Element)
             {
                 await reader.ReadAsync();
