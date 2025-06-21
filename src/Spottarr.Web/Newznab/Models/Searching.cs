@@ -4,7 +4,7 @@ using Spottarr.Services.Helpers;
 
 namespace Spottarr.Web.Newznab.Models;
 
-internal sealed class Searching : XmlWritable
+internal sealed class Searching : IXmlWritable
 {
     [XmlElement("search")] public required Search Search { get; init; }
     [XmlElement("tv-search")] public required Search TvSearch { get; init; }
@@ -13,7 +13,7 @@ internal sealed class Searching : XmlWritable
     [XmlElement("audio-search")] public required Search AudioSearch { get; init; }
     [XmlElement("book-search")] public required Search BookSearch { get; init; }
 
-    public override void WriteXml(XmlWriter writer)
+    public void WriteXml(XmlWriter writer)
     {
         writer.WriteElement("search", Search);
         writer.WriteElement("tv-search", TvSearch);

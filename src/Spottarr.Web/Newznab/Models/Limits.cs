@@ -5,12 +5,12 @@ using Spottarr.Services.Helpers;
 
 namespace Spottarr.Web.Newznab.Models;
 
-internal sealed class Limits : XmlWritable
+internal sealed class Limits : IXmlWritable
 {
     [XmlAttribute("max")] public int Max { get; init; }
     [XmlAttribute("default")] public int Default { get; init; }
 
-    public override void WriteXml(XmlWriter writer)
+    public void WriteXml(XmlWriter writer)
     {
         writer.WriteAttributeString("max", Max.ToString(CultureInfo.InvariantCulture));
         writer.WriteAttributeString("default", Default.ToString(CultureInfo.InvariantCulture));

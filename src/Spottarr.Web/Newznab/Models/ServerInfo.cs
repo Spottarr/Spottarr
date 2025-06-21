@@ -4,7 +4,7 @@ using Spottarr.Services.Helpers;
 
 namespace Spottarr.Web.Newznab.Models;
 
-internal sealed class ServerInfo : XmlWritable
+internal sealed class ServerInfo : IXmlWritable
 {
     [XmlAttribute("version")] public required string Version { get; init; }
     [XmlAttribute("title")] public required string Title { get; init; }
@@ -14,7 +14,7 @@ internal sealed class ServerInfo : XmlWritable
     [XmlAttribute("image")] public required string Image { get; init; }
     [XmlAttribute("type")] public required string Type { get; init; }
 
-    public override void WriteXml(XmlWriter writer)
+    public void WriteXml(XmlWriter writer)
     {
         writer.WriteAttributeString("version", Version);
         writer.WriteAttributeString("title", Title);

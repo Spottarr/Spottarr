@@ -5,12 +5,12 @@ using Spottarr.Services.Helpers;
 
 namespace Spottarr.Web.Newznab.Models;
 
-internal class Category : XmlWritable
+internal class Category : IXmlWritable
 {
     [XmlAttribute("id")] public int Id { get; init; }
     [XmlAttribute("name")] public required string Name { get; init; }
 
-    public override void WriteXml(XmlWriter writer)
+    public void WriteXml(XmlWriter writer)
     {
         writer.WriteAttributeString("id", Id.ToString(CultureInfo.InvariantCulture));
         writer.WriteAttributeString("name", Name);

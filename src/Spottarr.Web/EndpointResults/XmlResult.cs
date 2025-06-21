@@ -1,11 +1,10 @@
 using System.Net.Mime;
 using System.Xml;
-using System.Xml.Serialization;
 using Spottarr.Services.Helpers;
 
 namespace Spottarr.Web.EndpointResults;
 
-internal sealed class XmlResult<T> : IResult where T : IXmlSerializable
+internal sealed class XmlResult<T> : IResult where T : IXmlWritable
 {
     private readonly string _rootElement;
     private readonly T _result;

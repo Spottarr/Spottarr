@@ -6,7 +6,7 @@ using Spottarr.Services.Helpers;
 namespace Spottarr.Web.Newznab.Models;
 
 [XmlRoot("caps")]
-internal sealed class Capabilities : XmlWritable
+internal sealed class Capabilities : IXmlWritable
 {
     [XmlElement("server")] public required ServerInfo ServerInfo { get; init; }
     [XmlElement("limits")] public required Limits Limits { get; init; }
@@ -16,7 +16,7 @@ internal sealed class Capabilities : XmlWritable
     [XmlArray("categories"), XmlArrayItem("category")]
     public required Collection<MainCategory> Categories { get; init; }
 
-    public override void WriteXml(XmlWriter writer)
+    public void WriteXml(XmlWriter writer)
     {
         writer.WriteElement("server", ServerInfo);
         writer.WriteElement("limits", Limits);
