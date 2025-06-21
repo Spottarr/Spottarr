@@ -1,35 +1,39 @@
 using System.Xml;
-using System.Xml.Serialization;
+using Spottarr.Services.Helpers;
 using Spottarr.Services.Spotnet;
 
 namespace Spottarr.Services.Parsers;
 
 internal class SpotnetXmlParser
 {
-    private static readonly XmlSerializer Serializer = new(typeof(SpotnetXml)); 
     private static readonly XmlReaderSettings XmlReaderSettings = new()
     {
         Async = true,
         // Spot XML headers often contain invalid characters
         CheckCharacters = false
     };
-    
-    public static SpotnetXml Parse(string xml)
-    {
-        SpotnetXml? result;
-        
-        try
-        {
-            using var stringReader = new StringReader(xml);
-            using var xmlReader = XmlReader.Create(stringReader, XmlReaderSettings);
-            result = Serializer.Deserialize(xmlReader) as SpotnetXml;
-        }
-        catch (InvalidOperationException ex)
-        {
-            throw new InvalidOperationException(xml, ex);
-        }
 
-        if (result == null) throw new InvalidOperationException(xml);
+    public static async Task<SpotnetXml> Parse(string xml)
+    {
+        using var reader = new StringReader(xml);
+        return await Parse(reader);
+    }
+
+    public static async Task<SpotnetXml> Parse(IEnumerable<string> xml)
+    {
+        using var reader = new StringEnumerableReader(xml);
+        return await Parse(reader);
+    }
+
+    private static async Task<SpotnetXml> Parse(TextReader textReader)
+    {
+        using var reader = XmlReader.Create(textReader, XmlReaderSettings);
+
+        await reader.MoveToContentAsync();
+
+        reader.ReadStartElement("Spotnet");
+        var result = await SpotnetXml.ReadXml(reader);
+        reader.ReadEndElement();
 
         return result;
     }

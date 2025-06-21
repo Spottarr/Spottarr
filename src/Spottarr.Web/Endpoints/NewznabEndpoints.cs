@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using System.ServiceModel.Syndication;
 using Microsoft.AspNetCore.Mvc;
 using Spottarr.Data.Entities.Enums;
@@ -18,33 +19,48 @@ public static class NewznabEndpoints
 
     public static void MapNewznab(this IEndpointRouteBuilder app) =>
         app.MapGroup(PathPrefix)
-            .WithTags("newznab")
+            .WithTags("Newznab")
             .MapNewznab();
+
+    private static RouteHandlerBuilder MapNewznabSearch(this RouteGroupBuilder group, string route) =>
+        group.MapGet(route, SearchHandler)
+            .Produces(StatusCodes.Status200OK, contentType: MediaTypeNames.Application.Xml);
 
     private static void MapNewznab(this RouteGroupBuilder group)
     {
-        group.MapGet("/search", SearchHandler);
-        group.MapGet("/tvsearch", SearchHandler);
-        group.MapGet("/movie", SearchHandler);
-        group.MapGet("/music", SearchHandler);
-        group.MapGet("/book", SearchHandler);
-        group.MapGet("/pc", SearchHandler);
+        group.MapNewznabSearch("/search")
+            .WithDescription("Search for any type of spot. Returns a Newznab compatible RSS feed.");
+        group.MapNewznabSearch("/tvsearch")
+            .WithDescription("Search for TV show spots. Returns a Newznab compatible RSS feed.");
+        group.MapNewznabSearch("/movie")
+            .WithDescription("Search for movie spots. Returns a Newznab compatible RSS feed.");
+        group.MapNewznabSearch("/music")
+            .WithDescription("Search for music spots. Returns a Newznab compatible RSS feed.");
+        group.MapNewznabSearch("/book")
+            .WithDescription("Search for book spots. Returns a Newznab compatible RSS feed.");
+        group.MapNewznabSearch("/pc")
+            .WithDescription("Search for software spots. Returns a Newznab compatible RSS feed.");
 
         group.MapGet("/caps", (IApplicationVersionService versionService, IHostEnvironment env, HttpRequest request) =>
-        {
-            var xml = CapabilitiesHelper.GetCapabilities(request.GetApiUri().Uri, request.GetLogoUri().Uri,
-                env.ApplicationName, versionService.Version, DefaultPageSize);
+            {
+                var xml = CapabilitiesHelper.GetCapabilities(request.GetApiUri().Uri, request.GetLogoUri().Uri,
+                    env.ApplicationName, versionService.Version, DefaultPageSize);
 
-            return new XmlResult<Capabilities>(xml);
-        });
+                return new XmlResult<Capabilities>("caps", xml);
+            })
+            .Produces<Capabilities>(contentType: MediaTypeNames.Application.Xml)
+            .WithDescription("Get the Newznab capabilities that Spottarr supports.");
 
         group.MapGet("/get", async ([FromQuery(Name = "guid")] int id, ISpotImportService spotImportService) =>
-        {
-            var result = await spotImportService.RetrieveNzb(id);
-            return result == null
-                ? Results.NotFound()
-                : Results.File(result, "application/x-nzb", $"{id}.nzb");
-        });
+            {
+                var result = await spotImportService.RetrieveNzb(id);
+                return result == null
+                    ? Results.NotFound()
+                    : Results.File(result, "application/x-nzb", $"{id}.nzb");
+            })
+            .Produces(StatusCodes.Status200OK, contentType: "application/x-nzb")
+            .Produces(StatusCodes.Status404NotFound)
+            .WithDescription("Get the NZB file for a spot.");
     }
 
     private static Task<IResult> SearchHandler(

@@ -7,11 +7,11 @@ namespace Spottarr.Web.Middlewares;
 /// Newznab uses the ?t=action query string to determine the action.
 /// This middleware converts it to path based routing
 /// </summary>
-internal sealed class NewsznabQueryActionMiddleware
+internal sealed class NewznabQueryActionMiddleware
 {
     private readonly RequestDelegate _next;
 
-    public NewsznabQueryActionMiddleware(RequestDelegate next)
+    public NewznabQueryActionMiddleware(RequestDelegate next)
     {
         _next = next;
     }

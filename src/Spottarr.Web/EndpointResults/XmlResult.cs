@@ -1,28 +1,32 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Mime;
-using System.Xml.Serialization;
+using System.Xml;
+using Spottarr.Services.Helpers;
 
 namespace Spottarr.Web.EndpointResults;
 
-internal sealed class XmlResult<T> : IResult
+internal sealed class XmlResult<T> : IResult where T : IXmlWritable
 {
-    [UnconditionalSuppressMessage("Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "<Pending>")]
-    private static readonly XmlSerializer Serializer = new(typeof(T));
-
+    private readonly string _rootElement;
     private readonly T _result;
 
-    public XmlResult(T result) => _result = result;
+    public XmlResult(string rootElement, T result)
+    {
+        _rootElement = rootElement;
+        _result = result;
+    }
 
-    [UnconditionalSuppressMessage("Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "<Pending>")]
     public async Task ExecuteAsync(HttpContext httpContext)
     {
-        using var ms = new MemoryStream();
+        var ms = new MemoryStream();
+        await using var writer = XmlWriter.Create(ms, new XmlWriterSettings
+        {
+            Indent = true,
+            Async = true,
+        });
 
-        Serializer.Serialize(ms, _result);
+        writer.WriteElement(_rootElement, _result);
+        await writer.FlushAsync();
+
         ms.Position = 0;
 
         httpContext.Response.ContentType = MediaTypeNames.Application.Xml;

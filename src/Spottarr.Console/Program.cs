@@ -17,6 +17,6 @@ await app.MigrateDatabase();
 
 var schedulerFactory = app.Services.GetRequiredService<ISchedulerFactory>();
 var scheduler = await schedulerFactory.GetScheduler();
-await scheduler.TriggerJob(JobKeys.CleanUpSpots);
+await scheduler.TriggerJob(JobKeys.ImportSpots);
 
 await app.RunAsync();
