@@ -1,11 +1,10 @@
 using System.Xml;
-using System.Xml.Serialization;
 
 namespace Spottarr.Services.Helpers;
 
 public static class XmlWriterExtensions
 {
-    public static void WriteElement(this XmlWriter writer, string name, IXmlSerializable serializable)
+    public static void WriteElement(this XmlWriter writer, string name, IXmlWritable serializable)
     {
         ArgumentNullException.ThrowIfNull(writer, nameof(writer));
         ArgumentNullException.ThrowIfNull(serializable, nameof(serializable));
@@ -15,7 +14,7 @@ public static class XmlWriterExtensions
         writer.WriteEndElement();
     }
 
-    public static void WriteCollection(this XmlWriter writer, string itemName, IEnumerable<IXmlSerializable> collection)
+    public static void WriteCollection(this XmlWriter writer, string itemName, IEnumerable<IXmlWritable> collection)
     {
         ArgumentNullException.ThrowIfNull(writer, nameof(writer));
         ArgumentNullException.ThrowIfNull(collection, nameof(collection));
@@ -27,7 +26,7 @@ public static class XmlWriterExtensions
     }
 
     public static void WriteCollection(this XmlWriter writer, string name, string itemName,
-        IEnumerable<IXmlSerializable> collection)
+        IEnumerable<IXmlWritable> collection)
     {
         ArgumentNullException.ThrowIfNull(writer, nameof(writer));
         ArgumentNullException.ThrowIfNull(collection, nameof(collection));
