@@ -63,6 +63,12 @@ public sealed class Posting : IXmlReadable<Posting>
                 case "Description":
                     result.Description = await reader.ReadElementContentAsStringAsync();
                     break;
+                case "Filename":
+                    result.Filename = await reader.ReadElementContentAsStringAsync();
+                    break;
+                case "Newsgroup":
+                    result.Newsgroup = await reader.ReadElementContentAsStringAsync();
+                    break;
                 case "Image":
                     reader.ReadStartElement("Image");
                     result.Image = await ImageSegment.ReadXml(reader);

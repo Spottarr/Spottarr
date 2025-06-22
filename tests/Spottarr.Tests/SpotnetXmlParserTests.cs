@@ -62,6 +62,8 @@ public class SpotnetXmlParserTests
                            			<Segment>someid4@spot.net</Segment>
                            		</NZB>
                            		<PREVSPOTS></PREVSPOTS>
+                           		<Filename>filename.mp4</Filename>
+                           		<Newsgroup>some.group</Newsgroup>
                            	</Posting>
                            </Spotnet>
                            """;
@@ -71,6 +73,8 @@ public class SpotnetXmlParserTests
         Assert.Equal("SomePoster", result.Posting.Poster);
         Assert.Equal("Midnight Requiem - S01E09: The Final Note", result.Posting.Title);
         Assert.Equal("01", result.Posting.Category.Text);
+        Assert.Equal("filename.mp4", result.Posting.Filename);
+        Assert.Equal("some.group", result.Posting.Newsgroup);
         Assert.Collection(result.Posting.Category.Sub, sub1 => { Assert.Equal("01a09", sub1); },
             sub2 => { Assert.Equal("01b04", sub2); });
         Assert.Equal("someid4@spot.net", result.Posting.Nzb.Segment);
