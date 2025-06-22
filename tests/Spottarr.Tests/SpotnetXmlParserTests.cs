@@ -1,4 +1,3 @@
-using System.Xml;
 using Spottarr.Services.Parsers;
 using Xunit;
 
@@ -30,7 +29,10 @@ public class SpotnetXmlParserTests
                                </Posting>
                            </Spotnet>
                            """;
-        var result = await SpotnetXmlParser.Parse(xml);
+
+        var parsed = await SpotnetXmlParser.Parse(xml);
+        Assert.False(parsed.HasError);
+        var result = parsed.Result;
 
         Assert.Equal("SomePoster", result.Posting.Poster);
         Assert.Equal("Echoes of Tomorrow - S04E01: A New Dawn", result.Posting.Title);
@@ -68,7 +70,9 @@ public class SpotnetXmlParserTests
                            </Spotnet>
                            """;
 
-        var result = await SpotnetXmlParser.Parse(xml);
+        var parsed = await SpotnetXmlParser.Parse(xml);
+        Assert.False(parsed.HasError);
+        var result = parsed.Result;
 
         Assert.Equal("SomePoster", result.Posting.Poster);
         Assert.Equal("Midnight Requiem - S01E09: The Final Note", result.Posting.Title);
@@ -110,7 +114,9 @@ public class SpotnetXmlParserTests
                            </Spotnet>
                            """;
 
-        var result = await SpotnetXmlParser.Parse(xml);
+        var parsed = await SpotnetXmlParser.Parse(xml);
+        Assert.False(parsed.HasError);
+        var result = parsed.Result;
 
         Assert.Equal("SomePoster", result.Posting.Poster);
         Assert.Equal("Echoes of Tomorrow - S04E01: A New Dawn", result.Posting.Title);
@@ -146,7 +152,9 @@ public class SpotnetXmlParserTests
                            </Spotnet>
                            """;
 
-        var result = await SpotnetXmlParser.Parse(xml);
+        var parsed = await SpotnetXmlParser.Parse(xml);
+        Assert.False(parsed.HasError);
+        var result = parsed.Result;
 
         Assert.Equal("SomePoster", result.Posting.Poster);
         Assert.Equal("Midnight Requiem - S01E09: The Final Note", result.Posting.Title);
@@ -182,7 +190,8 @@ public class SpotnetXmlParserTests
                            </Spotnet>
                            """;
 
-        await Assert.ThrowsAsync<XmlException>(() => SpotnetXmlParser.Parse(xml));
+        var parsed = await SpotnetXmlParser.Parse(xml);
+        Assert.True(parsed.HasError);
     }
 
     [Fact]
@@ -209,8 +218,11 @@ public class SpotnetXmlParserTests
                                </Posting>
                            </Spotnet>
                            """;
+
         var lines = xml.Split("\n", StringSplitOptions.RemoveEmptyEntries).ToList();
-        var result = await SpotnetXmlParser.Parse(lines);
+        var parsed = await SpotnetXmlParser.Parse(lines);
+        Assert.False(parsed.HasError);
+        var result = parsed.Result;
 
         Assert.Equal("SomePoster", result.Posting.Poster);
         Assert.Equal("Echoes of Tomorrow - S04E01: A New Dawn", result.Posting.Title);

@@ -13,16 +13,32 @@ internal class SpotnetXmlParser
         CheckCharacters = false
     };
 
-    public static async Task<SpotnetXml> Parse(string xml)
+    public static async Task<ParserResult<SpotnetXml>> Parse(string xml)
     {
-        using var reader = new StringReader(xml);
-        return await Parse(reader);
+        try
+        {
+            using var reader = new StringReader(xml);
+            var result = await Parse(reader);
+            return new ParserResult<SpotnetXml>(result);
+        }
+        catch (XmlException ex)
+        {
+            return new ParserResult<SpotnetXml>($"Invalid spot XML header: '{ex.Message}' [{xml}]");
+        }
     }
 
-    public static async Task<SpotnetXml> Parse(IEnumerable<string> xml)
+    public static async Task<ParserResult<SpotnetXml>> Parse(IEnumerable<string> xml)
     {
-        using var reader = new StringEnumerableReader(xml);
-        return await Parse(reader);
+        try
+        {
+            using var reader = new StringEnumerableReader(xml);
+            var result = await Parse(reader);
+            return new ParserResult<SpotnetXml>(result);
+        }
+        catch (XmlException ex)
+        {
+            return new ParserResult<SpotnetXml>($"Invalid spot XML header: '{ex.Message}' [{string.Concat(xml)}]");
+        }
     }
 
     private static async Task<SpotnetXml> Parse(TextReader textReader)

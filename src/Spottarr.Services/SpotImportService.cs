@@ -395,7 +395,14 @@ internal sealed class SpotImportService : ISpotImportService
                 return;
             }
 
-            var spotDetails = await SpotnetXmlParser.Parse(spotnetXmlValues);
+            var result = await SpotnetXmlParser.Parse(spotnetXmlValues);
+            if (result.HasError)
+            {
+                _logger.ArticleContainsInvalidSpotXmlHeader(spot.MessageId, result.Error);
+                return;
+            }
+
+            var spotDetails = result.Result;
 
             spot.NzbMessageId = spotDetails.Posting.Nzb.Segment;
             spot.ImageMessageId = spotDetails.Posting.Image?.Segment;
