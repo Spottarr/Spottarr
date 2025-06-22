@@ -19,7 +19,6 @@
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
-    <PublishTrimmed>true</PublishTrimmed>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,10 +1,15 @@
+using System.Diagnostics.CodeAnalysis;
 using Quartz;
 
 namespace Spottarr.Services.Jobs;
 
 internal static class ServiceCollectionQuartzConfiguratorExtensions
 {
-    public static IServiceCollectionQuartzConfigurator ScheduleJob<TJob>(
+    public static IServiceCollectionQuartzConfigurator ScheduleJob<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors |
+                                    DynamicallyAccessedMemberTypes.PublicMethods)]
+        TJob
+    >(
         this IServiceCollectionQuartzConfigurator configurator, JobKey key, string schedule, bool start)
         where TJob : IJob =>
         configurator.ScheduleJob<TJob>(

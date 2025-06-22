@@ -10,6 +10,8 @@
         <TargetFramework>net10.0</TargetFramework>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <DebugType>embedded</DebugType>
+        <PublishTrimmed>true</PublishTrimmed>
+        <WarningsNotAsErrors>IL2026;IL2104;IL2037</WarningsNotAsErrors>
     </PropertyGroup>
     
     <!--
