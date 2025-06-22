@@ -147,7 +147,6 @@ public class SpotnetXmlParserTests
                            		<NZB>
                            			<Segment>someid4@spot.net</Segment>
                            		</NZB>
-                           		<PREVSPOTS></PREVSPOTS>
                            	</Posting>
                            </Spotnet>
                            """;
@@ -166,33 +165,79 @@ public class SpotnetXmlParserTests
     }
 
     [Fact]
-    public async Task DoesNotParseXmlInvalidImageTag()
+    public async Task ParsesXmlNoWhitespaceBetweenImageAttributes1()
     {
         const string xml = """
                            <Spotnet>
                                <Posting>
                                    <Key>7</Key>
-                                   <Created>1729126073</Created>
+                                   <Created>1728935794</Created>
                                    <Poster>SomePoster</Poster>
                                    <Title>Echoes of Tomorrow - S04E01: A New Dawn</Title>
                                    <Description>In a world where people can glimpse fleeting moments of their future, a secretive government agency uses this ability to prevent catastrophic events. As Season 4 begins, former agent Maya Quinn is forced out of hiding to confront a mysterious new threat. With the timelines growing unstable, Maya and her old team must race against time to stop a rogue faction determined to rewrite history. S04E01, “A New Dawn,” kicks off the season with shocking revelations and a dangerous new mission that will challenge everything they know about their powers.</Description>
-                                   <ImageWidth='900' Height='600'>
+                                   <Image Width="680"Height="1000">
                                        <Segment>someid1@spot.net</Segment>
                                    </Image>
-                                   <Size>447177625</Size>
+                                   <Size>864501308</Size>
                                    <Category>01<Sub>01a09</Sub>
                                        <Sub>01b04</Sub>
                                    </Category>
                                    <NZB>
-                                       <Segment>someid4@spot.net</Segment>
+                                       <Segment>someid2@spot.net</Segment>
                                    </NZB>
                                </Posting>
                            </Spotnet>
                            """;
 
         var parsed = await SpotnetXmlParser.Parse(xml);
-        Assert.True(parsed.HasError);
+        Assert.False(parsed.HasError);
+        var result = parsed.Result;
+
+        Assert.Equal("SomePoster", result.Posting.Poster);
+        Assert.Equal("Echoes of Tomorrow - S04E01: A New Dawn", result.Posting.Title);
+        Assert.Equal("01", result.Posting.Category.Text);
+        Assert.Collection(result.Posting.Category.Sub, sub1 => { Assert.Equal("01a09", sub1); },
+            sub2 => { Assert.Equal("01b04", sub2); });
+        Assert.Equal("someid2@spot.net", result.Posting.Nzb.Segment);
     }
+
+    [Fact]
+    public async Task ParsesXmlNoWhitespaceBetweenImageAttributes2()
+    {
+        const string xml = """
+                           <Spotnet>
+                               <Posting>
+                                   <Key>7</Key>
+                                   <Created>1728935794</Created>
+                                   <Poster>SomePoster</Poster>
+                                   <Title>Echoes of Tomorrow - S04E01: A New Dawn</Title>
+                                   <Description>In a world where people can glimpse fleeting moments of their future, a secretive government agency uses this ability to prevent catastrophic events. As Season 4 begins, former agent Maya Quinn is forced out of hiding to confront a mysterious new threat. With the timelines growing unstable, Maya and her old team must race against time to stop a rogue faction determined to rewrite history. S04E01, “A New Dawn,” kicks off the season with shocking revelations and a dangerous new mission that will challenge everything they know about their powers.</Description>
+                                   <ImageWidth="680" Height="1000">
+                                       <Segment>someid1@spot.net</Segment>
+                                   </Image>
+                                   <Size>864501308</Size>
+                                   <Category>01<Sub>01a09</Sub>
+                                       <Sub>01b04</Sub>
+                                   </Category>
+                                   <NZB>
+                                       <Segment>someid2@spot.net</Segment>
+                                   </NZB>
+                               </Posting>
+                           </Spotnet>
+                           """;
+
+        var parsed = await SpotnetXmlParser.Parse(xml);
+        Assert.False(parsed.HasError);
+        var result = parsed.Result;
+
+        Assert.Equal("SomePoster", result.Posting.Poster);
+        Assert.Equal("Echoes of Tomorrow - S04E01: A New Dawn", result.Posting.Title);
+        Assert.Equal("01", result.Posting.Category.Text);
+        Assert.Collection(result.Posting.Category.Sub, sub1 => { Assert.Equal("01a09", sub1); },
+            sub2 => { Assert.Equal("01b04", sub2); });
+        Assert.Equal("someid2@spot.net", result.Posting.Nzb.Segment);
+    }
+
 
     [Fact]
     public async Task ParsesXmlValidLines()
