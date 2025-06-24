@@ -57,7 +57,7 @@ internal static class CapabilitiesHelper
                 PcSearch = new Search()
                 {
                     Available = "no",
-                    SupportedParams = "",
+                    SupportedParams = string.Empty,
                 },
                 BookSearch = new Search
                 {

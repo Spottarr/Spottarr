@@ -18,7 +18,7 @@ public class SpotSearchService : ISpotSearchService
         ArgumentNullException.ThrowIfNull(filter);
 
         // If year / episode / season is not explicitly set, try to extract it from the query
-        var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(filter.Query ?? "");
+        var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(filter.Query ?? string.Empty);
         if (filter.Years.Count == 0) filter.Years.UnionWith(years);
         if (filter.Seasons.Count == 0) filter.Seasons.UnionWith(seasons);
         if (filter.Episodes.Count == 0) filter.Episodes.UnionWith(episodes);

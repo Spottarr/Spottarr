@@ -32,9 +32,22 @@ internal static class SpotExtensions
         ImageGenre.Outdoors
     ];
 
+    /// <summary>
+    /// There are a large number of spots with a very large dummy description.
+    /// These were posted under the tags listed below and can safely be ignored.
+    /// </summary>
+    private static readonly FrozenSet<string> TestTags =
+    [
+        "test",
+        "tester",
+        "timskuik"
+    ];
+
     public static bool IsAdultContent(this Spot spot) => spot.Type switch
     {
         SpotType.Image => AdultImageGenres.Intersect(spot.ImageGenres).Any(),
         _ => false
     };
+
+    public static bool IsTest(this Spot spot) => spot.Tag != null && TestTags.Contains(spot.Tag);
 }

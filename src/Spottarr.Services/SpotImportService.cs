@@ -343,7 +343,7 @@ internal sealed class SpotImportService : ISpotImportService
         var nntpHeaderResult = NntpHeaderParser.Parse(header);
         if (nntpHeaderResult.HasError)
         {
-            _logger.FailedToParseSpotHeader(header);
+            _logger.FailedToParseSpotHeader("-", header);
             return;
         }
 
@@ -352,7 +352,7 @@ internal sealed class SpotImportService : ISpotImportService
         var spotnetHeaderResult = SpotnetHeaderParser.Parse(nntpHeader);
         if (spotnetHeaderResult.HasError)
         {
-            _logger.FailedToParseSpotHeader(nntpHeader.Subject);
+            _logger.FailedToParseSpotHeader(nntpHeader.MessageId, header);
             return;
         }
 
@@ -364,8 +364,10 @@ internal sealed class SpotImportService : ISpotImportService
 
         var spot = spotnetHeader.ToSpot();
 
-        if (spot.SpottedAt >= retrieveAfter && (importAdultContent || !spot.IsAdultContent()))
-            spots.Add(spot);
+        if (spot.SpottedAt < retrieveAfter || (!importAdultContent && spot.IsAdultContent()) || spot.IsTest())
+            return;
+
+        spots.Add(spot);
     }
 
     private async ValueTask GetSpotDetails(Spot spot, CancellationToken ct)
@@ -385,25 +387,26 @@ internal sealed class SpotImportService : ISpotImportService
 
             var spotArticle = spotArticleResponse.Article;
 
-            // Usenet headers are not cases sensitive, but the Usenet library assumes they are.
-            var headers = spotArticle.Headers.ToDictionary(h => h.Key, h => string.Concat(h.Value),
-                StringComparer.OrdinalIgnoreCase);
-            var body = string.Concat(spotArticle.Body);
-
-            if (!headers.TryGetValue(SpotnetXml.HeaderName, out var spotnetXmlValues))
+            if (!spotArticle.Headers.TryGetValue(SpotnetXml.HeaderName, out var spotnetXmlValues))
             {
                 // No spot XML header, fall back to plaintext body
-                spot.Description = body;
+                spot.Description = string.Concat(spotArticle.Body).Truncate(Spot.DescriptionMaxLength);
                 _logger.ArticleIsMissingSpotXmlHeader(spot.MessageId);
                 return;
             }
 
-            var spotnetXml = string.Concat(spotnetXmlValues);
-            var spotDetails = SpotnetXmlParser.Parse(spotnetXml);
+            var result = await SpotnetXmlParser.Parse(spotnetXmlValues);
+            if (result.HasError)
+            {
+                _logger.ArticleContainsInvalidSpotXmlHeader(spot.MessageId, result.Error);
+                return;
+            }
+
+            var spotDetails = result.Result;
 
             spot.NzbMessageId = spotDetails.Posting.Nzb.Segment;
             spot.ImageMessageId = spotDetails.Posting.Image?.Segment;
-            spot.Description = spotDetails.Posting.Description;
+            spot.Description = spotDetails.Posting.Description.Truncate(Spot.DescriptionMaxLength);
             spot.Tag = spotDetails.Posting.Tag;
             spot.Url = Uri.TryCreate(spotDetails.Posting.Website, UriKind.Absolute, out var uri) ? uri : null;
             spot.Filename = spotDetails.Posting.Filename;
