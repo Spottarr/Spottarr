@@ -20,8 +20,10 @@ internal sealed class XmlResult<T> : IResult where T : IXmlWritable
         var ms = new MemoryStream();
         await using var writer = XmlWriter.Create(ms, new XmlWriterSettings
         {
+            // Disable BOM, it breaks parsing by other ARRs
+            Encoding = new UTF8Encoding(false),
             Indent = true,
-            Async = true,
+            Async = true
         });
 
         await writer.WriteStartElementAsync(null, _rootElement, null);
