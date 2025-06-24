@@ -1,5 +1,6 @@
 using System.Net.Mime;
 using System.Xml;
+using System.Text;
 using Spottarr.Services.Helpers;
 
 namespace Spottarr.Web.EndpointResults;
