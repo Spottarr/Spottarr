@@ -24,7 +24,12 @@ internal sealed class XmlResult<T> : IResult where T : IXmlWritable
             Async = true,
         });
 
-        writer.WriteElement(_rootElement, _result);
+        await writer.WriteStartElementAsync(null, _rootElement, null);
+        await writer.WriteAttributeStringAsync("xmlns", "xsi", null, "http://www.w3.org/2001/XMLSchema-instance");
+        await writer.WriteAttributeStringAsync("xmlns", "xsd", null, "http://www.w3.org/2001/XMLSchema");
+        _result.WriteXml(writer);
+        await writer.WriteEndElementAsync();
+
         await writer.FlushAsync();
 
         ms.Position = 0;
