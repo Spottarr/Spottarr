@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Mime;
+using System.Text;
 using System.Xml.Serialization;
 
 namespace Spottarr.Web.EndpointResults;
