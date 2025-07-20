@@ -11,11 +11,15 @@ permissions:
 jobs:
   build:
     name: Docker build
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform:
+          - name: linux/amd64
+            runner: ubuntu-latest
+          - name: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.platform.runner }}
     steps:
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -33,7 +37,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: Add docker metadata
         uses: docker/metadata-action@v5
         id: meta
@@ -50,7 +54,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          platforms: linux/amd64,linux/arm64
+          platforms: ${{ matrix.platform.name }}
           file: src/Spottarr.Web/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
