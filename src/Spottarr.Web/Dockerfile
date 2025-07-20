@@ -20,11 +20,11 @@ COPY ./Directory.Packages.props ./
 RUN dotnet restore "src/Spottarr.Web/Spottarr.Web.csproj"
 COPY . .
 WORKDIR "/src/src/Spottarr.Web"
-RUN dotnet build "Spottarr.Web.csproj" -c $BUILD_CONFIGURATION -o /app/build -p:Version=${BUILD_VERSION#v}
+RUN dotnet build "Spottarr.Web.csproj" --no-restore -c $BUILD_CONFIGURATION -o /app/build -p:Version=${BUILD_VERSION#v}
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "Spottarr.Web.csproj" -c $BUILD_CONFIGURATION -o /app/publish -p:UseAppHost=false -p:Version=${BUILD_VERSION#v}
+RUN dotnet publish "Spottarr.Web.csproj" --no-build -c $BUILD_CONFIGURATION -o /app/publish -p:UseAppHost=false -p:Version=${BUILD_VERSION#v}
 
 FROM base AS final
 ENV DOTNET_ENVIRONMENT=Production
