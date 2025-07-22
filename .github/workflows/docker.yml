@@ -1,7 +1,7 @@
 name: Docker build
 on:
   push:
-    branches: [ "main", "arm-image" ]
+    branches: [ "main" ]
     tags: [ "v*" ]
   #pull_request:
   #  branches: [ "main" ]
