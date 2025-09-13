@@ -26,7 +26,7 @@ internal static class ServiceCollectionExtensions
         {
             // Assuming that Spottarr runs in docker without being publicly exposed directly,
             // we trust any IP as a safe reverse proxy
-            options.KnownNetworks.Clear();
+            options.KnownIPNetworks.Clear();
             options.KnownProxies.Clear();
             options.ForwardedHeaders = ForwardedHeaders.All;
         });
