@@ -49,14 +49,13 @@ internal sealed class SpotImportService : ISpotImportService
         if (spot == null || string.IsNullOrEmpty(spot.NzbMessageId))
             return null;
 
-        IPooledNntpClient? client = null;
         try
         {
-            client = await _nntpClientPool.BorrowClient();
+            using var lease = await _nntpClientPool.GetLease();
             var nzbMessageId = spot.NzbMessageId;
 
             // Fetch the article headers which contains the NZB payload
-            var nzbArticleResponse = client.Article(new NntpMessageId(nzbMessageId));
+            var nzbArticleResponse = lease.Client.Article(new NntpMessageId(nzbMessageId));
             if (!nzbArticleResponse.Success)
             {
                 _logger.CouldNotRetrieveArticle(spot.MessageId, nzbArticleResponse.Code, nzbArticleResponse.Message);
@@ -70,10 +69,6 @@ internal sealed class SpotImportService : ISpotImportService
         {
             _logger.CouldNotRetrieveArticle(ex, spot.MessageId);
             return null;
-        }
-        finally
-        {
-            if (client != null) _nntpClientPool.ReturnClient(client);
         }
     }
 
@@ -118,13 +113,12 @@ internal sealed class SpotImportService : ISpotImportService
 
     private async Task<NntpGroup?> GetGroup(string group)
     {
-        IPooledNntpClient? client = null;
         try
         {
-            client = await _nntpClientPool.BorrowClient();
+            using var lease = await _nntpClientPool.GetLease();
 
             // Switch to the configured usenet group to verify that it exists.
-            var groupResponse = client.Group(group);
+            var groupResponse = lease.Client.Group(group);
             if (groupResponse.Success && groupResponse.Group != null) return groupResponse.Group;
 
             _logger.CouldNotRetrieveSpotGroup(group, groupResponse.Code, groupResponse.Message);
@@ -132,10 +126,6 @@ internal sealed class SpotImportService : ISpotImportService
         catch (NntpException ex)
         {
             _logger.CouldNotRetrieveSpotGroup(ex, group);
-        }
-        finally
-        {
-            if (client != null) _nntpClientPool.ReturnClient(client);
         }
 
         return null;
@@ -186,13 +176,12 @@ internal sealed class SpotImportService : ISpotImportService
         var attempts = 0;
         DateTimeOffset? date = null;
 
-        IPooledNntpClient? client = null;
         try
         {
-            client = await _nntpClientPool.BorrowClient();
+            using var lease = await _nntpClientPool.GetLease();
 
             // Group is set for the lifetime of the connection
-            var groupResponse = client.Group(options.SpotGroup);
+            var groupResponse = lease.Client.Group(options.SpotGroup);
             if (!groupResponse.Success)
             {
                 _logger.CouldNotRetrieveSpotGroup(options.SpotGroup, groupResponse.Code, groupResponse.Message);
@@ -213,7 +202,7 @@ internal sealed class SpotImportService : ISpotImportService
 
                 while (date == null)
                 {
-                    date = GetArticleDate(client, articleToCheck);
+                    date = GetArticleDate(lease.Client, articleToCheck);
                     attempts++;
 
                     // Sometimes articles will just be unavailable
@@ -244,10 +233,6 @@ internal sealed class SpotImportService : ISpotImportService
         {
             _logger.CouldNotRetrieveArticle(exception, string.Empty);
             return articleNumber;
-        }
-        finally
-        {
-            if (client != null) _nntpClientPool.ReturnClient(client);
         }
     }
 
@@ -297,20 +282,19 @@ internal sealed class SpotImportService : ISpotImportService
 
     private async Task<IReadOnlyList<Spot>> FetchSpotHeaders(SpotnetOptions options, NntpArticleRange batch)
     {
-        IPooledNntpClient? client = null;
         try
         {
-            client = await _nntpClientPool.BorrowClient();
+            using var lease = await _nntpClientPool.GetLease();
 
             // Group is set for the lifetime of the connection
-            var groupResponse = client.Group(options.SpotGroup);
+            var groupResponse = lease.Client.Group(options.SpotGroup);
             if (!groupResponse.Success)
             {
                 _logger.CouldNotRetrieveSpotGroup(options.SpotGroup, groupResponse.Code, groupResponse.Message);
                 return [];
             }
 
-            var xOverResponse = client.Xover(batch);
+            var xOverResponse = lease.Client.Xover(batch);
             if (!xOverResponse.Success)
             {
                 _logger.CouldNotRetrieveArticleHeaders(batch.From, batch.To, xOverResponse.Code, xOverResponse.Message);
@@ -330,10 +314,6 @@ internal sealed class SpotImportService : ISpotImportService
         {
             _logger.CouldNotRetrieveArticleHeaders(exception, batch.From, batch.To);
             return [];
-        }
-        finally
-        {
-            if (client != null) _nntpClientPool.ReturnClient(client);
         }
     }
 
@@ -372,13 +352,12 @@ internal sealed class SpotImportService : ISpotImportService
 
     private async ValueTask GetSpotDetails(Spot spot, CancellationToken ct)
     {
-        IPooledNntpClient? client = null;
         try
         {
-            client = await _nntpClientPool.BorrowClient();
+            using var lease = await _nntpClientPool.GetLease();
 
             // Fetch the article headers which contains the full spot detail in XML format
-            var spotArticleResponse = client.Article(new NntpMessageId(spot.MessageId));
+            var spotArticleResponse = lease.Client.Article(new NntpMessageId(spot.MessageId));
             if (!spotArticleResponse.Success)
             {
                 _logger.CouldNotRetrieveArticle(spot.MessageId, spotArticleResponse.Code, spotArticleResponse.Message);
@@ -419,10 +398,6 @@ internal sealed class SpotImportService : ISpotImportService
         catch (NntpException ex)
         {
             _logger.CouldNotRetrieveArticle(ex, spot.MessageId);
-        }
-        finally
-        {
-            if (client != null) _nntpClientPool.ReturnClient(client);
         }
     }
 }
