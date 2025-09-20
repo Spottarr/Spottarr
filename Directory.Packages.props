@@ -21,7 +21,7 @@
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
     <PackageVersion Include="PhenX.EntityFrameworkCore.BulkInsert.Sqlite" Version="0.4.1" />
     <PackageVersion Include="Quartz.Extensions.Hosting" Version="3.15.0" />
-    <PackageVersion Include="Scalar.AspNetCore" Version="2.8.3" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.8.5" />
     <PackageVersion Include="Spottarr.Usenet" Version="4.3.0" />
     <PackageVersion Include="System.ServiceModel.Syndication" Version="10.0.0-rc.1.25451.107" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
