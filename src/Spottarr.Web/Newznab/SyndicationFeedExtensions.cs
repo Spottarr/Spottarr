@@ -47,6 +47,13 @@ internal static class SyndicationFeedExtensions
         return item;
     }
 
+    public static SyndicationItem AddNewznabDetailsUrl(this SyndicationItem item, Uri url)
+    {
+        item.AddElement("comments", url.ToString());
+        item.AddPermalink(url);
+        return item;
+    }
+
     public static SyndicationItem AddCategories(this SyndicationItem item, IEnumerable<NewznabCategory> categories)
     {
         foreach (int category in categories)

@@ -11,6 +11,13 @@ internal static class NewznabHttpRequestExtensions
         return b;
     }
 
+    public static UriBuilder GetDetailsUri(this HttpRequest request, int id)
+    {
+        var b = request.GetApiUri();
+        b.Query = $"?t=search&guid={id}";
+        return b;
+    }
+
     public static UriBuilder GetNzbUri(this HttpRequest request, int id)
     {
         var b = request.GetApiUri();

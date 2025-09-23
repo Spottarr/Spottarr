@@ -12,9 +12,9 @@ internal static class NewznabMapper
     /// Creates a category specific RSS syndication item including any custom newznab attributes
     /// See: https://newznab.readthedocs.io/en/latest/misc/api.html#predefined-attributes
     /// </summary>
-    public static SyndicationItem ToSyndicationItem(this Spot spot, Uri nzbUri)
+    public static SyndicationItem ToSyndicationItem(this Spot spot, Uri detailsUri, Uri nzbUri)
     {
-        var item = MapSpot(spot, nzbUri)
+        var item = MapSpot(spot, detailsUri, nzbUri)
             .AddNewznabNzbUrl(nzbUri, spot.Bytes)
             .AddCategories(spot.NewznabCategories)
             .AddPublishDate(spot.SpottedAt);
@@ -38,10 +38,11 @@ internal static class NewznabMapper
     /// <summary>
     /// Adds attributes valid for all categories
     /// </summary>
-    private static SyndicationItem MapSpot(Spot spot, Uri spotUri) =>
-        new SyndicationItem(spot.Title.SanitizeXmlString(), spot.Description?.SanitizeXmlString(), spotUri,
+    private static SyndicationItem MapSpot(Spot spot, Uri detailsUri, Uri nzbUri) =>
+        new SyndicationItem(spot.Title.SanitizeXmlString(), spot.Description?.SanitizeXmlString(), nzbUri,
                 spot.Id.ToString(CultureInfo.InvariantCulture),
                 spot.UpdatedAt)
+            .AddNewznabDetailsUrl(detailsUri)
             .AddNewznabAttribute("size", spot.Bytes.ToString(CultureInfo.InvariantCulture))
             .AddNewznabAttributes("category",
                 spot.NewznabCategories.Select(c => ((int)c).ToString(CultureInfo.InvariantCulture)))

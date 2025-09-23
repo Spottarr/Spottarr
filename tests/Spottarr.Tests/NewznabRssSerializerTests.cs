@@ -29,7 +29,8 @@ public class NewznabRssSerializerTests
             }
         ];
 
-        var items = spots.Select(s => s.ToSyndicationItem(new Uri("https://example.com/nzb"))).ToList();
+        var items = spots.Select(s =>
+            s.ToSyndicationItem(new Uri("https://example.com/details"), new Uri("https://example.com/nzb"))).ToList();
 
         var feed = new SyndicationFeed("Test", "Test", new Uri("https://example.com"), items)
             .AddLogo(new Uri("https://example.com/logo.png"))
@@ -53,10 +54,11 @@ public class NewznabRssSerializerTests
                            </image>
                            <newznab:response offset="0" total="1" />
                            <item>
-                             <guid isPermaLink="false">0</guid>
+                             <guid isPermaLink="true">https://example.com/details</guid>
                              <link>https://example.com/nzb</link>
                              <title>Testspot大</title>
                              <enclosure url="https://example.com/nzb" type="application/x-nzb" length="1000" />
+                             <comments>https://example.com/details</comments>
                              <newznab:attr name="size" value="1000" />
                              <newznab:attr name="guid" value="0" />
                              <newznab:attr name="poster" value="Testspotter" />
@@ -95,7 +97,8 @@ public class NewznabRssSerializerTests
             }
         ];
 
-        var items = spots.Select(s => s.ToSyndicationItem(new Uri("https://example.com/nzb"))).ToList();
+        var items = spots.Select(s =>
+            s.ToSyndicationItem(new Uri("https://example.com/details"), new Uri("https://example.com/nzb"))).ToList();
 
         var feed = new SyndicationFeed("Test", "Test", new Uri("https://example.com"), items)
             .AddLogo(new Uri("https://example.com/logo.png"))
@@ -119,10 +122,11 @@ public class NewznabRssSerializerTests
                            </image>
                            <newznab:response offset="0" total="1" />
                            <item>
-                             <guid isPermaLink="false">0</guid>
+                             <guid isPermaLink="true">https://example.com/details</guid>
                              <link>https://example.com/nzb</link>
                              <title>Testspot?</title>
                              <enclosure url="https://example.com/nzb" type="application/x-nzb" length="1000" />
+                             <comments>https://example.com/details</comments>
                              <newznab:attr name="size" value="1000" />
                              <newznab:attr name="guid" value="0" />
                              <newznab:attr name="poster" value="Testspotter" />

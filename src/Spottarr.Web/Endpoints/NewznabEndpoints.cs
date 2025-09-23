@@ -68,6 +68,7 @@ public static class NewznabEndpoints
         IHostEnvironment env,
         IApplicationVersionService versionService,
         HttpRequest request,
+        [FromQuery(Name = "guid")] int id = 0,
         [FromQuery(Name = "limit")] int limit = DefaultPageSize,
         [FromQuery(Name = "imdbid")] string? imdbId = null,
         [FromQuery(Name = "cat")] string? categories = null,
@@ -87,6 +88,7 @@ public static class NewznabEndpoints
 
         var filter = new SpotSearchFilter
         {
+            Id = id,
             Offset = offset,
             Limit = clampedLimit,
             Query = query,
@@ -106,7 +108,8 @@ public static class NewznabEndpoints
         HttpRequest request)
     {
         var results = await spotSearchService.Search(filter);
-        var items = results.Spots.Select(s => s.ToSyndicationItem(request.GetNzbUri(s.Id).Uri)).ToList();
+        var items = results.Spots
+            .Select(s => s.ToSyndicationItem(request.GetDetailsUri(s.Id).Uri, request.GetNzbUri(s.Id).Uri)).ToList();
 
         var feed = new SyndicationFeed("Spottarr", "Spottarr", request.GetApiUri().Uri, items)
             .AddLogo(request.GetLogoUri().Uri)

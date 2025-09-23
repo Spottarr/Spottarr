@@ -25,6 +25,9 @@ public class SpotSearchService : ISpotSearchService
 
         var query = _dbContext.Spots.AsQueryable();
 
+        if (filter.Id > 0)
+            query = query.Where(s => s.Id == filter.Id);
+
         if (filter.Categories.Count > 0)
             query = query.Where(s => s.NewznabCategories.Any(y => filter.Categories.Contains(y)));
 
