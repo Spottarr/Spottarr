@@ -49,6 +49,7 @@ internal static class SyndicationFeedExtensions
 
     public static SyndicationItem AddNewznabDetailsUrl(this SyndicationItem item, Uri url)
     {
+        item.AddElement("comments", url.ToString());
         item.AddPermalink(url);
         return item;
     }
