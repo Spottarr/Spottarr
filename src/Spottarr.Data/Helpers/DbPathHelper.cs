@@ -8,7 +8,25 @@ public static class DbPathHelper
         var root = isContainer
             ? "/data"
             : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "spottarr");
-        if (!Directory.Exists(root)) Directory.CreateDirectory(root);
-        return Path.Join(root, "spottarr.db");
+
+        var path = Path.Join(root, "spottarr.db");
+
+        try
+        {
+            // Ensure that the data directory exists
+            if (!Directory.Exists(root)) Directory.CreateDirectory(root);
+
+            // Ensure we can write to it
+            var probe = Path.Join(root, $".probe-{Guid.NewGuid():N}");
+            using var _ = File.Create(probe, 1, FileOptions.DeleteOnClose);
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+        {
+            throw new InvalidOperationException(
+                $"Spottarr can not be started. The database path '{path}' is not writeable. " +
+                "Please ensure that the configured user/group has write permissions");
+        }
+
+        return path;
     }
 }
