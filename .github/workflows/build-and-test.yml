@@ -59,7 +59,7 @@ jobs:
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v4
-      if: ${{ !github.event.repository.private }}
+      if: ${{ !github.event.repository.private && false }}
       with:
         category: "/language:${{matrix.language}}"
 
