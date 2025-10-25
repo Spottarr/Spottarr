@@ -69,7 +69,6 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
 
         var now = DateTimeOffset.Now;
         var fullTextIndexSpots = new List<FtsSpot>();
-        var releaseTitleRegex = ReleaseTitleRegex();
 
         foreach (var spot in unIndexedSpots)
         {
@@ -78,11 +77,6 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
                 .Replace("[br]", "\n", StringComparison.OrdinalIgnoreCase);
 
             var titleAndDescription = string.Join('\n', spot.Title, description);
-
-            // Extract release title
-            var releaseMatch = releaseTitleRegex.Match(titleAndDescription);
-            if (releaseMatch.Success)
-                spot.ReleaseTitle = releaseMatch.Value;
 
             // Search for year, season and episode numbers.
             // e.g. "2024 S01E04", "Season: 1", "Episode 2"
@@ -96,6 +90,7 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
             spot.Episodes.Replace(episodes);
             spot.NewznabCategories.Replace(newznabCategories);
             spot.ImdbId = ImdbIdParser.Parse(spot.Url);
+            spot.ReleaseTitle = ReleaseTitleParser.Parse(titleAndDescription);
             spot.IndexedAt = now.UtcDateTime;
             spot.UpdatedAt = now.UtcDateTime;
 
@@ -145,7 +140,4 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
 
     [GeneratedRegex(@"(?<=\w)\.(?=\w)")]
     private static partial Regex CleanTitleRegex();
-
-    [GeneratedRegex(@"\b(\w+\.)+\w+-\w+\b", RegexOptions.IgnoreCase)]
-    private static partial Regex ReleaseTitleRegex();
 }
