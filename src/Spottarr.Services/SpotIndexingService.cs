@@ -109,9 +109,18 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
             fullTextIndexSpots.Add(ftsSpot);
         }
 
+        var fullTextIndexSpotIds = fullTextIndexSpots
+            .Select(s => s.RowId).ToHashSet();
+
         try
         {
             await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+
+            // EF does not natively support FTS tables, so we have to delete and re-insert the records in case any already exist
+            await _dbContext.FtsSpots
+                .Where(f => fullTextIndexSpotIds.Contains(f.RowId))
+                .ExecuteDeleteAsync(cancellationToken);
+
             await _dbContext.ExecuteBulkInsertAsync(fullTextIndexSpots, cancellationToken: cancellationToken);
             await _dbContext.ExecuteBulkInsertAsync(unIndexedSpots, new OnConflictOptions<Spot>
             {
