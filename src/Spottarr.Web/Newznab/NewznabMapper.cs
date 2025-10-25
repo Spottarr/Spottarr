@@ -21,7 +21,10 @@ internal static class NewznabMapper
 
         if (!string.IsNullOrEmpty(spot.ReleaseTitle))
         {
-            item.Title = new TextSyndicationContent(spot.ReleaseTitle);
+            item.Title = spot.Title == spot.ReleaseTitle
+                ? new TextSyndicationContent(spot.ReleaseTitle)
+                : new TextSyndicationContent($"{spot.ReleaseTitle} | {spot.Title.SanitizeXmlString()}");
+
             item.AddNewznabAttribute("title", spot.Title);
         }
 

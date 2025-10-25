@@ -69,7 +69,6 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
 
         var now = DateTimeOffset.Now;
         var fullTextIndexSpots = new List<FtsSpot>();
-        var releaseTitleRegex = ReleaseTitleRegex();
 
         foreach (var spot in unIndexedSpots)
         {
@@ -78,11 +77,6 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
                 .Replace("[br]", "\n", StringComparison.OrdinalIgnoreCase);
 
             var titleAndDescription = string.Join('\n', spot.Title, description);
-
-            // Extract release title
-            var releaseMatch = releaseTitleRegex.Match(titleAndDescription);
-            if (releaseMatch.Success)
-                spot.ReleaseTitle = releaseMatch.Value;
 
             // Search for year, season and episode numbers.
             // e.g. "2024 S01E04", "Season: 1", "Episode 2"
@@ -96,6 +90,7 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
             spot.Episodes.Replace(episodes);
             spot.NewznabCategories.Replace(newznabCategories);
             spot.ImdbId = ImdbIdParser.Parse(spot.Url);
+            spot.ReleaseTitle = ReleaseTitleParser.Parse(titleAndDescription);
             spot.IndexedAt = now.UtcDateTime;
             spot.UpdatedAt = now.UtcDateTime;
 
@@ -114,9 +109,18 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
             fullTextIndexSpots.Add(ftsSpot);
         }
 
+        var fullTextIndexSpotIds = fullTextIndexSpots
+            .Select(s => s.RowId).ToHashSet();
+
         try
         {
             await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+
+            // EF does not natively support FTS tables, so we have to delete and re-insert the records in case any already exist
+            await _dbContext.FtsSpots
+                .Where(f => fullTextIndexSpotIds.Contains(f.RowId))
+                .ExecuteDeleteAsync(cancellationToken);
+
             await _dbContext.ExecuteBulkInsertAsync(fullTextIndexSpots, cancellationToken: cancellationToken);
             await _dbContext.ExecuteBulkInsertAsync(unIndexedSpots, new OnConflictOptions<Spot>
             {
@@ -145,7 +149,4 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
 
     [GeneratedRegex(@"(?<=\w)\.(?=\w)")]
     private static partial Regex CleanTitleRegex();
-
-    [GeneratedRegex(@"\b(\w+\.)+\w+-\w+\b", RegexOptions.IgnoreCase)]
-    private static partial Regex ReleaseTitleRegex();
 }
