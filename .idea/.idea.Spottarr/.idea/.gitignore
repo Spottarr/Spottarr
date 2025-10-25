@@ -13,3 +13,5 @@
 /dataSources/
 /dataSources.local.xml
 /data_source_mapping.xml
+# Copilot plugin files
+copilot.data.migration.*.xml
