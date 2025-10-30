@@ -9,11 +9,6 @@
     <AnalysisMode>All</AnalysisMode>
     <TargetFramework>net10.0</TargetFramework>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    <!--
-      Tempory workaround for security vulnerability in upstream dependency
-      https://github.com/dotnet/aspnetcore/issues/64153
-    -->
-    <WarningsNotAsErrors>NU1903;$(WarningsNotAsErrors)</WarningsNotAsErrors>
   </PropertyGroup>
 
   <!--
