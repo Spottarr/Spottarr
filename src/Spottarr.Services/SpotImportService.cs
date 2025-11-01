@@ -422,7 +422,6 @@ internal sealed class SpotImportService : ISpotImportService
             spot.IndexedAt = DateTimeOffset.Now.UtcDateTime;
             spot.FtsSpot = new FtsSpot
             {
-                RowId = spot.Id,
                 Title = FtsTitleParser.Parse(spot.Title),
                 Description = spot.Description
             };
