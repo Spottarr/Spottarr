@@ -1,6 +1,6 @@
 namespace Spottarr.Services.Contracts;
 
-public interface ISpotIndexingService
+public interface ISpotReIndexingService
 {
     Task Index(CancellationToken cancellationToken);
 }
