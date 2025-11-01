@@ -146,20 +146,24 @@ internal sealed class SpotImportService : ISpotImportService
         {
             await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
 
-            var ftsSpots = spots
-                .Where(s => s.FtsSpot != null)
-                .Select(s => s.FtsSpot!)
-                .ToList();
-
-            await _dbContext.ExecuteBulkInsertAsync(spots, new OnConflictOptions<Spot>
+            var insertedSpots = await _dbContext.ExecuteBulkInsertReturnEntitiesAsync(spots, new OnConflictOptions<Spot>
             {
                 Match = spot => spot.MessageId
             }, cancellationToken);
 
-            await _dbContext.ExecuteBulkInsertAsync(ftsSpots, new OnConflictOptions<FtsSpot>
+            var ftsSpotLookup = spots
+                .Where(s => s.FtsSpot != null)
+                .ToDictionary(s => s.MessageId, s => s.FtsSpot!);
+
+            var ftsSpots = new List<FtsSpot>();
+            foreach (var insertedSpot in insertedSpots)
             {
-                Match = spot => spot.RowId
-            }, cancellationToken);
+                if (!ftsSpotLookup.TryGetValue(insertedSpot.MessageId, out var ftsSpot)) continue;
+                ftsSpot.RowId = insertedSpot.Id;
+                ftsSpots.Add(ftsSpot);
+            }
+
+            await _dbContext.ExecuteBulkInsertAsync(ftsSpots, cancellationToken: cancellationToken);
 
             await transaction.CommitAsync(cancellationToken);
         }
