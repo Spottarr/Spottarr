@@ -18,13 +18,13 @@ namespace Spottarr.Services;
 /// <summary>
 /// Extracts useful attributes from spots and cleans up their title and description
 /// </summary>
-internal sealed class SpotIndexingService : ISpotIndexingService
+internal sealed class SpotReIndexingService : ISpotReIndexingService
 {
-    private readonly ILogger<SpotIndexingService> _logger;
+    private readonly ILogger<SpotReIndexingService> _logger;
     private readonly SpottarrDbContext _dbContext;
     private readonly IOptions<SpotnetOptions> _spotnetOptions;
 
-    public SpotIndexingService(ILogger<SpotIndexingService> logger, SpottarrDbContext dbContext,
+    public SpotReIndexingService(ILogger<SpotReIndexingService> logger, SpottarrDbContext dbContext,
         IOptions<SpotnetOptions> spotnetOptions)
     {
         _logger = logger;
