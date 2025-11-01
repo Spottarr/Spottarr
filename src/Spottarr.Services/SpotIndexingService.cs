@@ -1,5 +1,4 @@
 using System.Data.Common;
-using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -19,7 +18,7 @@ namespace Spottarr.Services;
 /// <summary>
 /// Extracts useful attributes from spots and cleans up their title and description
 /// </summary>
-internal sealed partial class SpotIndexingService : ISpotIndexingService
+internal sealed class SpotIndexingService : ISpotIndexingService
 {
     private readonly ILogger<SpotIndexingService> _logger;
     private readonly SpottarrDbContext _dbContext;
@@ -67,43 +66,30 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
 
         if (unIndexedSpots.Count == 0) return unIndexedSpots.Count;
 
-        var now = DateTimeOffset.Now;
+        var now = DateTimeOffset.Now.UtcDateTime;
         var fullTextIndexSpots = new List<FtsSpot>();
 
         foreach (var spot in unIndexedSpots)
         {
-            // Replace BB tags
-            var description = (spot.Description ?? string.Empty)
-                .Replace("[br]", "\n", StringComparison.OrdinalIgnoreCase);
+            spot.Description = BbCodeParser.Parse(spot.Description);
 
-            var titleAndDescription = string.Join('\n', spot.Title, description);
-
-            // Search for year, season and episode numbers.
-            // e.g. "2024 S01E04", "Season: 1", "Episode 2"
-            // We store all values found to make it easier to search for them
+            var titleAndDescription = string.Join('\n', spot.Title, spot.Description);
             var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(titleAndDescription);
-
-            var newznabCategories = NewznabCategoryMapper.Map(spot);
 
             spot.Years.Replace(years);
             spot.Seasons.Replace(seasons);
             spot.Episodes.Replace(episodes);
-            spot.NewznabCategories.Replace(newznabCategories);
+            spot.NewznabCategories.Replace(NewznabCategoryMapper.Map(spot));
             spot.ImdbId = ImdbIdParser.Parse(spot.Url);
             spot.ReleaseTitle = ReleaseTitleParser.Parse(titleAndDescription);
-            spot.IndexedAt = now.UtcDateTime;
-            spot.UpdatedAt = now.UtcDateTime;
+            spot.IndexedAt = now;
+            spot.UpdatedAt = now;
 
-            // Clean up release title for fulltext search
-            // e.g. "Show.S01E04.Poster.1080p.DDP5.1.Atmos.H.264" -> "Show S01E04 Poster 1080p DDP5 1 Atmos H 264"
-            var ftsTitle = CleanTitleRegex()
-                .Replace(spot.Title, " ");
-
-            var ftsSpot = new FtsSpot()
+            var ftsSpot = new FtsSpot
             {
                 RowId = spot.Id,
-                Title = ftsTitle,
-                Description = description
+                Title = FtsTitleParser.Parse(spot.Title),
+                Description = spot.Description
             };
 
             fullTextIndexSpots.Add(ftsSpot);
@@ -146,7 +132,4 @@ internal sealed partial class SpotIndexingService : ISpotIndexingService
 
         return unIndexedSpots.Count;
     }
-
-    [GeneratedRegex(@"(?<=\w)\.(?=\w)")]
-    private static partial Regex CleanTitleRegex();
 }

@@ -3,10 +3,11 @@ using System.Text.RegularExpressions;
 
 namespace Spottarr.Services.Parsers;
 
-internal partial class YearEpisodeSeasonParser
+internal static partial class YearEpisodeSeasonParser
 {
     /// <summary>
     /// Tries to extract year, season and episode numbers from the given string
+    /// e.g. "2024 S01E04", "Season: 1", "Episode 2"
     /// A year must be between 1900 and 2100
     /// </summary>
     /// <returns>
@@ -45,6 +46,7 @@ internal partial class YearEpisodeSeasonParser
     }
 
     [GeneratedRegex(
-        @"(?:(?:^|\s|\p{P})\(?(?<year>[0-9]{4})\)?(?:$|\s|\p{P}))|(?:S(?<sshort>[0-9]{2})\s?E(?<eshort>[0-9]{2}))|(?:(?:Season|Seizoen)\:?)\s*(?<slong>[0-9]{1,2})|(?:(?:Episode|Aflevering)\:?)\s*(?<elong>[0-9]{1,2})", RegexOptions.IgnoreCase)]
+        @"(?:(?:^|\s|\p{P})\(?(?<year>[0-9]{4})\)?(?:$|\s|\p{P}))|(?:S(?<sshort>[0-9]{2})\s?E(?<eshort>[0-9]{2}))|(?:(?:Season|Seizoen)\:?)\s*(?<slong>[0-9]{1,2})|(?:(?:Episode|Aflevering)\:?)\s*(?<elong>[0-9]{1,2})",
+        RegexOptions.IgnoreCase)]
     private static partial Regex YearEpisodeSeasonRegex();
 }

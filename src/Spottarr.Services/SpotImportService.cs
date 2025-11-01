@@ -11,6 +11,7 @@ using Spottarr.Services.Configuration;
 using Spottarr.Services.Contracts;
 using Spottarr.Services.Helpers;
 using Spottarr.Services.Logging;
+using Spottarr.Services.Newznab;
 using Spottarr.Services.Nntp;
 using Spottarr.Services.Parsers;
 using Spottarr.Services.Spotnet;
@@ -143,10 +144,24 @@ internal sealed class SpotImportService : ISpotImportService
         // Save the fetched articles in bulk.
         try
         {
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+
+            var ftsSpots = spots
+                .Where(s => s.FtsSpot != null)
+                .Select(s => s.FtsSpot!)
+                .ToList();
+
             await _dbContext.ExecuteBulkInsertAsync(spots, new OnConflictOptions<Spot>
             {
                 Match = spot => spot.MessageId
             }, cancellationToken);
+
+            await _dbContext.ExecuteBulkInsertAsync(ftsSpots, new OnConflictOptions<FtsSpot>
+            {
+                Match = spot => spot.RowId
+            }, cancellationToken);
+
+            await transaction.CommitAsync(cancellationToken);
         }
         catch (DbException ex)
         {
@@ -385,11 +400,28 @@ internal sealed class SpotImportService : ISpotImportService
 
             spot.NzbMessageId = spotDetails.Posting.Nzb.Segment;
             spot.ImageMessageId = spotDetails.Posting.Image?.Segment;
-            spot.Description = spotDetails.Posting.Description.Truncate(Spot.DescriptionMaxLength);
+            spot.Description = BbCodeParser.Parse(spotDetails.Posting.Description).Truncate(Spot.DescriptionMaxLength);
             spot.Tag = spotDetails.Posting.Tag;
             spot.Url = Uri.TryCreate(spotDetails.Posting.Website, UriKind.Absolute, out var uri) ? uri : null;
             spot.Filename = spotDetails.Posting.Filename;
             spot.Newsgroup = spotDetails.Posting.Newsgroup;
+
+            var titleAndDescription = string.Join('\n', spot.Title, spot.Description);
+            var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(titleAndDescription);
+
+            spot.ReleaseTitle = ReleaseTitleParser.Parse(titleAndDescription);
+            spot.Years.Replace(years);
+            spot.Seasons.Replace(seasons);
+            spot.Episodes.Replace(episodes);
+            spot.NewznabCategories.Replace(NewznabCategoryMapper.Map(spot));
+            spot.ImdbId = ImdbIdParser.Parse(spot.Url);
+            spot.IndexedAt = DateTimeOffset.Now.UtcDateTime;
+            spot.FtsSpot = new FtsSpot
+            {
+                RowId = spot.Id,
+                Title = FtsTitleParser.Parse(spot.Title),
+                Description = spot.Description
+            };
         }
         catch (InvalidOperationException ex)
         {
