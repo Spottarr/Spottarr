@@ -15,6 +15,7 @@
 **/.idea/**/sqlDataSources.xml
 **/.idea/**/dynamic.xml
 **/.idea/**/db-forest-config.xml
+**/.idea/**/sqldialects.xml
 **/.idea/queries/
 
 # Rider
