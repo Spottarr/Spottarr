@@ -72,16 +72,15 @@ jobs:
         --results-directory ./tests/coverage
         --
         RunConfiguration.CollectSourceInformation=true
-        
-    - name: Publish test results
-      run: mkdir -p ./tests/report && cp $GITHUB_STEP_SUMMARY ./tests/report/results-summary.md
+        && mkdir -p ./tests/report
+        && cp $GITHUB_STEP_SUMMARY ./tests/report/results.md
       
     - name: Add test results summary as comment to pull request
       uses: marocchino/sticky-pull-request-comment@v2
       if: github.event_name == 'pull_request'
       with:
         recreate: true
-        path: ./tests/report/results-summary.md
+        path: ./tests/report/results.md
 
     - name: Publish code coverage results       
       uses: danielpalme/ReportGenerator-GitHub-Action@5.4.18
