@@ -74,7 +74,7 @@ jobs:
         RunConfiguration.CollectSourceInformation=true
         
     - name: Publish test results
-      run: cp $GITHUB_STEP_SUMMARY ./tests/report/results-summary.md
+      run: mkdir -p ./tests/report && cp $GITHUB_STEP_SUMMARY ./tests/report/results-summary.md
       
     - name: Add test results summary as comment to pull request
       uses: marocchino/sticky-pull-request-comment@v2
