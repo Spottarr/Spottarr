@@ -78,10 +78,10 @@ jobs:
         
     - name: Add test results as pull request comment
       uses: marocchino/sticky-pull-request-comment@v2
-      header: tests
       if: github.event_name == 'pull_request'
       with:
         recreate: true
+        header: tests
         path: ./tests/report/results.md
 
     - name: Publish code coverage results       
@@ -96,8 +96,8 @@ jobs:
 
     - name: Add coverage report as pull request comment
       uses: marocchino/sticky-pull-request-comment@v2
-      header: coverage
       if: github.event_name == 'pull_request'
       with:
         recreate: true
+        header: coverage
         path: ./tests/report/SummaryGithub.md
