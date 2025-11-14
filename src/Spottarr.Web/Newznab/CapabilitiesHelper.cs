@@ -42,12 +42,12 @@ internal static class CapabilitiesHelper
                 TvSearch = new Search
                 {
                     Available = "yes",
-                    SupportedParams = "q,season,ep,year",
+                    SupportedParams = "q,season,ep,year,imdbid",
                 },
                 MovieSearch = new Search
                 {
                     Available = "yes",
-                    SupportedParams = "q,season,ep,year",
+                    SupportedParams = "q,season,ep,year,imdbid",
                 },
                 AudioSearch = new Search
                 {
@@ -57,7 +57,7 @@ internal static class CapabilitiesHelper
                 PcSearch = new Search()
                 {
                     Available = "no",
-                    SupportedParams = "",
+                    SupportedParams = string.Empty,
                 },
                 BookSearch = new Search
                 {
@@ -72,7 +72,7 @@ internal static class CapabilitiesHelper
     private static Collection<MainCategory> GetCategories()
     {
         var mainCats = new Dictionary<NewznabCategory, HashSet<NewznabCategory>>();
-        
+
         var key = NewznabCategory.None;
         foreach (var cat in Enum.GetValues<NewznabCategory>())
         {
@@ -82,9 +82,10 @@ internal static class CapabilitiesHelper
                 mainCats[key] = [];
                 continue;
             }
+
             mainCats[key].Add(cat);
         }
-        
+
         return new Collection<MainCategory>(mainCats.Select(kvp => new MainCategory
         {
             Id = (int)kvp.Key,

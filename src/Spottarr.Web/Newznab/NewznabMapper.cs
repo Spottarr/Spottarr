@@ -2,6 +2,7 @@ using System.Globalization;
 using System.ServiceModel.Syndication;
 using Spottarr.Data.Entities;
 using Spottarr.Data.Entities.Enums;
+using Spottarr.Web.Helpers;
 
 namespace Spottarr.Web.Newznab;
 
@@ -11,19 +12,22 @@ internal static class NewznabMapper
     /// Creates a category specific RSS syndication item including any custom newznab attributes
     /// See: https://newznab.readthedocs.io/en/latest/misc/api.html#predefined-attributes
     /// </summary>
-    public static SyndicationItem ToSyndicationItem(this Spot spot, Uri nzbUri)
+    public static SyndicationItem ToSyndicationItem(this Spot spot, Uri detailsUri, Uri nzbUri)
     {
-        var item = MapSpot(spot, nzbUri)
+        var item = MapSpot(spot, detailsUri, nzbUri)
             .AddNewznabNzbUrl(nzbUri, spot.Bytes)
             .AddCategories(spot.NewznabCategories)
             .AddPublishDate(spot.SpottedAt);
 
         if (!string.IsNullOrEmpty(spot.ReleaseTitle))
         {
-            item.Title = new TextSyndicationContent(spot.ReleaseTitle);
+            item.Title = spot.Title == spot.ReleaseTitle
+                ? new TextSyndicationContent(spot.ReleaseTitle)
+                : new TextSyndicationContent($"{spot.ReleaseTitle} | {spot.Title.SanitizeXmlString()}");
+
             item.AddNewznabAttribute("title", spot.Title);
         }
-        
+
         return spot.Type switch
         {
             SpotType.Image => MapImageSpot(spot, item),
@@ -33,14 +37,18 @@ internal static class NewznabMapper
             _ => item
         };
     }
-    
+
     /// <summary>
     /// Adds attributes valid for all categories
     /// </summary>
-    private static SyndicationItem MapSpot(Spot spot, Uri spotUri) =>
-        new SyndicationItem(spot.Title, spot.Description, spotUri, spot.Id.ToString(CultureInfo.InvariantCulture), spot.UpdatedAt)
+    private static SyndicationItem MapSpot(Spot spot, Uri detailsUri, Uri nzbUri) =>
+        new SyndicationItem(spot.Title.SanitizeXmlString(), spot.Description?.SanitizeXmlString(), nzbUri,
+                spot.Id.ToString(CultureInfo.InvariantCulture),
+                spot.UpdatedAt)
+            .AddNewznabDetailsUrl(detailsUri)
             .AddNewznabAttribute("size", spot.Bytes.ToString(CultureInfo.InvariantCulture))
-            .AddNewznabAttributes("category", spot.NewznabCategories.Select(c => ((int)c).ToString(CultureInfo.InvariantCulture)))
+            .AddNewznabAttributes("category",
+                spot.NewznabCategories.Select(c => ((int)c).ToString(CultureInfo.InvariantCulture)))
             .AddNewznabAttribute("guid", spot.Id.ToString(CultureInfo.InvariantCulture))
             .AddNewznabAttribute("files", null)
             .AddNewznabAttribute("poster", spot.Spotter)
@@ -80,6 +88,8 @@ internal static class NewznabMapper
             .AddNewznabAttribute("rageid", null)
             .AddNewznabAttribute("tvtitle", null)
             .AddNewznabAttribute("tvairdate", null)
+            .AddNewznabAttribute("imdb",
+                spot.ImdbId?.Replace("tt", string.Empty, StringComparison.OrdinalIgnoreCase) ?? null)
             .AddNewznabAttribute("video", string.Join(',', spot.ImageFormats.Select(Enum.GetName)))
             .AddNewznabAttribute("audio", null)
             .AddNewznabAttribute("resolution", null)
@@ -100,7 +110,8 @@ internal static class NewznabMapper
             .AddNewznabAttribute("framerate", null)
             .AddNewznabAttribute("language", MapImageAudioLanguage(spot.ImageLanguages))
             .AddNewznabAttribute("subs", MapImageSubtitleLanguage(spot.ImageLanguages))
-            .AddNewznabAttribute("imdb", null)
+            .AddNewznabAttribute("imdb",
+                spot.ImdbId?.Replace("tt", string.Empty, StringComparison.OrdinalIgnoreCase) ?? null)
             .AddNewznabAttribute("imdbscore", null)
             .AddNewznabAttribute("imdbtitle", null)
             .AddNewznabAttribute("imdbtagline", null)
@@ -155,7 +166,7 @@ internal static class NewznabMapper
             .AddNewznabAttribute("backdropcoverurl", null)
             .AddNewznabAttribute("review", null);
     }
-    
+
     /// <summary>
     /// Adds newznab attributes for game (unofficial) category
     /// </summary>
@@ -165,7 +176,7 @@ internal static class NewznabMapper
     /// Adds newznab attributes for pc (unofficial) category
     /// </summary>
     private static SyndicationItem MapApplicationSpot(this Spot spot, SyndicationItem item) => item;
-    
+
     private static string MapImageAudioLanguage(ICollection<ImageLanguage> languages) =>
         string.Join(',', languages.Select(l => l switch
         {
@@ -177,7 +188,7 @@ internal static class NewznabMapper
             ImageLanguage.AsianAudioWritten => "Japanese", // Asian, lol
             _ => null
         }).Where(s => s != null));
-    
+
     private static string MapImageSubtitleLanguage(ICollection<ImageLanguage> languages) =>
         string.Join(',', languages.Select(l => l switch
         {

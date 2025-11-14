@@ -21,6 +21,7 @@ jobs:
       actions: read
       contents: read
       security-events: write
+      pull-requests: write
     strategy:
       fail-fast: false
       matrix:
@@ -32,15 +33,15 @@ jobs:
         
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
     
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: 9.0.x
+        dotnet-version: 10.0.x
     
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
+      uses: github/codeql-action/init@v4
       if: ${{ !github.event.repository.private }}
       with:
         languages: ${{ matrix.language }}
@@ -58,7 +59,7 @@ jobs:
       run: dotnet build --no-restore
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
+      uses: github/codeql-action/analyze@v4
       if: ${{ !github.event.repository.private }}
       with:
         category: "/language:${{matrix.language}}"
@@ -68,5 +69,35 @@ jobs:
         dotnet test
         --no-build
         --logger "GitHubActions;summary.includePassedTests=true;summary.includeSkippedTests=true"
+        --collect "XPlat Code Coverage"
+        --results-directory ./tests/coverage
         --
         RunConfiguration.CollectSourceInformation=true
+        && mkdir -p ./tests/report
+        && cp $GITHUB_STEP_SUMMARY ./tests/report/results.md
+        
+    - name: Add test results as pull request comment
+      uses: marocchino/sticky-pull-request-comment@v2
+      if: github.event_name == 'pull_request'
+      with:
+        recreate: true
+        header: tests
+        path: ./tests/report/results.md
+
+    - name: Publish code coverage results       
+      uses: danielpalme/ReportGenerator-GitHub-Action@5.4.18
+      with:
+        reports: ./tests/coverage/*/coverage.cobertura.xml
+        targetdir: ./tests/report
+        reporttypes: MarkdownSummaryGithub
+
+    - name: Write code coverage results to summary
+      run: cat ./tests/report/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+
+    - name: Add coverage report as pull request comment
+      uses: marocchino/sticky-pull-request-comment@v2
+      if: github.event_name == 'pull_request'
+      with:
+        recreate: true
+        header: coverage
+        path: ./tests/report/SummaryGithub.md

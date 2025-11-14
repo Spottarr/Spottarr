@@ -45,8 +45,9 @@ public static partial class LoggerExtensions
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to save spots.")]
     public static partial void FailedToSaveSpots(this ILogger logger, Exception exception);
 
-    [LoggerMessage(Level = LogLevel.Debug, Message = "Failed to parse spot header: [{Header}].'")]
-    public static partial void FailedToParseSpotHeader(this ILogger logger, string header);
+    [LoggerMessage(Level = LogLevel.Debug,
+        Message = "Failed to parse spot header for article [{MessageId}]: '{Header}'.")]
+    public static partial void FailedToParseSpotHeader(this ILogger logger, string messageId, string header);
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "Article [{MessageId}] is missing spot XML header.'")]
     public static partial void ArticleIsMissingSpotXmlHeader(this ILogger logger, string messageId);
@@ -105,4 +106,21 @@ public static partial class LoggerExtensions
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "Disposing idle NNTP client ({CurrentPoolSize}/{MaxPoolSize})")]
     public static partial void DisposingIdleNntpClient(this ILogger logger, int currentPoolSize, int maxPoolSize);
+
+    [LoggerMessage(Level = LogLevel.Information,
+        Message = "Spot cleanup started at {DateTime}. Cleaning up spots older than {CleanUpBefore}.")]
+    public static partial void SpotCleanupStarted(this ILogger logger, DateTimeOffset dateTime,
+        DateTimeOffset cleanUpBefore);
+
+    [LoggerMessage(Level = LogLevel.Information,
+        Message =
+            "Spot cleanup finished at {DateTime}. Cleaned up {RowCount} spots, {FtsRowCount} full text index records.")]
+    public static partial void SpotCleanupFinished(this ILogger logger, DateTimeOffset dateTime, int rowCount,
+        int ftsRowCount);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Database optimization started at {DateTime}.")]
+    public static partial void DatabaseOptimizationStarted(this ILogger logger, DateTimeOffset dateTime);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Database optimization finished at {DateTime}.")]
+    public static partial void DatabaseOptimizationFinished(this ILogger logger, DateTimeOffset dateTime);
 }

@@ -1,60 +1,37 @@
-using Microsoft.Extensions.Configuration.Json;
-using Microsoft.Extensions.FileProviders;
+using Scalar.AspNetCore;
 using Spottarr.Data.Helpers;
 using Spottarr.Services;
-using Spottarr.Services.Helpers;
+using Spottarr.Web;
+using Spottarr.Web.Endpoints;
+using Spottarr.Web.Helpers;
+using Spottarr.Web.Logging;
 using Spottarr.Web.Middlewares;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateSlimBuilder(args);
 
-if (builder.Environment.IsContainer())
-{
-    builder.Logging.AddSimpleConsole(options =>
-    {
-        options.SingleLine = true;
-        options.TimestampFormat = "HH:mm:ss ";
-    });
-}
-else
-{
-    builder.Logging.AddConsole();
-}
-
-if (builder.Environment.IsDevelopment() || builder.Environment.IsContainerFastMode())
-{
-    // ASP.NET expects the configuration files to be in the root of the project when running an app from source.
-    // Because we share the config file for the entire solution we need to read it from the bin directory like
-    // a console app does instead.
-    var root = AppContext.BaseDirectory;
-
-    foreach (var json in builder.Configuration.Sources.OfType<JsonConfigurationSource>())
-        json.FileProvider = new PhysicalFileProvider(root);
-
-    if (builder.Configuration is IConfigurationRoot configRoot)
-        configRoot.Reload();
-}
-
-builder.Services.AddControllers().AddXmlSerializerFormatters();
-builder.Services.Configure<RouteOptions>(options =>
-{
-    options.LowercaseQueryStrings = true;
-    options.LowercaseUrls = true;
-});
-
+builder.Logging.AddConsole(builder.Environment);
+builder.Configuration.MapConfigurationSources(builder.Environment);
 builder.Services.AddSpottarrServices(builder.Configuration);
+builder.Services.AddSpottarrWeb(builder.Environment);
+builder.WebHost.UseStaticWebAssets();
 
 var app = builder.Build();
 
 await app.MigrateDatabase();
 
-app.UseHttpsRedirection();
+app.MapHealthChecks("/healthz");
+app.MapStaticAssets();
+app.MapNewznab();
+app.MapHtmx();
+app.MapOpenApi();
+app.MapScalarApiReference();
+
+// Middleware pipeline, order matters here
+app.UseForwardedHeaders();
 app.UseDefaultFiles();
-app.UseStaticFiles();
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.UseMiddleware<NewsznabQueryActionMiddleware>();
+app.UseMiddleware<NewznabQueryActionMiddleware>();
 app.UseRouting();
+app.UseCors();
+app.UseAntiforgery();
 
 await app.RunAsync();

@@ -1,32 +1,32 @@
 <Project>
-    <PropertyGroup>
-        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <LangVersion>latest</LangVersion>
-        <EnableNETAnalyzers>true</EnableNETAnalyzers>
-        <AnalysisLevel>latest</AnalysisLevel>
-        <AnalysisMode>All</AnalysisMode>
-        <TargetFramework>net9.0</TargetFramework>
-        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    </PropertyGroup>
-    
-    <!--
-      Automatically add the appsettings file to all entry point projects
-    -->
-    <ItemGroup Condition="$(OutputType) == 'Exe'">
-        <Content Include="$(SolutionDir).dockerignore" Link=".dockerignore" CopyToOutputDirectory="PreserveNewest" />
-        <Content Include="$(SolutionDir)appsettings.json" Link="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
-        <Content Include="$(SolutionDir)appsettings.Development.json" Link="appsettings.Development.json" CopyToOutputDirectory="PreserveNewest" />
-        <Content Include="$(SolutionDir)appsettings.Production.json" Link="appsettings.Production.json" CopyToOutputDirectory="PreserveNewest" />
-    </ItemGroup>
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>All</AnalysisMode>
+    <TargetFramework>net10.0</TargetFramework>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+  </PropertyGroup>
 
-    <!--
-      Perform a deep clean using `dotnet clean -p:deep=true` to remove obj and bin folders
-      After a deep clean make sure to restore NuGet packages
-    -->
-    <Target Name="PostClean" AfterTargets="Clean" Condition="$(Deep)==True">
-        <RemoveDir Directories="$(BaseIntermediateOutputPath)" /><!-- obj -->
-        <RemoveDir Directories="$(BaseOutputPath)" /><!-- bin -->
-    </Target>
+  <!--
+    Automatically add the appsettings file to all entry point projects
+  -->
+  <ItemGroup Condition="$(OutputType) == 'Exe' And $(MSBuildProjectExtension) == '.csproj'">
+    <Content Include="$(SolutionDir).dockerignore" Link=".dockerignore" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(SolutionDir)appsettings.json" Link="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(SolutionDir)appsettings.Development.json" Link="appsettings.Development.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(SolutionDir)appsettings.Production.json" Link="appsettings.Production.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!--
+    Perform a deep clean using `dotnet clean -p:deep=true` to remove obj and bin folders
+    After a deep clean make sure to restore NuGet packages
+  -->
+  <Target Name="PostClean" AfterTargets="Clean" Condition="$(Deep)==True">
+    <RemoveDir Directories="$(BaseIntermediateOutputPath)" /><!-- obj -->
+    <RemoveDir Directories="$(BaseOutputPath)" /><!-- bin -->
+  </Target>
 </Project>

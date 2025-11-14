@@ -1,22 +1,22 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
+using Spottarr.Services.Configuration;
 
 namespace Spottarr.Services.Jobs;
 
-public static class JobsServiceCollectionExtensions
+internal static class JobsServiceCollectionExtensions
 {
-    public static IServiceCollection AddSpottarrJobs(this IServiceCollection services, bool runOnce) =>
+    public static IServiceCollection AddSpottarrJobs(this IServiceCollection services, IConfiguration configuration,
+        bool start) =>
         services.AddQuartz(c =>
             {
+                var config = configuration.GetSection(SpotnetOptions.Section).Get<SpotnetOptions>();
+                if (config == null) return;
+
                 c.SchedulerName = "Spottarr Scheduler";
-                c.ScheduleJob<ImportSpotsJob>(t => t
-                        .StartNow()
-                        .WithSimpleSchedule(s =>
-                        {
-                            if (!runOnce)
-                                s.WithIntervalInMinutes(5).RepeatForever();
-                        }), j => j.WithIdentity(ImportSpotsJob.Key).DisallowConcurrentExecution()
-                );
+                c.ScheduleJob<ImportSpotsJob>(JobKeys.ImportSpots, config.ImportSpotsSchedule, start);
+                c.ScheduleJob<CleanUpSpotsJob>(JobKeys.CleanUpSpots, config.CleanUpSpotsSchedule, start);
             })
             .AddQuartzHostedService(c =>
             {

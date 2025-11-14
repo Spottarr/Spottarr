@@ -1,20 +1,23 @@
 using System.Collections.Concurrent;
 using System.Data.Common;
-using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using PhenX.EntityFrameworkCore.BulkInsert.Extensions;
+using PhenX.EntityFrameworkCore.BulkInsert.Options;
 using Spottarr.Data;
 using Spottarr.Data.Entities;
 using Spottarr.Services.Configuration;
 using Spottarr.Services.Contracts;
 using Spottarr.Services.Helpers;
 using Spottarr.Services.Logging;
+using Spottarr.Services.Newznab;
 using Spottarr.Services.Nntp;
 using Spottarr.Services.Parsers;
 using Spottarr.Services.Spotnet;
 using Usenet.Exceptions;
 using Usenet.Nntp;
+using Usenet.Nntp.Contracts;
 using Usenet.Nntp.Models;
 
 namespace Spottarr.Services;
@@ -47,14 +50,13 @@ internal sealed class SpotImportService : ISpotImportService
         if (spot == null || string.IsNullOrEmpty(spot.NzbMessageId))
             return null;
 
-        NntpClientWrapper? client = null;
         try
         {
-            client = await _nntpClientPool.BorrowClient();
+            using var lease = await _nntpClientPool.GetLease();
             var nzbMessageId = spot.NzbMessageId;
 
             // Fetch the article headers which contains the NZB payload
-            var nzbArticleResponse = client.Article(new NntpMessageId(nzbMessageId));
+            var nzbArticleResponse = lease.Client.Article(new NntpMessageId(nzbMessageId));
             if (!nzbArticleResponse.Success)
             {
                 _logger.CouldNotRetrieveArticle(spot.MessageId, nzbArticleResponse.Code, nzbArticleResponse.Message);
@@ -68,10 +70,6 @@ internal sealed class SpotImportService : ISpotImportService
         {
             _logger.CouldNotRetrieveArticle(ex, spot.MessageId);
             return null;
-        }
-        finally
-        {
-            if (client != null) _nntpClientPool.ReturnClient(client);
         }
     }
 
@@ -116,13 +114,12 @@ internal sealed class SpotImportService : ISpotImportService
 
     private async Task<NntpGroup?> GetGroup(string group)
     {
-        NntpClientWrapper? client = null;
         try
         {
-            client = await _nntpClientPool.BorrowClient();
+            using var lease = await _nntpClientPool.GetLease();
 
             // Switch to the configured usenet group to verify that it exists.
-            var groupResponse = client.Group(group);
+            var groupResponse = lease.Client.Group(group);
             if (groupResponse.Success && groupResponse.Group != null) return groupResponse.Group;
 
             _logger.CouldNotRetrieveSpotGroup(group, groupResponse.Code, groupResponse.Message);
@@ -130,10 +127,6 @@ internal sealed class SpotImportService : ISpotImportService
         catch (NntpException ex)
         {
             _logger.CouldNotRetrieveSpotGroup(ex, group);
-        }
-        finally
-        {
-            if (client != null) _nntpClientPool.ReturnClient(client);
         }
 
         return null;
@@ -151,8 +144,28 @@ internal sealed class SpotImportService : ISpotImportService
         // Save the fetched articles in bulk.
         try
         {
-            await _dbContext.BulkInsertAsync(spots, progress: p => _logger.BulkInsertUpdateProgress(p),
-                cancellationToken: cancellationToken);
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+
+            var insertedSpots = await _dbContext.ExecuteBulkInsertReturnEntitiesAsync(spots, new OnConflictOptions<Spot>
+            {
+                Match = spot => spot.MessageId
+            }, cancellationToken);
+
+            var ftsSpotLookup = spots
+                .Where(s => s.FtsSpot != null)
+                .ToDictionary(s => s.MessageId, s => s.FtsSpot!);
+
+            var ftsSpots = new List<FtsSpot>();
+            foreach (var insertedSpot in insertedSpots)
+            {
+                if (!ftsSpotLookup.TryGetValue(insertedSpot.MessageId, out var ftsSpot)) continue;
+                ftsSpot.RowId = insertedSpot.Id;
+                ftsSpots.Add(ftsSpot);
+            }
+
+            await _dbContext.ExecuteBulkInsertAsync(ftsSpots, cancellationToken: cancellationToken);
+
+            await transaction.CommitAsync(cancellationToken);
         }
         catch (DbException ex)
         {
@@ -182,13 +195,12 @@ internal sealed class SpotImportService : ISpotImportService
         var attempts = 0;
         DateTimeOffset? date = null;
 
-        NntpClientWrapper? client = null;
         try
         {
-            client = await _nntpClientPool.BorrowClient();
+            using var lease = await _nntpClientPool.GetLease();
 
             // Group is set for the lifetime of the connection
-            var groupResponse = client.Group(options.SpotGroup);
+            var groupResponse = lease.Client.Group(options.SpotGroup);
             if (!groupResponse.Success)
             {
                 _logger.CouldNotRetrieveSpotGroup(options.SpotGroup, groupResponse.Code, groupResponse.Message);
@@ -209,7 +221,7 @@ internal sealed class SpotImportService : ISpotImportService
 
                 while (date == null)
                 {
-                    date = GetArticleDate(client, articleToCheck);
+                    date = GetArticleDate(lease.Client, articleToCheck);
                     attempts++;
 
                     // Sometimes articles will just be unavailable
@@ -241,13 +253,9 @@ internal sealed class SpotImportService : ISpotImportService
             _logger.CouldNotRetrieveArticle(exception, string.Empty);
             return articleNumber;
         }
-        finally
-        {
-            if (client != null) _nntpClientPool.ReturnClient(client);
-        }
     }
 
-    private DateTimeOffset? GetArticleDate(NntpClientWrapper client, long mid)
+    private DateTimeOffset? GetArticleDate(IPooledNntpClient client, long mid)
     {
         var dateResponse = client.Xhdr(NntpHeaders.Date, new NntpArticleRange(mid, mid));
 
@@ -259,7 +267,7 @@ internal sealed class SpotImportService : ISpotImportService
 
         // Xhdr can return headers for multiple articles, but we only need the first one
         // The header is in the format: <article number> <header value>, strip the article number.
-        var dateHeader = dateResponse.Lines.ToList()
+        var dateHeader = dateResponse.Lines
             .FirstOrDefault(string.Empty)
             .Replace($"{mid} ", string.Empty, StringComparison.Ordinal);
 
@@ -293,33 +301,29 @@ internal sealed class SpotImportService : ISpotImportService
 
     private async Task<IReadOnlyList<Spot>> FetchSpotHeaders(SpotnetOptions options, NntpArticleRange batch)
     {
-        NntpClientWrapper? client = null;
         try
         {
-            client = await _nntpClientPool.BorrowClient();
+            using var lease = await _nntpClientPool.GetLease();
 
             // Group is set for the lifetime of the connection
-            var groupResponse = client.Group(options.SpotGroup);
+            var groupResponse = lease.Client.Group(options.SpotGroup);
             if (!groupResponse.Success)
             {
                 _logger.CouldNotRetrieveSpotGroup(options.SpotGroup, groupResponse.Code, groupResponse.Message);
                 return [];
             }
 
-            var xOverResponse = client.Xover(batch);
+            var xOverResponse = lease.Client.Xover(batch);
             if (!xOverResponse.Success)
             {
                 _logger.CouldNotRetrieveArticleHeaders(batch.From, batch.To, xOverResponse.Code, xOverResponse.Message);
                 return [];
             }
 
-            // Always enumerate all lines from the response so the buffer is empty
-            var headers = xOverResponse.Lines.ToList();
-
             // Parallelize to speed up parsing
             var spots = new ConcurrentBag<Spot>();
             var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 10 };
-            Parallel.ForEach(headers, parallelOptions, spot =>
+            Parallel.ForEach(xOverResponse.Lines, parallelOptions, spot =>
                 ParseSpotHeader(spot, spots, options.RetrieveAfter, options.ImportAdultContent)
             );
 
@@ -330,10 +334,6 @@ internal sealed class SpotImportService : ISpotImportService
             _logger.CouldNotRetrieveArticleHeaders(exception, batch.From, batch.To);
             return [];
         }
-        finally
-        {
-            if (client != null) _nntpClientPool.ReturnClient(client);
-        }
     }
 
     private void ParseSpotHeader(string header, ConcurrentBag<Spot> spots, DateTimeOffset retrieveAfter,
@@ -342,7 +342,7 @@ internal sealed class SpotImportService : ISpotImportService
         var nntpHeaderResult = NntpHeaderParser.Parse(header);
         if (nntpHeaderResult.HasError)
         {
-            _logger.FailedToParseSpotHeader(header);
+            _logger.FailedToParseSpotHeader("-", header);
             return;
         }
 
@@ -351,7 +351,7 @@ internal sealed class SpotImportService : ISpotImportService
         var spotnetHeaderResult = SpotnetHeaderParser.Parse(nntpHeader);
         if (spotnetHeaderResult.HasError)
         {
-            _logger.FailedToParseSpotHeader(nntpHeader.Subject);
+            _logger.FailedToParseSpotHeader(nntpHeader.MessageId, header);
             return;
         }
 
@@ -363,19 +363,20 @@ internal sealed class SpotImportService : ISpotImportService
 
         var spot = spotnetHeader.ToSpot();
 
-        if (spot.SpottedAt >= retrieveAfter && (importAdultContent || !spot.IsAdultContent()))
-            spots.Add(spot);
+        if (spot.SpottedAt < retrieveAfter || (!importAdultContent && spot.IsAdultContent()) || spot.IsTest())
+            return;
+
+        spots.Add(spot);
     }
 
     private async ValueTask GetSpotDetails(Spot spot, CancellationToken ct)
     {
-        NntpClientWrapper? client = null;
         try
         {
-            client = await _nntpClientPool.BorrowClient();
+            using var lease = await _nntpClientPool.GetLease();
 
             // Fetch the article headers which contains the full spot detail in XML format
-            var spotArticleResponse = client.Article(new NntpMessageId(spot.MessageId));
+            var spotArticleResponse = lease.Client.Article(new NntpMessageId(spot.MessageId));
             if (!spotArticleResponse.Success)
             {
                 _logger.CouldNotRetrieveArticle(spot.MessageId, spotArticleResponse.Code, spotArticleResponse.Message);
@@ -384,26 +385,46 @@ internal sealed class SpotImportService : ISpotImportService
 
             var spotArticle = spotArticleResponse.Article;
 
-            // Header and body values are enumerable and lazy, we need to enumerate them to clear the read buffer on the usenet client.
-            // Usenet headers are not cases sensitive, but the Usenet library assumes they are.
-            var headers = spotArticle.Headers.ToDictionary(h => h.Key, h => string.Concat(h.Value),
-                StringComparer.OrdinalIgnoreCase);
-            var body = string.Concat(spotArticle.Body);
-
-            if (!headers.TryGetValue(SpotnetXml.HeaderName, out var spotnetXmlValues))
+            if (!spotArticle.Headers.TryGetValue(SpotnetXml.HeaderName, out var spotnetXmlValues))
             {
                 // No spot XML header, fall back to plaintext body
-                spot.Description = body;
+                spot.Description = string.Concat(spotArticle.Body).Truncate(Spot.DescriptionMaxLength);
                 _logger.ArticleIsMissingSpotXmlHeader(spot.MessageId);
                 return;
             }
 
-            var spotnetXml = string.Concat(spotnetXmlValues);
-            var spotDetails = SpotnetXmlParser.Parse(spotnetXml);
+            var result = await SpotnetXmlParser.Parse(spotnetXmlValues);
+            if (result.HasError)
+            {
+                _logger.ArticleContainsInvalidSpotXmlHeader(spot.MessageId, result.Error);
+                return;
+            }
+
+            var spotDetails = result.Result;
 
             spot.NzbMessageId = spotDetails.Posting.Nzb.Segment;
             spot.ImageMessageId = spotDetails.Posting.Image?.Segment;
-            spot.Description = spotDetails.Posting.Description;
+            spot.Description = BbCodeParser.Parse(spotDetails.Posting.Description).Truncate(Spot.DescriptionMaxLength);
+            spot.Tag = spotDetails.Posting.Tag;
+            spot.Url = Uri.TryCreate(spotDetails.Posting.Website, UriKind.Absolute, out var uri) ? uri : null;
+            spot.Filename = spotDetails.Posting.Filename;
+            spot.Newsgroup = spotDetails.Posting.Newsgroup;
+
+            var titleAndDescription = string.Join('\n', spot.Title, spot.Description);
+            var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(titleAndDescription);
+
+            spot.ReleaseTitle = ReleaseTitleParser.Parse(titleAndDescription);
+            spot.Years.Replace(years);
+            spot.Seasons.Replace(seasons);
+            spot.Episodes.Replace(episodes);
+            spot.NewznabCategories.Replace(NewznabCategoryMapper.Map(spot));
+            spot.ImdbId = ImdbIdParser.Parse(spot.Url);
+            spot.IndexedAt = DateTimeOffset.Now.UtcDateTime;
+            spot.FtsSpot = new FtsSpot
+            {
+                Title = FtsTitleParser.Parse(spot.Title),
+                Description = spot.Description
+            };
         }
         catch (InvalidOperationException ex)
         {
@@ -412,10 +433,6 @@ internal sealed class SpotImportService : ISpotImportService
         catch (NntpException ex)
         {
             _logger.CouldNotRetrieveArticle(ex, spot.MessageId);
-        }
-        finally
-        {
-            if (client != null) _nntpClientPool.ReturnClient(client);
         }
     }
 }
