@@ -12,6 +12,6 @@ internal partial class ImdbIdParser
         return match.Success ? match.Groups[1].Value : null;
     }
 
-    [GeneratedRegex(@"^\/title\/(tt(\d+))\/", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"^\/title\/(tt(\d+))(\/|$)", RegexOptions.IgnoreCase)]
     private static partial Regex ImdbUrlRegex();
 }
