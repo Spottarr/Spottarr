@@ -2,7 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using PhenX.EntityFrameworkCore.BulkInsert.Sqlite;
+using Microsoft.Extensions.Options;
+using Spottarr.Configuration.Options;
 using Spottarr.Data.Entities;
 using Spottarr.Data.Helpers;
 
@@ -12,23 +13,33 @@ public class SpottarrDbContext : DbContext, IDataProtectionKeyContext
 {
     private readonly IHostEnvironment _environment;
     private readonly ILoggerFactory _loggerFactory;
+    private readonly DatabaseOptions _options;
 
     public DbSet<Spot> Spots { get; set; } = null!;
     public DbSet<FtsSpot> FtsSpots { get; set; } = null!;
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
 
-    public SpottarrDbContext(IHostEnvironment environment, ILoggerFactory loggerFactory)
+    public DatabaseProvider Provider => _options.Provider;
+
+    public SpottarrDbContext(IHostEnvironment environment, ILoggerFactory loggerFactory,
+        IOptions<DatabaseOptions> options)
     {
+        ArgumentNullException.ThrowIfNull(options);
+
         _environment = environment;
         _loggerFactory = loggerFactory;
+        _options = options.Value;
     }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
-        optionsBuilder.UseSqlite($"Data Source={DbPathHelper.GetDbPath()}")
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        ArgumentNullException.ThrowIfNull(optionsBuilder);
+        optionsBuilder
+            .UseProvider(_options)
             .UseLoggerFactory(_loggerFactory)
             .EnableDetailedErrors(_environment.IsDevelopment())
-            .EnableSensitiveDataLogging(_environment.IsDevelopment())
-            .UseBulkInsertSqlite();
+            .EnableSensitiveDataLogging(_environment.IsDevelopment());
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -36,8 +47,6 @@ public class SpottarrDbContext : DbContext, IDataProtectionKeyContext
 
         modelBuilder.Entity<Spot>(x =>
         {
-            x.ToTable("Spots");
-
             x.Property(s => s.Title).HasMaxLength(256);
             x.Property(s => s.ReleaseTitle).HasMaxLength(256);
             x.Property(s => s.Spotter).HasMaxLength(128);
@@ -68,14 +77,36 @@ public class SpottarrDbContext : DbContext, IDataProtectionKeyContext
 
         modelBuilder.Entity<FtsSpot>(x =>
         {
-            // Pluralize, since we won't be adding a DbSet for it
             const string tableName = "FtsSpots";
             x.ToTable(tableName);
-            x.HasKey(fts => fts.RowId);
-            x.Property(fts => fts.Match).HasColumnName(tableName);
-            x.HasOne(fts => fts.Spot)
-                .WithOne(p => p.FtsSpot)
-                .HasForeignKey<FtsSpot>(fts => fts.RowId);
+
+            switch (Provider)
+            {
+                // Postgres FTS can be indexed on a regular table
+                case DatabaseProvider.Postgres:
+                    x.Ignore(fts => fts.RowId);
+                    x.Ignore(fts => fts.Match);
+                    x.Ignore(fts => fts.Rank);
+
+                    x.HasOne(fts => fts.Spot)
+                        .WithOne(p => p.FtsSpot)
+                        .HasForeignKey<FtsSpot>(fts => fts.SpotId)
+                        .IsRequired();
+                    break;
+                // Sqlite FTS uses a virtual table with special requirements
+                case DatabaseProvider.Sqlite:
+                    x.Ignore(fts => fts.Id);
+                    x.Ignore(fts => fts.SpotId);
+
+                    x.HasKey(fts => fts.RowId);
+                    x.Property(fts => fts.Match).HasColumnName(tableName);
+                    x.HasOne(fts => fts.Spot)
+                        .WithOne(p => p.FtsSpot)
+                        .HasForeignKey<FtsSpot>(fts => fts.RowId);
+                    break;
+                default:
+                    break;
+            }
         });
     }
 }

@@ -6,6 +6,7 @@ namespace Spottarr.Data.Entities;
 /// </summary>
 public abstract class BaseFtsEntity
 {
+    public int Id { get; set; }
     public int RowId { get; set; }
     public string? Match { get; set; }
     public double? Rank { get; set; }

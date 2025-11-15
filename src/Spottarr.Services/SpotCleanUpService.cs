@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Spottarr.Configuration.Options;
 using Spottarr.Data;
-using Spottarr.Services.Configuration;
 using Spottarr.Services.Contracts;
 using Spottarr.Services.Logging;
 
