@@ -4,13 +4,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Spottarr.Data;
+using Spottarr.Data.Sqlite;
 
 #nullable disable
 
 namespace Spottarr.Data.Migrations
 {
-    [DbContext(typeof(SpottarrDbContext))]
-    partial class SpottarrDbContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(SpottarrSqliteDbContext))]
+    partial class SpottarrSqliteDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {

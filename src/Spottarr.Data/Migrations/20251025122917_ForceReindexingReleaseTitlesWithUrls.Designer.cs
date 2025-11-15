@@ -5,12 +5,13 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Spottarr.Data;
+using Spottarr.Data.Sqlite;
 
 #nullable disable
 
 namespace Spottarr.Data.Migrations
 {
-    [DbContext(typeof(SpottarrDbContext))]
+    [DbContext(typeof(SpottarrSqliteDbContext))]
     [Migration("20251025122917_ForceReindexingReleaseTitlesWithUrls")]
     partial class ForceReindexingReleaseTitlesWithUrls
     {
