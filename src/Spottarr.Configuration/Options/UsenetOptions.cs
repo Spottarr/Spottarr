@@ -1,9 +1,11 @@
-namespace Spottarr.Services.Configuration;
+using Spottarr.Configuration.Contracts;
 
-public class UsenetOptions
+namespace Spottarr.Configuration.Options;
+
+public sealed class UsenetOptions : IOptionsSection
 {
-    public const string Section = "Usenet";
-    
+    public static string Section => "Usenet";
+
     public required string Hostname { get; init; }
     public required string Username { get; init; }
     public required string Password { get; init; }

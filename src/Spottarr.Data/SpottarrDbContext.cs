@@ -2,9 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using PhenX.EntityFrameworkCore.BulkInsert.Sqlite;
 using Microsoft.Extensions.Options;
-using Spottarr.Data.Configuration;
+using PhenX.EntityFrameworkCore.BulkInsert.Sqlite;
+using Spottarr.Configuration.Options;
 using Spottarr.Data.Entities;
 using Spottarr.Data.Helpers;
 

@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Spottarr.Data.Configuration;
+using Spottarr.Configuration.Options;
 
 namespace Spottarr.Data.Helpers;
 

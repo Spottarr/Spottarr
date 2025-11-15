@@ -8,4 +8,8 @@
     <PackageReference Include="PhenX.EntityFrameworkCore.BulkInsert.Sqlite" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Spottarr.Configuration\Spottarr.Configuration.csproj" />
+  </ItemGroup>
+
 </Project>

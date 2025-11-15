@@ -1,8 +1,10 @@
-namespace Spottarr.Data.Configuration;
+using Spottarr.Configuration.Contracts;
 
-public class DatabaseOptions
+namespace Spottarr.Configuration.Options;
+
+public sealed class DatabaseOptions : IOptionsSection
 {
-    public const string Section = "Database";
+    public static string Section => "Database";
 
     public required DatabaseProvider Provider { get; init; }
 
