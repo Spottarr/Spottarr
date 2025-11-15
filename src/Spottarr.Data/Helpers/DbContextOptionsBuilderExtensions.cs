@@ -11,10 +11,10 @@ internal static class DbContextOptionsBuilderExtensions
         options.Provider switch
         {
             DatabaseProvider.Sqlite => builder
-                .UseSqlite($"Data Source={DbPathHelper.GetDbPath()}")
+                .UseSqlite($"Data Source={DbPathHelper.GetDbPath()}", x => x.MigrationsAssembly("Spottarr.Data.Sqlite"))
                 .UseBulkInsertSqlite(),
             DatabaseProvider.Postgres => builder
-                .UseNpgsql(options.ConnectionString)
+                .UseNpgsql(options.ConnectionString, x => x.MigrationsAssembly("Spottarr.Data.PostgreSql"))
                 .UseBulkInsertPostgreSql()
                 .UseSnakeCaseNamingConvention(),
             _ => throw new InvalidOperationException("Invalid database provider")
