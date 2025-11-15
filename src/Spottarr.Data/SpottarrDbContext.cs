@@ -10,7 +10,7 @@ using Spottarr.Data.Helpers;
 
 namespace Spottarr.Data;
 
-public class SpottarrDbContext : DbContext, IDataProtectionKeyContext
+public abstract class SpottarrDbContext : DbContext, IDataProtectionKeyContext
 {
     private readonly IHostEnvironment _environment;
     private readonly ILoggerFactory _loggerFactory;
@@ -20,7 +20,7 @@ public class SpottarrDbContext : DbContext, IDataProtectionKeyContext
     public DbSet<FtsSpot> FtsSpots { get; set; } = null!;
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
 
-    public SpottarrDbContext(IHostEnvironment environment, ILoggerFactory loggerFactory,
+    protected SpottarrDbContext(IHostEnvironment environment, ILoggerFactory loggerFactory,
         IOptions<DatabaseOptions> options)
     {
         _environment = environment;
@@ -28,12 +28,14 @@ public class SpottarrDbContext : DbContext, IDataProtectionKeyContext
         _options = options;
     }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
-        optionsBuilder.GetBuilder(_options.Value)
-            .UseLoggerFactory(_loggerFactory)
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        ArgumentNullException.ThrowIfNull(optionsBuilder);
+        optionsBuilder.UseLoggerFactory(_loggerFactory)
             .EnableDetailedErrors(_environment.IsDevelopment())
             .EnableSensitiveDataLogging(_environment.IsDevelopment())
             .UseBulkInsertSqlite();
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
