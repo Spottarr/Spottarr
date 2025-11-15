@@ -7,7 +7,7 @@ using Spottarr.Data;
 
 #nullable disable
 
-namespace Spottarr.Data.Migrations.Sqlite
+namespace Spottarr.Data.Migrations
 {
     [DbContext(typeof(SpottarrDbContext))]
     partial class SpottarrDbContextModelSnapshot : ModelSnapshot

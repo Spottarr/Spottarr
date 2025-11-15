@@ -1,8 +1,8 @@
-﻿#nullable disable
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-using Microsoft.EntityFrameworkCore.Migrations;
+#nullable disable
 
-namespace Spottarr.Data.Migrations.Sqlite
+namespace Spottarr.Data.Migrations
 {
     /// <inheritdoc />
     public partial class AddNewznabCategoriesToSpot : Migration

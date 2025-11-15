@@ -1,8 +1,9 @@
-﻿#nullable disable
-
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Spottarr.Data.Migrations.Sqlite
+#nullable disable
+
+namespace Spottarr.Data.Migrations
 {
     /// <inheritdoc />
     public partial class InitialMigration : Migration
@@ -48,7 +49,10 @@ namespace Spottarr.Data.Migrations.Sqlite
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
-                constraints: table => { table.PrimaryKey("PK_Spots", x => x.Id); });
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Spots", x => x.Id);
+                });
 
             // See: https://www.bricelam.net/2020/08/08/sqlite-fts-and-efcore.html
             /*
@@ -74,7 +78,7 @@ namespace Spottarr.Data.Migrations.Sqlite
                 });
             */
             migrationBuilder.Sql("CREATE VIRTUAL TABLE FtsSpots USING fts5(Title, Description)");
-
+            
             migrationBuilder.CreateIndex(
                 name: "IX_Spots_MessageId",
                 table: "Spots",
