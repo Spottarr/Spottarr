@@ -5,21 +5,20 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Spottarr.Data;
-using Spottarr.Data.Sqlite;
 
 #nullable disable
 
-namespace Spottarr.Data.Sqlite.Migrations
+namespace Spottarr.Data.Migrations.Sqlite
 {
-    [DbContext(typeof(SpottarrSqliteDbContext))]
-    [Migration("20250511103241_AddDateIndicesToSpot")]
-    partial class AddDateIndicesToSpot
+    [DbContext(typeof(SpottarrDbContext))]
+    [Migration("20241025185628_AddIndexOnMessageNumber")]
+    partial class AddIndexOnMessageNumber
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.0-rc.2.24474.1");
 
             modelBuilder.Entity("Spottarr.Data.Entities.FtsSpot", b =>
                 {
@@ -97,10 +96,6 @@ namespace Spottarr.Data.Sqlite.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Filename")
-                        .HasMaxLength(128)
-                        .HasColumnType("TEXT");
-
                     b.PrimitiveCollection<string>("GameFormats")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -141,10 +136,6 @@ namespace Spottarr.Data.Sqlite.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ImdbId")
-                        .HasMaxLength(16)
-                        .HasColumnType("TEXT");
-
                     b.Property<DateTime?>("IndexedAt")
                         .HasColumnType("TEXT");
 
@@ -156,20 +147,12 @@ namespace Spottarr.Data.Sqlite.Migrations
                     b.Property<long>("MessageNumber")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Newsgroup")
-                        .HasMaxLength(128)
-                        .HasColumnType("TEXT");
-
                     b.PrimitiveCollection<string>("NewznabCategories")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("NzbMessageId")
                         .HasMaxLength(128)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ReleaseTitle")
-                        .HasMaxLength(256)
                         .HasColumnType("TEXT");
 
                     b.PrimitiveCollection<string>("Seasons")
@@ -184,27 +167,15 @@ namespace Spottarr.Data.Sqlite.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Tag")
-                        .HasMaxLength(128)
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(256)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("TvdbId")
-                        .HasMaxLength(16)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Type")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Url")
-                        .HasMaxLength(512)
                         .HasColumnType("TEXT");
 
                     b.PrimitiveCollection<string>("Years")
@@ -216,17 +187,7 @@ namespace Spottarr.Data.Sqlite.Migrations
                     b.HasIndex("MessageId")
                         .IsUnique();
 
-                    b.HasIndex("MessageNumber")
-                        .IsUnique();
-
-                    b.HasIndex("SpottedAt")
-                        .IsDescending();
-
-                    b.HasIndex("ImdbId", "SpottedAt")
-                        .IsDescending(false, true);
-
-                    b.HasIndex("TvdbId", "SpottedAt")
-                        .IsDescending(false, true);
+                    b.HasIndex("MessageNumber");
 
                     b.ToTable("Spots", (string)null);
                 });

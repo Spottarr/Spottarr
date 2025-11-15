@@ -1,5 +1,5 @@
 # Disable checks in generated migrations
-[{src/Spottarr.Data.Sqlite/Migrations/*.cs,src/Spottarr.Data.PostgreSql/Migrations/*.cs}]
+[src/Spottarr.Data/Migrations/**/*.cs]
 dotnet_diagnostic.CA1062.severity = none
 dotnet_diagnostic.CA1861.severity = none
 dotnet_diagnostic.CA1825.severity = none

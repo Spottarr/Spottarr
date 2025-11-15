@@ -5,21 +5,20 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Spottarr.Data;
-using Spottarr.Data.Sqlite;
 
 #nullable disable
 
-namespace Spottarr.Data.Sqlite.Migrations
+namespace Spottarr.Data.Migrations.Sqlite
 {
-    [DbContext(typeof(SpottarrSqliteDbContext))]
-    [Migration("20251025122917_ForceReindexingReleaseTitlesWithUrls")]
-    partial class ForceReindexingReleaseTitlesWithUrls
+    [DbContext(typeof(SpottarrDbContext))]
+    [Migration("20250524123210_AddDataProtection")]
+    partial class AddDataProtection
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.0-rc.2.25502.107");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.5");
 
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
                 {

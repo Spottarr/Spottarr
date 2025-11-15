@@ -5,38 +5,20 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Spottarr.Data;
-using Spottarr.Data.Sqlite;
 
 #nullable disable
 
-namespace Spottarr.Data.Sqlite.Migrations
+namespace Spottarr.Data.Migrations.Sqlite
 {
-    [DbContext(typeof(SpottarrSqliteDbContext))]
-    [Migration("20250524123210_AddDataProtection")]
-    partial class AddDataProtection
+    [DbContext(typeof(SpottarrDbContext))]
+    [Migration("20241020185340_AddNzbFile")]
+    partial class AddNzbFile
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.5");
-
-            modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("FriendlyName")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Xml")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DataProtectionKeys");
-                });
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.0-rc.2.24474.1");
 
             modelBuilder.Entity("Spottarr.Data.Entities.FtsSpot", b =>
                 {
@@ -61,6 +43,41 @@ namespace Spottarr.Data.Sqlite.Migrations
                     b.HasKey("RowId");
 
                     b.ToTable("FtsSpots", (string)null);
+                });
+
+            modelBuilder.Entity("Spottarr.Data.Entities.NzbFile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.Property<string>("MessageId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SpotId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MessageId")
+                        .IsUnique();
+
+                    b.HasIndex("SpotId")
+                        .IsUnique();
+
+                    b.ToTable("NzbFiles", (string)null);
                 });
 
             modelBuilder.Entity("Spottarr.Data.Entities.Spot", b =>
@@ -114,10 +131,6 @@ namespace Spottarr.Data.Sqlite.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Filename")
-                        .HasMaxLength(128)
-                        .HasColumnType("TEXT");
-
                     b.PrimitiveCollection<string>("GameFormats")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -146,20 +159,12 @@ namespace Spottarr.Data.Sqlite.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ImageMessageId")
-                        .HasMaxLength(128)
-                        .HasColumnType("TEXT");
-
                     b.PrimitiveCollection<string>("ImageSources")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.PrimitiveCollection<string>("ImageTypes")
                         .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ImdbId")
-                        .HasMaxLength(16)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("IndexedAt")
@@ -173,20 +178,8 @@ namespace Spottarr.Data.Sqlite.Migrations
                     b.Property<long>("MessageNumber")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Newsgroup")
-                        .HasMaxLength(128)
-                        .HasColumnType("TEXT");
-
                     b.PrimitiveCollection<string>("NewznabCategories")
                         .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("NzbMessageId")
-                        .HasMaxLength(128)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ReleaseTitle")
-                        .HasMaxLength(256)
                         .HasColumnType("TEXT");
 
                     b.PrimitiveCollection<string>("Seasons")
@@ -201,27 +194,15 @@ namespace Spottarr.Data.Sqlite.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Tag")
-                        .HasMaxLength(128)
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(256)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("TvdbId")
-                        .HasMaxLength(16)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Type")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Url")
-                        .HasMaxLength(512)
                         .HasColumnType("TEXT");
 
                     b.PrimitiveCollection<string>("Years")
@@ -232,18 +213,6 @@ namespace Spottarr.Data.Sqlite.Migrations
 
                     b.HasIndex("MessageId")
                         .IsUnique();
-
-                    b.HasIndex("MessageNumber")
-                        .IsUnique();
-
-                    b.HasIndex("SpottedAt")
-                        .IsDescending();
-
-                    b.HasIndex("ImdbId", "SpottedAt")
-                        .IsDescending(false, true);
-
-                    b.HasIndex("TvdbId", "SpottedAt")
-                        .IsDescending(false, true);
 
                     b.ToTable("Spots", (string)null);
                 });
@@ -259,9 +228,22 @@ namespace Spottarr.Data.Sqlite.Migrations
                     b.Navigation("Spot");
                 });
 
+            modelBuilder.Entity("Spottarr.Data.Entities.NzbFile", b =>
+                {
+                    b.HasOne("Spottarr.Data.Entities.Spot", "Spot")
+                        .WithOne("NzbFile")
+                        .HasForeignKey("Spottarr.Data.Entities.NzbFile", "SpotId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Spot");
+                });
+
             modelBuilder.Entity("Spottarr.Data.Entities.Spot", b =>
                 {
                     b.Navigation("FtsSpot");
+
+                    b.Navigation("NzbFile");
                 });
 #pragma warning restore 612, 618
         }

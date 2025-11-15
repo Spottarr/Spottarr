@@ -1,8 +1,8 @@
-using Microsoft.EntityFrameworkCore.Migrations;
-
 #nullable disable
 
-namespace Spottarr.Data.Sqlite.Migrations
+using Microsoft.EntityFrameworkCore.Migrations;
+
+namespace Spottarr.Data.Migrations.Sqlite
 {
     /// <inheritdoc />
     public partial class AddReleaseTitleToSpot : Migration

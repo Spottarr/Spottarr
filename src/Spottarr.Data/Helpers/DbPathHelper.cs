@@ -1,4 +1,4 @@
-namespace Spottarr.Data.Sqlite.Helpers;
+namespace Spottarr.Data.Helpers;
 
 public static class DbPathHelper
 {

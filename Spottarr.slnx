@@ -15,8 +15,6 @@
     <Folder Name="/src/">
       <Project Path="src/Spottarr.Configuration/Spottarr.Configuration.csproj" />
       <Project Path="src/Spottarr.Console/Spottarr.Console.csproj" />
-      <Project Path="src/Spottarr.Data.PostgreSql/Spottarr.Data.PostgreSql.csproj" />
-      <Project Path="src/Spottarr.Data.Sqlite/Spottarr.Data.Sqlite.csproj" />
       <Project Path="src/Spottarr.Data/Spottarr.Data.csproj" />
       <Project Path="src/Spottarr.Services/Spottarr.Services.csproj" />
       <Project Path="src/Spottarr.Web/Spottarr.Web.csproj" />

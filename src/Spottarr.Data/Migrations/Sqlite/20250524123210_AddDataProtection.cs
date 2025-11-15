@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿#nullable disable
 
-#nullable disable
+using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Spottarr.Data.Sqlite.Migrations
+namespace Spottarr.Data.Migrations.Sqlite
 {
     /// <inheritdoc />
     public partial class AddDataProtection : Migration
@@ -19,10 +19,7 @@ namespace Spottarr.Data.Sqlite.Migrations
                     FriendlyName = table.Column<string>(type: "TEXT", nullable: true),
                     Xml = table.Column<string>(type: "TEXT", nullable: true)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DataProtectionKeys", x => x.Id);
-                });
+                constraints: table => { table.PrimaryKey("PK_DataProtectionKeys", x => x.Id); });
         }
 
         /// <inheritdoc />

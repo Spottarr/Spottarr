@@ -3,8 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Spottarr.Configuration;
 using Spottarr.Configuration.Options;
-using Spottarr.Data.PostgreSql;
-using Spottarr.Data.Sqlite;
+using Spottarr.Data;
 using Spottarr.Services.Contracts;
 using Spottarr.Services.Jobs;
 using Usenet.Nntp;
@@ -21,8 +20,7 @@ public static class ServiceCollectionExtensions
 
         return services
             .AddSpottarrConfiguration(configuration)
-            .AddSpottarrDataSqlite(configuration)
-            .AddSpottarrDataPostgreSql(configuration)
+            .AddSpottarrData(configuration)
             .AddSpottarrJobs(configuration, startJobs)
             .AddSingleton<INntpClientPool, NntpClientPool>(s =>
             {

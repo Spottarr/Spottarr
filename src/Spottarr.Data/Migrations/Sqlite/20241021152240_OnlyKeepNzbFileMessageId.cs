@@ -1,16 +1,44 @@
-﻿using System;
+﻿#nullable disable
+
 using Microsoft.EntityFrameworkCore.Migrations;
 
-#nullable disable
-
-namespace Spottarr.Data.Sqlite.Migrations
+namespace Spottarr.Data.Migrations.Sqlite
 {
     /// <inheritdoc />
-    public partial class AddNzbFile : Migration
+    public partial class OnlyKeepNzbFileMessageId : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "NzbFiles");
+
+            migrationBuilder.AddColumn<string>(
+                name: "ImageMessageId",
+                table: "Spots",
+                type: "TEXT",
+                maxLength: 128,
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "NzbMessageId",
+                table: "Spots",
+                type: "TEXT",
+                maxLength: 128,
+                nullable: true);
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(
+                name: "ImageMessageId",
+                table: "Spots");
+
+            migrationBuilder.DropColumn(
+                name: "NzbMessageId",
+                table: "Spots");
+
             migrationBuilder.CreateTable(
                 name: "NzbFiles",
                 columns: table => new
@@ -18,9 +46,9 @@ namespace Spottarr.Data.Sqlite.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     SpotId = table.Column<int>(type: "INTEGER", nullable: false),
-                    MessageId = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
-                    Data = table.Column<byte[]>(type: "BLOB", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Data = table.Column<byte[]>(type: "BLOB", nullable: false),
+                    MessageId = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
@@ -45,13 +73,6 @@ namespace Spottarr.Data.Sqlite.Migrations
                 table: "NzbFiles",
                 column: "SpotId",
                 unique: true);
-        }
-
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "NzbFiles");
         }
     }
 }

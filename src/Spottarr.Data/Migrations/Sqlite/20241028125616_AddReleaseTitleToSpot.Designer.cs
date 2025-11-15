@@ -5,13 +5,12 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Spottarr.Data;
-using Spottarr.Data.Sqlite;
 
 #nullable disable
 
-namespace Spottarr.Data.Sqlite.Migrations
+namespace Spottarr.Data.Migrations.Sqlite
 {
-    [DbContext(typeof(SpottarrSqliteDbContext))]
+    [DbContext(typeof(SpottarrDbContext))]
     [Migration("20241028125616_AddReleaseTitleToSpot")]
     partial class AddReleaseTitleToSpot
     {

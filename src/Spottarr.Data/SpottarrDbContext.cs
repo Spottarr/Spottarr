@@ -2,30 +2,41 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Spottarr.Configuration.Options;
 using Spottarr.Data.Entities;
 using Spottarr.Data.Helpers;
 
 namespace Spottarr.Data;
 
-public abstract class SpottarrDbContext : DbContext, IDataProtectionKeyContext
+public class SpottarrDbContext : DbContext, IDataProtectionKeyContext
 {
     private readonly IHostEnvironment _environment;
     private readonly ILoggerFactory _loggerFactory;
+    private readonly DatabaseOptions _options;
 
     public DbSet<Spot> Spots { get; set; } = null!;
     public DbSet<FtsSpot> FtsSpots { get; set; } = null!;
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
 
-    protected SpottarrDbContext(IHostEnvironment environment, ILoggerFactory loggerFactory)
+    public DatabaseProvider Provider => _options.Provider;
+
+    public SpottarrDbContext(IHostEnvironment environment, ILoggerFactory loggerFactory,
+        IOptions<DatabaseOptions> options)
     {
+        ArgumentNullException.ThrowIfNull(options);
+
         _environment = environment;
         _loggerFactory = loggerFactory;
+        _options = options.Value;
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         ArgumentNullException.ThrowIfNull(optionsBuilder);
-        optionsBuilder.UseLoggerFactory(_loggerFactory)
+        optionsBuilder
+            .UseProvider(_options)
+            .UseLoggerFactory(_loggerFactory)
             .EnableDetailedErrors(_environment.IsDevelopment())
             .EnableSensitiveDataLogging(_environment.IsDevelopment());
     }
@@ -62,6 +73,40 @@ public abstract class SpottarrDbContext : DbContext, IDataProtectionKeyContext
             x.HasIndex(s => s.SpottedAt).IsDescending(true);
             x.HasIndex(s => new { s.ImdbId, s.SpottedAt }).IsDescending(false, true);
             x.HasIndex(s => new { s.TvdbId, s.SpottedAt }).IsDescending(false, true);
+        });
+
+        modelBuilder.Entity<FtsSpot>(x =>
+        {
+            const string tableName = "FtsSpots";
+            x.ToTable(tableName);
+
+            switch (Provider)
+            {
+                // Postgres FTS can be indexed on a regular table
+                case DatabaseProvider.Postgres:
+                    x.Ignore(fts => fts.RowId);
+                    x.Ignore(fts => fts.Match);
+                    x.Ignore(fts => fts.Rank);
+
+                    x.HasOne(fts => fts.Spot)
+                        .WithOne(p => p.FtsSpot)
+                        .HasForeignKey<FtsSpot>(fts => fts.SpotId)
+                        .IsRequired();
+                    break;
+                // Sqlite FTS uses a virtual table with special requirements
+                case DatabaseProvider.Sqlite:
+                    x.Ignore(fts => fts.Id);
+                    x.Ignore(fts => fts.SpotId);
+
+                    x.HasKey(fts => fts.RowId);
+                    x.Property(fts => fts.Match).HasColumnName(tableName);
+                    x.HasOne(fts => fts.Spot)
+                        .WithOne(p => p.FtsSpot)
+                        .HasForeignKey<FtsSpot>(fts => fts.RowId);
+                    break;
+                default:
+                    break;
+            }
         });
     }
 }
