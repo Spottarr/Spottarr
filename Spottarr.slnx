@@ -1,24 +1,25 @@
 <Solution>
     <Folder Name="/solution/">
-        <File Path=".editorconfig"/>
-        <File Path=".gitignore"/>
-        <File Path=".globalconfig"/>
-        <File Path="appsettings.Development.json"/>
-        <File Path="appsettings.json"/>
-        <File Path="appsettings.Production.json"/>
-        <File Path="compose.yaml"/>
-        <File Path="Directory.Build.props"/>
+      <File Path=".editorconfig" />
+      <File Path=".gitignore" />
+      <File Path=".globalconfig" />
+      <File Path="appsettings.Development.json" />
+      <File Path="appsettings.json" />
+      <File Path="appsettings.Production.json" />
+      <File Path="compose.yaml" />
+      <File Path="Directory.Build.props" />
         <File Path="Directory.Packages.props" />
-        <File Path="global.json"/>
-        <File Path="README.md"/>
+      <File Path="global.json" />
+      <File Path="README.md" />
     </Folder>
     <Folder Name="/src/">
-        <Project Path="src/Spottarr.Console/Spottarr.Console.csproj"/>
-        <Project Path="src/Spottarr.Data/Spottarr.Data.csproj"/>
-        <Project Path="src/Spottarr.Services/Spottarr.Services.csproj"/>
-        <Project Path="src/Spottarr.Web/Spottarr.Web.csproj"/>
+      <Project Path="src/Spottarr.Configuration/Spottarr.Configuration.csproj" />
+      <Project Path="src/Spottarr.Console/Spottarr.Console.csproj" />
+      <Project Path="src/Spottarr.Data/Spottarr.Data.csproj" />
+      <Project Path="src/Spottarr.Services/Spottarr.Services.csproj" />
+      <Project Path="src/Spottarr.Web/Spottarr.Web.csproj" />
     </Folder>
     <Folder Name="/tests/">
-        <Project Path="tests/Spottarr.Tests/Spottarr.Tests.csproj"/>
+      <Project Path="tests/Spottarr.Tests/Spottarr.Tests.csproj" />
     </Folder>
 </Solution>
