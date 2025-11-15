@@ -9,17 +9,34 @@ using Spottarr.Data.Sqlite;
 
 #nullable disable
 
-namespace Spottarr.Data.Migrations
+namespace Spottarr.Data.Sqlite.Migrations
 {
     [DbContext(typeof(SpottarrSqliteDbContext))]
-    [Migration("20241020113342_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20251025122917_ForceReindexingReleaseTitlesWithUrls")]
+    partial class ForceReindexingReleaseTitlesWithUrls
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.0-rc.2.24474.1");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.0-rc.2.25502.107");
+
+            modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("FriendlyName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Xml")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DataProtectionKeys");
+                });
 
             modelBuilder.Entity("Spottarr.Data.Entities.FtsSpot", b =>
                 {
@@ -97,6 +114,10 @@ namespace Spottarr.Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Filename")
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
                     b.PrimitiveCollection<string>("GameFormats")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -125,12 +146,20 @@ namespace Spottarr.Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("ImageMessageId")
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
                     b.PrimitiveCollection<string>("ImageSources")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.PrimitiveCollection<string>("ImageTypes")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ImdbId")
+                        .HasMaxLength(16)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("IndexedAt")
@@ -144,6 +173,22 @@ namespace Spottarr.Data.Migrations
                     b.Property<long>("MessageNumber")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Newsgroup")
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
+                    b.PrimitiveCollection<string>("NewznabCategories")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NzbMessageId")
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ReleaseTitle")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
                     b.PrimitiveCollection<string>("Seasons")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -156,15 +201,27 @@ namespace Spottarr.Data.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Tag")
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TvdbId")
+                        .HasMaxLength(16)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Type")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Url")
+                        .HasMaxLength(512)
                         .HasColumnType("TEXT");
 
                     b.PrimitiveCollection<string>("Years")
@@ -176,7 +233,19 @@ namespace Spottarr.Data.Migrations
                     b.HasIndex("MessageId")
                         .IsUnique();
 
-                    b.ToTable("Spots");
+                    b.HasIndex("MessageNumber")
+                        .IsUnique();
+
+                    b.HasIndex("SpottedAt")
+                        .IsDescending();
+
+                    b.HasIndex("ImdbId", "SpottedAt")
+                        .IsDescending(false, true);
+
+                    b.HasIndex("TvdbId", "SpottedAt")
+                        .IsDescending(false, true);
+
+                    b.ToTable("Spots", (string)null);
                 });
 
             modelBuilder.Entity("Spottarr.Data.Entities.FtsSpot", b =>

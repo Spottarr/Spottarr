@@ -15,7 +15,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Spottarr.Configuration\Spottarr.Configuration.csproj" />
-    <ProjectReference Include="..\Spottarr.Data\Spottarr.Data.csproj" />
+    <ProjectReference Include="..\Spottarr.Data.PostgreSql\Spottarr.Data.PostgreSql.csproj" />
+    <ProjectReference Include="..\Spottarr.Data.Sqlite\Spottarr.Data.Sqlite.csproj" />
   </ItemGroup>
 
 </Project>

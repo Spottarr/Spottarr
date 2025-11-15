@@ -9,7 +9,7 @@ using Spottarr.Data.Sqlite;
 
 #nullable disable
 
-namespace Spottarr.Data.Migrations
+namespace Spottarr.Data.Sqlite.Migrations
 {
     [DbContext(typeof(SpottarrSqliteDbContext))]
     [Migration("20250524123210_AddDataProtection")]

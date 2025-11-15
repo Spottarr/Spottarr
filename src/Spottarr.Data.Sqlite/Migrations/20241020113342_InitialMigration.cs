@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Spottarr.Data.Migrations
+namespace Spottarr.Data.Sqlite.Migrations
 {
     /// <inheritdoc />
     public partial class InitialMigration : Migration

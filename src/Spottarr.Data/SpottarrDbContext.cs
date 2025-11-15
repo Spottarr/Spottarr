@@ -1,10 +1,5 @@
-﻿using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using PhenX.EntityFrameworkCore.BulkInsert.Sqlite;
-using Spottarr.Configuration.Options;
 using Spottarr.Data.Entities;
 using Spottarr.Data.Helpers;
 
@@ -14,18 +9,15 @@ public abstract class SpottarrDbContext : DbContext, IDataProtectionKeyContext
 {
     private readonly IHostEnvironment _environment;
     private readonly ILoggerFactory _loggerFactory;
-    private readonly IOptions<DatabaseOptions> _options;
 
     public DbSet<Spot> Spots { get; set; } = null!;
     public DbSet<FtsSpot> FtsSpots { get; set; } = null!;
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
 
-    protected SpottarrDbContext(IHostEnvironment environment, ILoggerFactory loggerFactory,
-        IOptions<DatabaseOptions> options)
+    protected SpottarrDbContext(IHostEnvironment environment, ILoggerFactory loggerFactory)
     {
         _environment = environment;
         _loggerFactory = loggerFactory;
-        _options = options;
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -33,8 +25,7 @@ public abstract class SpottarrDbContext : DbContext, IDataProtectionKeyContext
         ArgumentNullException.ThrowIfNull(optionsBuilder);
         optionsBuilder.UseLoggerFactory(_loggerFactory)
             .EnableDetailedErrors(_environment.IsDevelopment())
-            .EnableSensitiveDataLogging(_environment.IsDevelopment())
-            .UseBulkInsertSqlite();
+            .EnableSensitiveDataLogging(_environment.IsDevelopment());
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -43,8 +34,6 @@ public abstract class SpottarrDbContext : DbContext, IDataProtectionKeyContext
 
         modelBuilder.Entity<Spot>(x =>
         {
-            x.ToTable("Spots");
-
             x.Property(s => s.Title).HasMaxLength(256);
             x.Property(s => s.ReleaseTitle).HasMaxLength(256);
             x.Property(s => s.Spotter).HasMaxLength(128);
@@ -71,18 +60,6 @@ public abstract class SpottarrDbContext : DbContext, IDataProtectionKeyContext
             x.HasIndex(s => s.SpottedAt).IsDescending(true);
             x.HasIndex(s => new { s.ImdbId, s.SpottedAt }).IsDescending(false, true);
             x.HasIndex(s => new { s.TvdbId, s.SpottedAt }).IsDescending(false, true);
-        });
-
-        modelBuilder.Entity<FtsSpot>(x =>
-        {
-            // Pluralize, since we won't be adding a DbSet for it
-            const string tableName = "FtsSpots";
-            x.ToTable(tableName);
-            x.HasKey(fts => fts.RowId);
-            x.Property(fts => fts.Match).HasColumnName(tableName);
-            x.HasOne(fts => fts.Spot)
-                .WithOne(p => p.FtsSpot)
-                .HasForeignKey<FtsSpot>(fts => fts.RowId);
         });
     }
 }

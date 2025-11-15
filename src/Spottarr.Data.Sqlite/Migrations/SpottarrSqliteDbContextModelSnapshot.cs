@@ -2,24 +2,38 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Spottarr.Data;
 using Spottarr.Data.Sqlite;
 
 #nullable disable
 
-namespace Spottarr.Data.Migrations
+namespace Spottarr.Data.Sqlite.Migrations
 {
     [DbContext(typeof(SpottarrSqliteDbContext))]
-    [Migration("20250510094213_AddFtdFieldsAndExternalIdsToSpot")]
-    partial class AddFtdFieldsAndExternalIdsToSpot
+    partial class SpottarrSqliteDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.0-rc.2.25502.107");
+
+            modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("FriendlyName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Xml")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DataProtectionKeys");
+                });
 
             modelBuilder.Entity("Spottarr.Data.Entities.FtsSpot", b =>
                 {
@@ -213,14 +227,20 @@ namespace Spottarr.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ImdbId");
-
                     b.HasIndex("MessageId")
                         .IsUnique();
 
-                    b.HasIndex("MessageNumber");
+                    b.HasIndex("MessageNumber")
+                        .IsUnique();
 
-                    b.HasIndex("TvdbId");
+                    b.HasIndex("SpottedAt")
+                        .IsDescending();
+
+                    b.HasIndex("ImdbId", "SpottedAt")
+                        .IsDescending(false, true);
+
+                    b.HasIndex("TvdbId", "SpottedAt")
+                        .IsDescending(false, true);
 
                     b.ToTable("Spots", (string)null);
                 });

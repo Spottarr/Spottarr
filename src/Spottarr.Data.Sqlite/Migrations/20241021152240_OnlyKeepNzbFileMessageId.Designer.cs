@@ -9,11 +9,11 @@ using Spottarr.Data.Sqlite;
 
 #nullable disable
 
-namespace Spottarr.Data.Migrations
+namespace Spottarr.Data.Sqlite.Migrations
 {
     [DbContext(typeof(SpottarrSqliteDbContext))]
-    [Migration("20241020123848_AddNewznabCategoriesToSpot")]
-    partial class AddNewznabCategoriesToSpot
+    [Migration("20241021152240_OnlyKeepNzbFileMessageId")]
+    partial class OnlyKeepNzbFileMessageId
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -125,6 +125,10 @@ namespace Spottarr.Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("ImageMessageId")
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
                     b.PrimitiveCollection<string>("ImageSources")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -146,6 +150,10 @@ namespace Spottarr.Data.Migrations
 
                     b.PrimitiveCollection<string>("NewznabCategories")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NzbMessageId")
+                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.PrimitiveCollection<string>("Seasons")
@@ -180,7 +188,7 @@ namespace Spottarr.Data.Migrations
                     b.HasIndex("MessageId")
                         .IsUnique();
 
-                    b.ToTable("Spots");
+                    b.ToTable("Spots", (string)null);
                 });
 
             modelBuilder.Entity("Spottarr.Data.Entities.FtsSpot", b =>

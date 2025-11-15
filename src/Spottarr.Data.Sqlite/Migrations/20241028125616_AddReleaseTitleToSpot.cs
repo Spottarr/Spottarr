@@ -1,28 +1,28 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Spottarr.Data.Migrations
+namespace Spottarr.Data.Sqlite.Migrations
 {
     /// <inheritdoc />
-    public partial class AddNewznabCategoriesToSpot : Migration
+    public partial class AddReleaseTitleToSpot : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "NewznabCategories",
+                name: "ReleaseTitle",
                 table: "Spots",
                 type: "TEXT",
-                nullable: false,
-                defaultValue: "[]");
+                maxLength: 256,
+                nullable: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "NewznabCategories",
+                name: "ReleaseTitle",
                 table: "Spots");
         }
     }

@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
-namespace Spottarr.Data.Helpers;
+namespace Spottarr.Data.Sqlite.Helpers;
 
 public static class DatabaseFacadeExtensions
 {

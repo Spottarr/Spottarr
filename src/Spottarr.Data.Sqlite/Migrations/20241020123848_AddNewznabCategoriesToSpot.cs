@@ -2,25 +2,27 @@
 
 #nullable disable
 
-namespace Spottarr.Data.Migrations
+namespace Spottarr.Data.Sqlite.Migrations
 {
     /// <inheritdoc />
-    public partial class AddIndexOnMessageNumber : Migration
+    public partial class AddNewznabCategoriesToSpot : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateIndex(
-                name: "IX_Spots_MessageNumber",
+            migrationBuilder.AddColumn<string>(
+                name: "NewznabCategories",
                 table: "Spots",
-                column: "MessageNumber");
+                type: "TEXT",
+                nullable: false,
+                defaultValue: "[]");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(
-                name: "IX_Spots_MessageNumber",
+            migrationBuilder.DropColumn(
+                name: "NewznabCategories",
                 table: "Spots");
         }
     }
