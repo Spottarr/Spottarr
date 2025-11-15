@@ -10,4 +10,10 @@ public static class ConfigurationExtensions
         ArgumentNullException.ThrowIfNull(configuration);
         return configuration.GetSection(T.Section).Get<T>()!;
     }
+
+    public static T? GetSectionOrDefault<T>(this IConfiguration configuration) where T : class, IOptionsSection
+    {
+        ArgumentNullException.ThrowIfNull(configuration);
+        return configuration.GetSection(T.Section).Get<T>() ?? null;
+    }
 }
