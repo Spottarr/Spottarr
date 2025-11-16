@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Spottarr.Configuration.Options;
 using Spottarr.Data;
@@ -74,54 +75,63 @@ public class SpotSearchService : ISpotSearchService
 
     private static async Task<(IList<Spot>, int)> ExecuteSearch(IQueryable<Spot> query, SpotSearchFilter filter)
     {
+        var count = await query.CountAsync();
+        if (count == 0) return ([], count);
+
         var spots = await query
             .OrderByDescending(s => s.SpottedAt)
             .Skip(filter.Offset)
             .Take(filter.Limit)
             .ToListAsync();
 
-        var count = await query.CountAsync();
-
         return (spots, count);
     }
 
     private async Task<(IList<Spot>, int)> ExecuteFullTextSearch(IQueryable<Spot> query, SpotSearchFilter filter)
     {
+        var keywords = QueryExclusionParser.Parse(filter.Query, _dbContext.Provider) ?? string.Empty;
+
         // Force inner join on FTS table
         var ftsQuery = query.Join(_dbContext.FtsSpots,
-            spot => spot.Id,
-            fts => fts.SpotId,
-            (spot, fts) => new SpotWithFts
-            {
-                Spot = spot,
-                Fts = fts
-            });
+                spot => spot.Id,
+                fts => fts.SpotId,
+                (spot, fts) => new SpotWithFts
+                {
+                    Spot = spot,
+                    Fts = fts
+                })
+            .Where(Matches(keywords));
 
-        var ftsOrderedQuery = ApplyFullTextSearch(ftsQuery, filter);
+        var count = await ftsQuery.CountAsync();
+        if (count == 0) return ([], count);
 
-        var spots = await ftsOrderedQuery.ThenByDescending(x => x.Spot.SpottedAt)
+        var spots = await ftsQuery
+            .OrderBy(Rank(keywords))
+            .ThenByDescending(x => x.Spot.SpottedAt)
             .Select(x => x.Spot)
             .Skip(filter.Offset)
             .Take(filter.Limit)
             .ToListAsync();
 
-        var count = await ftsQuery.CountAsync();
-
         return (spots, count);
     }
 
-    private IOrderedQueryable<SpotWithFts> ApplyFullTextSearch(IQueryable<SpotWithFts> ftsQuery,
-        SpotSearchFilter filter)
+    private Expression<Func<SpotWithFts, bool>> Matches(string keywords)
     {
-        var keywords = QueryExclusionParser.Parse(filter.Query, _dbContext.Provider) ?? string.Empty;
         return _dbContext.Provider switch
         {
-            DatabaseProvider.Sqlite => ftsQuery
-                .Where(x => x.Fts.Match == keywords)
-                .OrderBy(x => x.Fts.Rank),
-            DatabaseProvider.Postgres => ftsQuery
-                .Where(x => x.Fts.SearchVector.Matches(EF.Functions.ToTsQuery(keywords)))
-                .OrderBy(x => x.Fts.SearchVector.Rank(EF.Functions.ToTsQuery(keywords))),
+            DatabaseProvider.Sqlite => x => x.Fts.Match == keywords,
+            DatabaseProvider.Postgres => x => x.Fts.SearchVector.Matches(EF.Functions.ToTsQuery(keywords)),
+            _ => throw new InvalidOperationException("Unsupported database provider for full text search")
+        };
+    }
+
+    private Expression<Func<SpotWithFts, object?>> Rank(string keywords)
+    {
+        return _dbContext.Provider switch
+        {
+            DatabaseProvider.Sqlite => x => x.Fts.Rank,
+            DatabaseProvider.Postgres => x => x.Fts.SearchVector.Rank(EF.Functions.ToTsQuery(keywords)),
             _ => throw new InvalidOperationException("Unsupported database provider for full text search")
         };
     }
