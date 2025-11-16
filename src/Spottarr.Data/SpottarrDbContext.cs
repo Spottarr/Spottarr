@@ -77,32 +77,32 @@ public class SpottarrDbContext : DbContext, IDataProtectionKeyContext
 
         modelBuilder.Entity<FtsSpot>(x =>
         {
-            const string tableName = "FtsSpots";
-            x.ToTable(tableName);
+            x.HasKey(fts => fts.SpotId);
+            x.HasOne(fts => fts.Spot)
+                .WithOne(p => p.FtsSpot)
+                .HasForeignKey<FtsSpot>(fts => fts.SpotId);
 
             switch (Provider)
             {
                 // Postgres FTS can be indexed on a regular table
                 case DatabaseProvider.Postgres:
-                    x.Ignore(fts => fts.RowId);
                     x.Ignore(fts => fts.Match);
                     x.Ignore(fts => fts.Rank);
 
-                    x.HasOne(fts => fts.Spot)
-                        .WithOne(p => p.FtsSpot)
-                        .HasForeignKey<FtsSpot>(fts => fts.SpotId)
-                        .IsRequired();
+                    // Add the full text index for Postgres
+                    // Using Dutch text search configuration because most spotnet descriptions are in Dutch.
+                    // You can list available configurations with: SELECT cfgname FROM pg_catalog.pg_ts_config;
+                    x.HasGeneratedTsVectorColumn(p => p.SearchVector, "dutch", p => new { p.Title, p.Description })
+                        .HasIndex(p => p.SearchVector)
+                        .HasMethod("GIN");
+
                     break;
                 // Sqlite FTS uses a virtual table with special requirements
                 case DatabaseProvider.Sqlite:
-                    x.Ignore(fts => fts.Id);
-                    x.Ignore(fts => fts.SpotId);
+                    x.Ignore(fts => fts.SearchVector);
 
-                    x.HasKey(fts => fts.RowId);
-                    x.Property(fts => fts.Match).HasColumnName(tableName);
-                    x.HasOne(fts => fts.Spot)
-                        .WithOne(p => p.FtsSpot)
-                        .HasForeignKey<FtsSpot>(fts => fts.RowId);
+                    x.Property(fts => fts.SpotId).HasColumnName("RowId");
+                    x.Property(fts => fts.Match).HasColumnName(x.Metadata.GetTableName());
                     break;
                 default:
                     break;

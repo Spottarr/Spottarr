@@ -87,7 +87,7 @@ internal sealed class SpotReIndexingService : ISpotReIndexingService
 
             var ftsSpot = new FtsSpot
             {
-                RowId = spot.Id,
+                SpotId = spot.Id,
                 Title = FtsTitleParser.Parse(spot.Title),
                 Description = spot.Description
             };
@@ -96,7 +96,7 @@ internal sealed class SpotReIndexingService : ISpotReIndexingService
         }
 
         var fullTextIndexSpotIds = fullTextIndexSpots
-            .Select(s => s.RowId).ToHashSet();
+            .Select(s => s.SpotId).ToHashSet();
 
         try
         {
@@ -104,7 +104,7 @@ internal sealed class SpotReIndexingService : ISpotReIndexingService
 
             // EF does not natively support FTS tables, so we have to delete and re-insert the records in case any already exist
             await _dbContext.FtsSpots
-                .Where(f => fullTextIndexSpotIds.Contains(f.RowId))
+                .Where(f => fullTextIndexSpotIds.Contains(f.SpotId))
                 .ExecuteDeleteAsync(cancellationToken);
 
             await _dbContext.ExecuteBulkInsertAsync(fullTextIndexSpots, cancellationToken: cancellationToken);

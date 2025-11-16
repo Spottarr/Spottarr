@@ -91,7 +91,7 @@ public class SpotSearchService : ISpotSearchService
         // Force inner join on FTS table
         var ftsQuery = query.Join(_dbContext.FtsSpots,
                 spot => spot.Id,
-                fts => fts.RowId,
+                fts => fts.SpotId,
                 (spot, fts) => new
                 {
                     Spot = spot,
