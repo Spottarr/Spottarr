@@ -15,8 +15,7 @@ internal static class DbContextOptionsBuilderExtensions
                 .UseBulkInsertSqlite(),
             DatabaseProvider.Postgres => builder
                 .UseNpgsql(options.ConnectionString, x => x.MigrationsAssembly("Spottarr.Data.PostgreSql"))
-                .UseBulkInsertPostgreSql()
-                .UseSnakeCaseNamingConvention(),
+                .UseBulkInsertPostgreSql(),
             _ => throw new InvalidOperationException("Invalid database provider")
         };
 }

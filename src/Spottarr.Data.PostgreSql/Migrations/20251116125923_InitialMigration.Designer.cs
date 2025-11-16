@@ -13,7 +13,7 @@ using Spottarr.Data;
 namespace Spottarr.Data.PostgreSql.Migrations
 {
     [DbContext(typeof(SpottarrDbContext))]
-    [Migration("20251116103458_InitialMigration")]
+    [Migration("20251116125923_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -30,293 +30,235 @@ namespace Spottarr.Data.PostgreSql.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("FriendlyName")
-                        .HasColumnType("text")
-                        .HasColumnName("friendly_name");
+                        .HasColumnType("text");
 
                     b.Property<string>("Xml")
-                        .HasColumnType("text")
-                        .HasColumnName("xml");
+                        .HasColumnType("text");
 
-                    b.HasKey("Id")
-                        .HasName("pk_data_protection_keys");
+                    b.HasKey("Id");
 
-                    b.ToTable("data_protection_keys", (string)null);
+                    b.ToTable("DataProtectionKeys");
                 });
 
             modelBuilder.Entity("Spottarr.Data.Entities.FtsSpot", b =>
                 {
                     b.Property<int>("SpotId")
-                        .HasColumnType("integer")
-                        .HasColumnName("spot_id");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("description");
+                        .HasColumnType("text");
 
                     b.Property<NpgsqlTsVector>("SearchVector")
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("tsvector")
-                        .HasColumnName("search_vector")
                         .HasAnnotation("Npgsql:TsVectorConfig", "dutch")
                         .HasAnnotation("Npgsql:TsVectorProperties", new[] { "Title", "Description" });
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("title");
+                        .HasColumnType("text");
 
-                    b.HasKey("SpotId")
-                        .HasName("pk_fts_spots");
+                    b.HasKey("SpotId");
 
-                    b.HasIndex("SearchVector")
-                        .HasDatabaseName("ix_fts_spots_search_vector");
+                    b.HasIndex("SearchVector");
 
                     NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("SearchVector"), "GIN");
 
-                    b.ToTable("fts_spots", (string)null);
+                    b.ToTable("FtsSpots");
                 });
 
             modelBuilder.Entity("Spottarr.Data.Entities.Spot", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.PrimitiveCollection<int[]>("ApplicationGenres")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("application_genres");
+                        .HasColumnType("integer[]");
 
                     b.PrimitiveCollection<int[]>("ApplicationPlatforms")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("application_platforms");
+                        .HasColumnType("integer[]");
 
                     b.PrimitiveCollection<int[]>("ApplicationTypes")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("application_types");
+                        .HasColumnType("integer[]");
 
                     b.PrimitiveCollection<int[]>("AudioBitrates")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("audio_bitrates");
+                        .HasColumnType("integer[]");
 
                     b.PrimitiveCollection<int[]>("AudioFormats")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("audio_formats");
+                        .HasColumnType("integer[]");
 
                     b.PrimitiveCollection<int[]>("AudioGenres")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("audio_genres");
+                        .HasColumnType("integer[]");
 
                     b.PrimitiveCollection<int[]>("AudioSources")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("audio_sources");
+                        .HasColumnType("integer[]");
 
                     b.PrimitiveCollection<int[]>("AudioTypes")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("audio_types");
+                        .HasColumnType("integer[]");
 
                     b.Property<long>("Bytes")
-                        .HasColumnType("bigint")
-                        .HasColumnName("bytes");
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text")
-                        .HasColumnName("description");
+                        .HasColumnType("text");
 
                     b.PrimitiveCollection<int[]>("Episodes")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("episodes");
+                        .HasColumnType("integer[]");
 
                     b.Property<string>("Filename")
                         .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("filename");
+                        .HasColumnType("character varying(128)");
 
                     b.PrimitiveCollection<int[]>("GameFormats")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("game_formats");
+                        .HasColumnType("integer[]");
 
                     b.PrimitiveCollection<int[]>("GameGenres")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("game_genres");
+                        .HasColumnType("integer[]");
 
                     b.PrimitiveCollection<int[]>("GamePlatforms")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("game_platforms");
+                        .HasColumnType("integer[]");
 
                     b.PrimitiveCollection<int[]>("GameTypes")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("game_types");
+                        .HasColumnType("integer[]");
 
                     b.PrimitiveCollection<int[]>("ImageFormats")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("image_formats");
+                        .HasColumnType("integer[]");
 
                     b.PrimitiveCollection<int[]>("ImageGenres")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("image_genres");
+                        .HasColumnType("integer[]");
 
                     b.PrimitiveCollection<int[]>("ImageLanguages")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("image_languages");
+                        .HasColumnType("integer[]");
 
                     b.Property<string>("ImageMessageId")
                         .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("image_message_id");
+                        .HasColumnType("character varying(128)");
 
                     b.PrimitiveCollection<int[]>("ImageSources")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("image_sources");
+                        .HasColumnType("integer[]");
 
                     b.PrimitiveCollection<int[]>("ImageTypes")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("image_types");
+                        .HasColumnType("integer[]");
 
                     b.Property<string>("ImdbId")
                         .HasMaxLength(16)
-                        .HasColumnType("character varying(16)")
-                        .HasColumnName("imdb_id");
+                        .HasColumnType("character varying(16)");
 
                     b.Property<DateTime?>("IndexedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("indexed_at");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("MessageId")
                         .IsRequired()
                         .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("message_id");
+                        .HasColumnType("character varying(128)");
 
                     b.Property<long>("MessageNumber")
-                        .HasColumnType("bigint")
-                        .HasColumnName("message_number");
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Newsgroup")
                         .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("newsgroup");
+                        .HasColumnType("character varying(128)");
 
                     b.PrimitiveCollection<int[]>("NewznabCategories")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("newznab_categories");
+                        .HasColumnType("integer[]");
 
                     b.Property<string>("NzbMessageId")
                         .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("nzb_message_id");
+                        .HasColumnType("character varying(128)");
 
                     b.Property<string>("ReleaseTitle")
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)")
-                        .HasColumnName("release_title");
+                        .HasColumnType("character varying(256)");
 
                     b.PrimitiveCollection<int[]>("Seasons")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("seasons");
+                        .HasColumnType("integer[]");
 
                     b.Property<DateTime>("SpottedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("spotted_at");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Spotter")
                         .IsRequired()
                         .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("spotter");
+                        .HasColumnType("character varying(128)");
 
                     b.Property<string>("Tag")
                         .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("tag");
+                        .HasColumnType("character varying(128)");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)")
-                        .HasColumnName("title");
+                        .HasColumnType("character varying(256)");
 
                     b.Property<string>("TvdbId")
                         .HasMaxLength(16)
-                        .HasColumnType("character varying(16)")
-                        .HasColumnName("tvdb_id");
+                        .HasColumnType("character varying(16)");
 
                     b.Property<int>("Type")
-                        .HasColumnType("integer")
-                        .HasColumnName("type");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Url")
                         .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("url");
+                        .HasColumnType("character varying(512)");
 
                     b.PrimitiveCollection<int[]>("Years")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("years");
+                        .HasColumnType("integer[]");
 
-                    b.HasKey("Id")
-                        .HasName("pk_spots");
+                    b.HasKey("Id");
 
                     b.HasIndex("MessageId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_spots_message_id");
+                        .IsUnique();
 
                     b.HasIndex("MessageNumber")
-                        .IsUnique()
-                        .HasDatabaseName("ix_spots_message_number");
+                        .IsUnique();
 
                     b.HasIndex("SpottedAt")
-                        .IsDescending()
-                        .HasDatabaseName("ix_spots_spotted_at");
+                        .IsDescending();
 
                     b.HasIndex("ImdbId", "SpottedAt")
-                        .IsDescending(false, true)
-                        .HasDatabaseName("ix_spots_imdb_id_spotted_at");
+                        .IsDescending(false, true);
 
                     b.HasIndex("TvdbId", "SpottedAt")
-                        .IsDescending(false, true)
-                        .HasDatabaseName("ix_spots_tvdb_id_spotted_at");
+                        .IsDescending(false, true);
 
-                    b.ToTable("spots", (string)null);
+                    b.ToTable("Spots");
                 });
 
             modelBuilder.Entity("Spottarr.Data.Entities.FtsSpot", b =>
@@ -325,8 +267,7 @@ namespace Spottarr.Data.PostgreSql.Migrations
                         .WithOne("FtsSpot")
                         .HasForeignKey("Spottarr.Data.Entities.FtsSpot", "SpotId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_fts_spots_spots_spot_id");
+                        .IsRequired();
 
                     b.Navigation("Spot");
                 });
