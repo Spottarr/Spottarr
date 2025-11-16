@@ -153,7 +153,8 @@ internal sealed class SpotImportService : ISpotImportService
 
             var ftsSpotLookup = spots
                 .Where(s => s.FtsSpot != null)
-                .ToDictionary(s => s.MessageId, s => s.FtsSpot!);
+                .GroupBy(s => s.MessageId)
+                .ToDictionary(g => g.Key, g => g.First().FtsSpot!);
 
             var ftsSpots = new List<FtsSpot>();
             foreach (var insertedSpot in insertedSpots)
