@@ -74,17 +74,15 @@ public class SpotSearchService : ISpotSearchService
 
     private static async Task<(IList<Spot>, int)> ExecuteSearch(IQueryable<Spot> query, SpotSearchFilter filter)
     {
-        var spotTask = query
+        var spots = await query
             .OrderByDescending(s => s.SpottedAt)
             .Skip(filter.Offset)
             .Take(filter.Limit)
             .ToListAsync();
 
-        var countTask = query.CountAsync();
+        var count = await query.CountAsync();
 
-        await Task.WhenAll(spotTask, countTask);
-
-        return (await spotTask, await countTask);
+        return (spots, count);
     }
 
     private async Task<(IList<Spot>, int)> ExecuteFullTextSearch(IQueryable<Spot> query, SpotSearchFilter filter)
