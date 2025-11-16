@@ -159,6 +159,7 @@ internal sealed class SpotImportService : ISpotImportService
             foreach (var insertedSpot in insertedSpots)
             {
                 if (!ftsSpotLookup.TryGetValue(insertedSpot.MessageId, out var ftsSpot)) continue;
+                ftsSpot.SpotId = insertedSpot.Id;
                 ftsSpot.RowId = insertedSpot.Id;
                 ftsSpots.Add(ftsSpot);
             }
