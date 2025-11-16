@@ -13,6 +13,8 @@ ARG BUILD_VERSION=v1.0.0
 WORKDIR /src
 COPY ["src/Spottarr.Web/Spottarr.Web.csproj", "src/Spottarr.Web/"]
 COPY ["src/Spottarr.Data/Spottarr.Data.csproj", "src/Spottarr.Data/"]
+COPY ["src/Spottarr.Data.Sqlite/Spottarr.Data.Sqlite.csproj", "src/Spottarr.Data.Sqlite/"]
+COPY ["src/Spottarr.Data.PostgreSql/Spottarr.Data.PostgreSql.csproj", "src/Spottarr.Data.PostgreSql/"]
 COPY ["src/Spottarr.Services/Spottarr.Services.csproj", "src/Spottarr.Services/"]
 COPY ./appsettings*.json ./
 COPY ./Directory.Build.props ./
