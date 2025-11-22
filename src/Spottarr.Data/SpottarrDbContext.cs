@@ -48,6 +48,7 @@ public class SpottarrDbContext : DbContext, IDataProtectionKeyContext
         modelBuilder.Entity<Spot>(x =>
         {
             x.Property(s => s.Title).HasMaxLength(256);
+            x.Property(s => s.Description).HasMaxLength(Spot.DescriptionMaxLength);
             x.Property(s => s.ReleaseTitle).HasMaxLength(256);
             x.Property(s => s.Spotter).HasMaxLength(128);
             x.Property(s => s.MessageId).HasMaxLength(128);
