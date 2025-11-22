@@ -151,6 +151,7 @@ internal sealed class SpotImportService : ISpotImportService
                 Match = spot => spot.MessageId
             }, cancellationToken);
 
+            // Only Sqlite requires a separate virtual FTS table to enable full-text search
             if (_dbContext.Provider == DatabaseProvider.Sqlite)
             {
                 var ftsSpots = insertedSpots.Select(s => new FtsSpot
