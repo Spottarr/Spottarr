@@ -32,6 +32,8 @@ internal sealed class SpotImportService : ISpotImportService
     private readonly IOptions<SpotnetOptions> _spotnetOptions;
     private readonly INntpClientPool _nntpClientPool;
     private readonly SpottarrDbContext _dbContext;
+    private readonly ParallelOptions _fetchParallelOptions;
+    private readonly ParallelOptions _parseParallelOptions;
 
     public SpotImportService(ILogger<SpotImportService> logger,
         IOptions<UsenetOptions> usenetOptions, IOptions<SpotnetOptions> spotnetOptions,
@@ -42,6 +44,11 @@ internal sealed class SpotImportService : ISpotImportService
         _spotnetOptions = spotnetOptions;
         _nntpClientPool = nntpClientPool;
         _dbContext = dbContext;
+
+        // Limit the number of jobs we run in parallel to the maximum number of connections to prevent waiting for
+        // a connection to become available in the pool
+        _fetchParallelOptions = new() { MaxDegreeOfParallelism = usenetOptions.Value.MaxConnections };
+        _parseParallelOptions = new() { MaxDegreeOfParallelism = 10 };
     }
 
     public async Task<MemoryStream?> RetrieveNzb(int spotId)
@@ -136,10 +143,7 @@ internal sealed class SpotImportService : ISpotImportService
         CancellationToken cancellationToken)
     {
         // Fetch the article headers, we will do this in parallel to speed up the process
-        // Limit the number of jobs we run in parallel to the maximum number of connections to prevent
-        // waiting for a connection to become available in the pool
-        var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = usenetOptions.MaxConnections };
-        await Parallel.ForEachAsync(spots, parallelOptions, GetSpotDetails);
+        await Parallel.ForEachAsync(spots, _fetchParallelOptions, GetSpotDetails);
 
         // Save the fetched articles in bulk.
         try
@@ -320,8 +324,7 @@ internal sealed class SpotImportService : ISpotImportService
 
             // Parallelize to speed up parsing
             var spots = new ConcurrentBag<Spot>();
-            var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 10 };
-            Parallel.ForEach(xOverResponse.Lines, parallelOptions, spot =>
+            Parallel.ForEach(xOverResponse.Lines, _parseParallelOptions, spot =>
                 ParseSpotHeader(spot, spots, options.RetrieveAfter, options.ImportAdultContent)
             );
 
