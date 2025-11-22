@@ -408,10 +408,9 @@ internal sealed class SpotImportService : ISpotImportService
             spot.Filename = spotDetails.Posting.Filename;
             spot.Newsgroup = spotDetails.Posting.Newsgroup;
 
-            var titleAndDescription = string.Join('\n', spot.Title, spot.Description);
-            var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(titleAndDescription);
+            var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(spot.Title, spot.Description);
 
-            spot.ReleaseTitle = ReleaseTitleParser.Parse(titleAndDescription);
+            spot.ReleaseTitle = ReleaseTitleParser.Parse(spot.Title, spot.Description);
             spot.Years.Replace(years);
             spot.Seasons.Replace(seasons);
             spot.Episodes.Replace(episodes);
