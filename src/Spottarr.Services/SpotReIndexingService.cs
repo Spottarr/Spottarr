@@ -58,19 +58,21 @@ internal sealed class SpotReIndexingService : ISpotReIndexingService
 
     private async Task<int> IndexBatch(int batchSize, CancellationToken cancellationToken)
     {
-        var unIndexedSpots = await _dbContext.Spots.Where(s => s.IndexedAt == null)
+        var spots = await _dbContext.Spots.Where(s => s.IndexedAt == null)
             .AsNoTracking()
             .OrderBy(s => s.Id)
             .Take(batchSize)
             .ToListAsync(cancellationToken);
 
-        if (unIndexedSpots.Count == 0) return unIndexedSpots.Count;
+        if (spots.Count == 0) return spots.Count;
 
         var now = DateTimeOffset.Now.UtcDateTime;
-        var fullTextIndexSpots = new List<FtsSpot>();
 
-        foreach (var spot in unIndexedSpots)
+        var spotIds = new HashSet<int>();
+        foreach (var spot in spots)
         {
+            spotIds.Add(spot.Id);
+
             spot.Description = BbCodeParser.Parse(spot.Description);
 
             var titleAndDescription = string.Join('\n', spot.Title, spot.Description);
@@ -84,31 +86,29 @@ internal sealed class SpotReIndexingService : ISpotReIndexingService
             spot.ReleaseTitle = ReleaseTitleParser.Parse(titleAndDescription);
             spot.IndexedAt = now;
             spot.UpdatedAt = now;
-
-            var ftsSpot = new FtsSpot
-            {
-                SpotId = spot.Id,
-                Title = FtsTitleParser.Parse(spot.Title),
-                Description = spot.Description
-            };
-
-            fullTextIndexSpots.Add(ftsSpot);
         }
-
-        var fullTextIndexSpotIds = fullTextIndexSpots
-            .Select(s => s.SpotId).ToHashSet();
 
         try
         {
             await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
 
-            // EF does not natively support FTS tables, so we have to delete and re-insert the records in case any already exist
-            await _dbContext.FtsSpots
-                .Where(f => fullTextIndexSpotIds.Contains(f.SpotId))
-                .ExecuteDeleteAsync(cancellationToken);
+            if (_dbContext.Provider == DatabaseProvider.Sqlite)
+            {
+                // EF does not natively support FTS tables, so we have to delete and re-insert the records in case any already exist
+                await _dbContext.FtsSpots
+                    .Where(f => spotIds.Contains(f.SpotId))
+                    .ExecuteDeleteAsync(cancellationToken);
 
-            await _dbContext.ExecuteBulkInsertAsync(fullTextIndexSpots, cancellationToken: cancellationToken);
-            await _dbContext.ExecuteBulkInsertAsync(unIndexedSpots, new OnConflictOptions<Spot>
+                var ftsSpots = spots.Select(s => new FtsSpot
+                {
+                    Title = s.Title,
+                    Description = s.Description ?? string.Empty
+                });
+
+                await _dbContext.ExecuteBulkInsertAsync(ftsSpots, cancellationToken: cancellationToken);
+            }
+
+            await _dbContext.ExecuteBulkInsertAsync(spots, new OnConflictOptions<Spot>
             {
                 Update = (existing, inserted) => new Spot
                 {
@@ -130,6 +130,6 @@ internal sealed class SpotReIndexingService : ISpotReIndexingService
             _logger.FailedToSaveSpots(ex);
         }
 
-        return unIndexedSpots.Count;
+        return spots.Count;
     }
 }
