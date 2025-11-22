@@ -4,7 +4,13 @@
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="PhenX.EntityFrameworkCore.BulkInsert.PostgreSql" />
     <PackageReference Include="PhenX.EntityFrameworkCore.BulkInsert.Sqlite" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Spottarr.Configuration\Spottarr.Configuration.csproj" />
   </ItemGroup>
 
 </Project>

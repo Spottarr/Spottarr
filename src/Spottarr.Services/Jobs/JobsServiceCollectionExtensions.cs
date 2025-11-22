@@ -1,7 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
-using Spottarr.Services.Configuration;
+using Spottarr.Configuration.Helpers;
+using Spottarr.Configuration.Options;
 
 namespace Spottarr.Services.Jobs;
 
@@ -11,7 +12,7 @@ internal static class JobsServiceCollectionExtensions
         bool start) =>
         services.AddQuartz(c =>
             {
-                var config = configuration.GetSection(SpotnetOptions.Section).Get<SpotnetOptions>();
+                var config = configuration.GetSectionOrDefault<SpotnetOptions>();
                 if (config == null) return;
 
                 c.SchedulerName = "Spottarr Scheduler";

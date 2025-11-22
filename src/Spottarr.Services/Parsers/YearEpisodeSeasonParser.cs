@@ -15,14 +15,24 @@ internal static partial class YearEpisodeSeasonParser
     /// A set with all occuring season values
     /// A set with all occuring episode values
     /// </returns>
-    public static (HashSet<int> Years, HashSet<int> Seasons, HashSet<int> Episodes) Parse(string text)
+    public static (HashSet<int> Years, HashSet<int> Seasons, HashSet<int> Episodes) Parse(string title,
+        string description)
     {
-        var matches = YearEpisodeSeasonRegex().Matches(text);
-
         var years = new HashSet<int>();
         var seasons = new HashSet<int>();
         var episodes = new HashSet<int>();
 
+        Parse(title, years, seasons, episodes);
+        Parse(description, years, seasons, episodes);
+
+        return (years, seasons, episodes);
+    }
+
+    private static void Parse(string text, HashSet<int> years, HashSet<int> seasons, HashSet<int> episodes)
+    {
+        if (string.IsNullOrEmpty(text)) return;
+
+        var matches = YearEpisodeSeasonRegex().Matches(text);
         foreach (Match match in matches)
         {
             years.UnionWith(match.Groups["year"].Captures
@@ -41,8 +51,6 @@ internal static partial class YearEpisodeSeasonParser
             episodes.UnionWith(match.Groups["eshort"].Captures
                 .Select(c => int.Parse(c.Value, CultureInfo.InvariantCulture)));
         }
-
-        return (years, seasons, episodes);
     }
 
     [GeneratedRegex(

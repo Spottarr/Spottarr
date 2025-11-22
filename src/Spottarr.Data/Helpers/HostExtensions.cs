@@ -15,7 +15,7 @@ public static class HostExtensions
         await using var scope = host.Services.CreateAsyncScope();
 
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<IHost>>();
-        logger.DatabaseMigrationStarted(DbPathHelper.GetDbPath());
+        logger.DatabaseMigrationStarted();
         var dbContext = scope.ServiceProvider.GetRequiredService<SpottarrDbContext>();
         await dbContext.Database.MigrateAsync();
         logger.DatabaseMigrationFinished();

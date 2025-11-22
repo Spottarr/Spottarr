@@ -5,9 +5,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PhenX.EntityFrameworkCore.BulkInsert.Extensions;
 using PhenX.EntityFrameworkCore.BulkInsert.Options;
+using Spottarr.Configuration.Options;
 using Spottarr.Data;
 using Spottarr.Data.Entities;
-using Spottarr.Services.Configuration;
 using Spottarr.Services.Contracts;
 using Spottarr.Services.Helpers;
 using Spottarr.Services.Logging;
@@ -32,6 +32,8 @@ internal sealed class SpotImportService : ISpotImportService
     private readonly IOptions<SpotnetOptions> _spotnetOptions;
     private readonly INntpClientPool _nntpClientPool;
     private readonly SpottarrDbContext _dbContext;
+    private readonly ParallelOptions _fetchParallelOptions;
+    private readonly ParallelOptions _parseParallelOptions;
 
     public SpotImportService(ILogger<SpotImportService> logger,
         IOptions<UsenetOptions> usenetOptions, IOptions<SpotnetOptions> spotnetOptions,
@@ -42,6 +44,11 @@ internal sealed class SpotImportService : ISpotImportService
         _spotnetOptions = spotnetOptions;
         _nntpClientPool = nntpClientPool;
         _dbContext = dbContext;
+
+        // Limit the number of jobs we run in parallel to the maximum number of connections to prevent waiting for
+        // a connection to become available in the pool
+        _fetchParallelOptions = new() { MaxDegreeOfParallelism = usenetOptions.Value.MaxConnections };
+        _parseParallelOptions = new() { MaxDegreeOfParallelism = 10 };
     }
 
     public async Task<MemoryStream?> RetrieveNzb(int spotId)
@@ -136,10 +143,7 @@ internal sealed class SpotImportService : ISpotImportService
         CancellationToken cancellationToken)
     {
         // Fetch the article headers, we will do this in parallel to speed up the process
-        // Limit the number of jobs we run in parallel to the maximum number of connections to prevent
-        // waiting for a connection to become available in the pool
-        var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = usenetOptions.MaxConnections };
-        await Parallel.ForEachAsync(spots, parallelOptions, GetSpotDetails);
+        await Parallel.ForEachAsync(spots, _fetchParallelOptions, GetSpotDetails);
 
         // Save the fetched articles in bulk.
         try
@@ -151,19 +155,17 @@ internal sealed class SpotImportService : ISpotImportService
                 Match = spot => spot.MessageId
             }, cancellationToken);
 
-            var ftsSpotLookup = spots
-                .Where(s => s.FtsSpot != null)
-                .ToDictionary(s => s.MessageId, s => s.FtsSpot!);
-
-            var ftsSpots = new List<FtsSpot>();
-            foreach (var insertedSpot in insertedSpots)
+            // Only Sqlite requires a separate virtual FTS table to enable full-text search
+            if (_dbContext.Provider == DatabaseProvider.Sqlite)
             {
-                if (!ftsSpotLookup.TryGetValue(insertedSpot.MessageId, out var ftsSpot)) continue;
-                ftsSpot.RowId = insertedSpot.Id;
-                ftsSpots.Add(ftsSpot);
-            }
+                var ftsSpots = insertedSpots.Select(s => new FtsSpot
+                {
+                    Title = s.Title,
+                    Description = s.Description ?? string.Empty
+                });
 
-            await _dbContext.ExecuteBulkInsertAsync(ftsSpots, cancellationToken: cancellationToken);
+                await _dbContext.ExecuteBulkInsertAsync(ftsSpots, cancellationToken: cancellationToken);
+            }
 
             await transaction.CommitAsync(cancellationToken);
         }
@@ -322,8 +324,7 @@ internal sealed class SpotImportService : ISpotImportService
 
             // Parallelize to speed up parsing
             var spots = new ConcurrentBag<Spot>();
-            var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 10 };
-            Parallel.ForEach(xOverResponse.Lines, parallelOptions, spot =>
+            Parallel.ForEach(xOverResponse.Lines, _parseParallelOptions, spot =>
                 ParseSpotHeader(spot, spots, options.RetrieveAfter, options.ImportAdultContent)
             );
 
@@ -410,21 +411,15 @@ internal sealed class SpotImportService : ISpotImportService
             spot.Filename = spotDetails.Posting.Filename;
             spot.Newsgroup = spotDetails.Posting.Newsgroup;
 
-            var titleAndDescription = string.Join('\n', spot.Title, spot.Description);
-            var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(titleAndDescription);
+            var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(spot.Title, spot.Description);
 
-            spot.ReleaseTitle = ReleaseTitleParser.Parse(titleAndDescription);
+            spot.ReleaseTitle = ReleaseTitleParser.Parse(spot.Title, spot.Description);
             spot.Years.Replace(years);
             spot.Seasons.Replace(seasons);
             spot.Episodes.Replace(episodes);
             spot.NewznabCategories.Replace(NewznabCategoryMapper.Map(spot));
             spot.ImdbId = ImdbIdParser.Parse(spot.Url);
             spot.IndexedAt = DateTimeOffset.Now.UtcDateTime;
-            spot.FtsSpot = new FtsSpot
-            {
-                Title = FtsTitleParser.Parse(spot.Title),
-                Description = spot.Description
-            };
         }
         catch (InvalidOperationException ex)
         {
