@@ -151,20 +151,16 @@ internal sealed class SpotImportService : ISpotImportService
                 Match = spot => spot.MessageId
             }, cancellationToken);
 
-            var ftsSpotLookup = spots
-                .Where(s => s.FtsSpot != null)
-                .GroupBy(s => s.MessageId)
-                .ToDictionary(g => g.Key, g => g.First().FtsSpot!);
-
-            var ftsSpots = new List<FtsSpot>();
-            foreach (var insertedSpot in insertedSpots)
+            if (_dbContext.Provider == DatabaseProvider.Sqlite)
             {
-                if (!ftsSpotLookup.TryGetValue(insertedSpot.MessageId, out var ftsSpot)) continue;
-                ftsSpot.SpotId = insertedSpot.Id;
-                ftsSpots.Add(ftsSpot);
-            }
+                var ftsSpots = insertedSpots.Select(s => new FtsSpot
+                {
+                    Title = s.Title,
+                    Description = s.Description ?? string.Empty
+                });
 
-            await _dbContext.ExecuteBulkInsertAsync(ftsSpots, cancellationToken: cancellationToken);
+                await _dbContext.ExecuteBulkInsertAsync(ftsSpots, cancellationToken: cancellationToken);
+            }
 
             await transaction.CommitAsync(cancellationToken);
         }
@@ -421,11 +417,6 @@ internal sealed class SpotImportService : ISpotImportService
             spot.NewznabCategories.Replace(NewznabCategoryMapper.Map(spot));
             spot.ImdbId = ImdbIdParser.Parse(spot.Url);
             spot.IndexedAt = DateTimeOffset.Now.UtcDateTime;
-            spot.FtsSpot = new FtsSpot
-            {
-                Title = spot.Title,
-                Description = spot.Description
-            };
         }
         catch (InvalidOperationException ex)
         {
