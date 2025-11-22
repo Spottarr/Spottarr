@@ -73,40 +73,42 @@ public class SpottarrDbContext : DbContext, IDataProtectionKeyContext
             x.HasIndex(s => s.SpottedAt).IsDescending(true);
             x.HasIndex(s => new { s.ImdbId, s.SpottedAt }).IsDescending(false, true);
             x.HasIndex(s => new { s.TvdbId, s.SpottedAt }).IsDescending(false, true);
-        });
 
-        modelBuilder.Entity<FtsSpot>(x =>
-        {
-            x.HasKey(fts => fts.SpotId);
-            x.HasOne(fts => fts.Spot)
-                .WithOne(p => p.FtsSpot)
-                .HasForeignKey<FtsSpot>(fts => fts.SpotId);
-
+            // Postgres FTS just needs an index on the spots table
             switch (Provider)
             {
-                // Postgres FTS can be indexed on a regular table
                 case DatabaseProvider.Postgres:
-                    x.Ignore(fts => fts.Match);
-                    x.Ignore(fts => fts.Rank);
-
                     // Add the full text index for Postgres
                     // Using Dutch text search configuration because most spotnet descriptions are in Dutch.
                     // You can list available configurations with: SELECT cfgname FROM pg_catalog.pg_ts_config;
                     x.HasGeneratedTsVectorColumn(p => p.SearchVector, "dutch", p => new { p.Title, p.Description })
                         .HasIndex(p => p.SearchVector)
                         .HasMethod("GIN");
-
                     break;
-                // Sqlite FTS uses a virtual table with special requirements
                 case DatabaseProvider.Sqlite:
                     x.Ignore(fts => fts.SearchVector);
-
-                    x.Property(fts => fts.SpotId).HasColumnName("RowId");
-                    x.Property(fts => fts.Match).HasColumnName(x.Metadata.GetTableName());
-                    break;
-                default:
                     break;
             }
         });
+
+        // Sqlite FTS uses a virtual table that we need to map separately
+        // See: https://www.bricelam.net/2020/08/08/sqlite-fts-and-efcore.html
+        switch (Provider)
+        {
+            case DatabaseProvider.Postgres:
+                modelBuilder.Ignore<FtsSpot>();
+                break;
+            case DatabaseProvider.Sqlite:
+                modelBuilder.Entity<FtsSpot>(x =>
+                {
+                    x.HasKey(fts => fts.SpotId);
+                    x.HasOne(fts => fts.Spot)
+                        .WithOne(p => p.FtsSpot)
+                        .HasForeignKey<FtsSpot>(fts => fts.SpotId);
+                    x.Property(fts => fts.SpotId).HasColumnName("RowId");
+                    x.Property(fts => fts.Match).HasColumnName(x.Metadata.GetTableName());
+                });
+                break;
+        }
     }
 }
