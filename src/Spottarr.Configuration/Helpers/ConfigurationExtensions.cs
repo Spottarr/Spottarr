@@ -14,6 +14,6 @@ public static class ConfigurationExtensions
     public static T? GetSectionOrDefault<T>(this IConfiguration configuration) where T : class, IOptionsSection
     {
         ArgumentNullException.ThrowIfNull(configuration);
-        return configuration.GetSection(T.Section).Get<T>() ?? null;
+        return configuration.GetSection(T.Section).Get<T>();
     }
 }
