@@ -73,8 +73,6 @@ jobs:
         --report-github-summary-include-skipped=true
         --collect "XPlat Code Coverage"
         --results-directory ./tests/coverage
-        --
-        RunConfiguration.CollectSourceInformation=true
         && mkdir -p ./tests/report
         && cp $GITHUB_STEP_SUMMARY ./tests/report/results.md
         
