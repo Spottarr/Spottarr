@@ -1,6 +1,6 @@
 using System.Net.Mime;
-using System.Xml;
 using System.Text;
+using System.Xml;
 using Spottarr.Services.Helpers;
 
 namespace Spottarr.Web.EndpointResults;
@@ -38,6 +38,6 @@ internal sealed class XmlResult<T> : IResult where T : IXmlWritable
         ms.Position = 0;
 
         httpContext.Response.ContentType = MediaTypeNames.Application.Xml;
-        await ms.CopyToAsync(httpContext.Response.Body);
+        await ms.CopyToAsync(httpContext.Response.Body, httpContext.RequestAborted);
     }
 }

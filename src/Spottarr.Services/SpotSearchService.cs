@@ -14,7 +14,7 @@ public class SpotSearchService : ISpotSearchService
 
     public SpotSearchService(SpottarrDbContext dbContext) => _dbContext = dbContext;
 
-    public async Task<SpotSearchResponse> Search(SpotSearchFilter filter)
+    public async Task<SpotSearchResponse> Search(SpotSearchFilter filter, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(filter);
 
@@ -60,8 +60,8 @@ public class SpotSearchService : ISpotSearchService
             query = query.Where(s => s.ImdbId == filter.ImdbId);
 
         var (spots, totalCount) = !string.IsNullOrEmpty(filter.Query)
-            ? await ExecuteFullTextSearch(query, filter)
-            : await ExecuteSearch(query, filter);
+            ? await ExecuteFullTextSearch(query, filter, cancellationToken)
+            : await ExecuteSearch(query, filter, cancellationToken);
 
         return new SpotSearchResponse()
         {
@@ -70,37 +70,39 @@ public class SpotSearchService : ISpotSearchService
         };
     }
 
-    public Task<int> Count() => _dbContext.Spots.CountAsync();
+    public Task<int> Count(CancellationToken cancellationToken) => _dbContext.Spots.CountAsync(cancellationToken);
 
-    private static async Task<(IList<Spot>, int)> ExecuteSearch(IQueryable<Spot> query, SpotSearchFilter filter)
+    private static async Task<(IList<Spot>, int)> ExecuteSearch(IQueryable<Spot> query, SpotSearchFilter filter,
+        CancellationToken cancellationToken)
     {
-        var count = await query.CountAsync();
+        var count = await query.CountAsync(cancellationToken);
         if (count == 0) return ([], count);
 
         var spots = await query
             .OrderByDescending(s => s.SpottedAt)
             .Skip(filter.Offset)
             .Take(filter.Limit)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         return (spots, count);
     }
 
-    private Task<(IList<Spot> Spots, int Count)> ExecuteFullTextSearch(IQueryable<Spot> query, SpotSearchFilter filter)
+    private Task<(IList<Spot> Spots, int Count)> ExecuteFullTextSearch(IQueryable<Spot> query, SpotSearchFilter filter,
+        CancellationToken cancellationToken)
     {
         var keywords = QueryExclusionParser.Parse(filter.Query, _dbContext.Provider) ?? string.Empty;
 
         return _dbContext.Provider switch
         {
-            DatabaseProvider.Sqlite => ExecuteFullTextSearchSqlite(query, filter, keywords),
-            DatabaseProvider.Postgres => ExecuteFullTextSearchPostgres(query, filter, keywords),
+            DatabaseProvider.Sqlite => ExecuteFullTextSearchSqlite(query, filter, keywords, cancellationToken),
+            DatabaseProvider.Postgres => ExecuteFullTextSearchPostgres(query, filter, keywords, cancellationToken),
             _ => throw new InvalidOperationException(
                 $"Database provider '{_dbContext.Provider}' is not supported for full-text search.")
         };
     }
 
     private async Task<(IList<Spot> Spots, int Count)> ExecuteFullTextSearchSqlite(IQueryable<Spot> query,
-        SpotSearchFilter filter, string keywords)
+        SpotSearchFilter filter, string keywords, CancellationToken cancellationToken)
     {
         // Force inner join on FTS table
         var ftsQuery = query.Join(_dbContext.FtsSpots,
@@ -113,7 +115,7 @@ public class SpotSearchService : ISpotSearchService
                 })
             .Where(x => x.Fts.Match == keywords);
 
-        var count = await ftsQuery.CountAsync();
+        var count = await ftsQuery.CountAsync(cancellationToken);
         if (count == 0) return ([], count);
 
         var spots = await ftsQuery
@@ -122,17 +124,17 @@ public class SpotSearchService : ISpotSearchService
             .Select(x => x.Spot)
             .Skip(filter.Offset)
             .Take(filter.Limit)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         return (spots, count);
     }
 
     private static async Task<(IList<Spot> Spots, int Count)> ExecuteFullTextSearchPostgres(IQueryable<Spot> query,
-        SpotSearchFilter filter, string keywords)
+        SpotSearchFilter filter, string keywords, CancellationToken cancellationToken)
     {
         var ftsQuery = query.Where(s => s.SearchVector.Matches(EF.Functions.ToTsQuery(keywords)));
 
-        var count = await ftsQuery.CountAsync();
+        var count = await ftsQuery.CountAsync(cancellationToken);
         if (count == 0) return ([], count);
 
         var spots = await ftsQuery
@@ -140,7 +142,7 @@ public class SpotSearchService : ISpotSearchService
             .ThenByDescending(s => s.SpottedAt)
             .Skip(filter.Offset)
             .Take(filter.Limit)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         return (spots, count);
     }

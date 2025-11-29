@@ -30,7 +30,7 @@ public class SpotnetXmlParserTests
                            </Spotnet>
                            """;
 
-        var parsed = await SpotnetXmlParser.Parse(xml);
+        var parsed = await SpotnetXmlParser.Parse(xml, TestContext.Current.CancellationToken);
         Assert.False(parsed.HasError);
         var result = parsed.Result;
 
@@ -70,7 +70,7 @@ public class SpotnetXmlParserTests
                            </Spotnet>
                            """;
 
-        var parsed = await SpotnetXmlParser.Parse(xml);
+        var parsed = await SpotnetXmlParser.Parse(xml, TestContext.Current.CancellationToken);
         Assert.False(parsed.HasError);
         var result = parsed.Result;
 
@@ -114,7 +114,7 @@ public class SpotnetXmlParserTests
                            </Spotnet>
                            """;
 
-        var parsed = await SpotnetXmlParser.Parse(xml);
+        var parsed = await SpotnetXmlParser.Parse(xml, TestContext.Current.CancellationToken);
         Assert.False(parsed.HasError);
         var result = parsed.Result;
 
@@ -151,7 +151,7 @@ public class SpotnetXmlParserTests
                            </Spotnet>
                            """;
 
-        var parsed = await SpotnetXmlParser.Parse(xml);
+        var parsed = await SpotnetXmlParser.Parse(xml, TestContext.Current.CancellationToken);
         Assert.False(parsed.HasError);
         var result = parsed.Result;
 
@@ -189,7 +189,7 @@ public class SpotnetXmlParserTests
                            </Spotnet>
                            """;
 
-        var parsed = await SpotnetXmlParser.Parse(xml);
+        var parsed = await SpotnetXmlParser.Parse(xml, TestContext.Current.CancellationToken);
         Assert.False(parsed.HasError);
         var result = parsed.Result;
 
@@ -226,7 +226,7 @@ public class SpotnetXmlParserTests
                            </Spotnet>
                            """;
 
-        var parsed = await SpotnetXmlParser.Parse(xml);
+        var parsed = await SpotnetXmlParser.Parse(xml, TestContext.Current.CancellationToken);
         Assert.False(parsed.HasError);
         var result = parsed.Result;
 
@@ -265,7 +265,7 @@ public class SpotnetXmlParserTests
                            """;
 
         var lines = xml.Split("\n", StringSplitOptions.RemoveEmptyEntries).ToList();
-        var parsed = await SpotnetXmlParser.Parse(lines);
+        var parsed = await SpotnetXmlParser.Parse(lines, TestContext.Current.CancellationToken);
         Assert.False(parsed.HasError);
         var result = parsed.Result;
 

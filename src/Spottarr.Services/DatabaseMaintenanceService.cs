@@ -25,10 +25,10 @@ internal class DatabaseMaintenanceService : IDatabaseMaintenanceService
         _logger.DatabaseOptimizationStarted(DateTimeOffset.Now);
 
         // Run SQLite vacuum command to shrink the database file size
-        await _dbContext.Database.Vacuum();
+        await _dbContext.Database.Vacuum(cancellationToken);
 
         // Run SQLite analyze command to update the statistics for the database
-        await _dbContext.Database.Analyze();
+        await _dbContext.Database.Analyze(cancellationToken);
 
         _logger.DatabaseOptimizationFinished(DateTimeOffset.Now);
     }

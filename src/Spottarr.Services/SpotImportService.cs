@@ -28,25 +28,20 @@ namespace Spottarr.Services;
 internal sealed class SpotImportService : ISpotImportService
 {
     private readonly ILogger<SpotImportService> _logger;
+    private readonly IOptions<UsenetOptions> _usenetOptions;
     private readonly IOptions<SpotnetOptions> _spotnetOptions;
     private readonly INntpClientPool _nntpClientPool;
     private readonly IDbContextFactory<SpottarrDbContext> _dbContextFactory;
-    private readonly ParallelOptions _fetchParallelOptions;
-    private readonly ParallelOptions _parseParallelOptions;
 
     public SpotImportService(ILogger<SpotImportService> logger,
         IOptions<UsenetOptions> usenetOptions, IOptions<SpotnetOptions> spotnetOptions,
         INntpClientPool nntpClientPool, IDbContextFactory<SpottarrDbContext> dbContextFactory)
     {
         _logger = logger;
+        _usenetOptions = usenetOptions;
         _spotnetOptions = spotnetOptions;
         _nntpClientPool = nntpClientPool;
         _dbContextFactory = dbContextFactory;
-
-        // Limit the number of jobs we run in parallel to the maximum number of connections to prevent waiting for
-        // a connection to become available in the pool
-        _fetchParallelOptions = new() { MaxDegreeOfParallelism = usenetOptions.Value.MaxConnections };
-        _parseParallelOptions = new() { MaxDegreeOfParallelism = 10 };
     }
 
     public async Task<MemoryStream?> RetrieveNzb(int spotId, CancellationToken cancellationToken)
@@ -70,7 +65,7 @@ internal sealed class SpotImportService : ISpotImportService
             }
 
             var nzbData = string.Concat(nzbArticleResponse.Article.Body);
-            return await NzbArticleParser.Parse(nzbData);
+            return await NzbArticleParser.Parse(nzbData, cancellationToken);
         }
         catch (NntpException ex)
         {
@@ -90,7 +85,7 @@ internal sealed class SpotImportService : ISpotImportService
 
         var spotnetOptions = _spotnetOptions.Value;
 
-        var group = await GetGroup(spotnetOptions.SpotGroup);
+        var group = await GetGroup(spotnetOptions.SpotGroup, cancellationToken);
         if (group == null) return;
 
         var articleRanges = await GetArticleRangesToImport(spotnetOptions, group, cancellationToken);
@@ -110,14 +105,14 @@ internal sealed class SpotImportService : ISpotImportService
         {
             _logger.SpotImportBatchStarted(i + 1, articleRanges.Count, DateTimeOffset.Now);
 
-            var spots = await FetchSpotHeaders(spotnetOptions, articleRanges[i]);
+            var spots = await FetchSpotHeaders(spotnetOptions, articleRanges[i], cancellationToken);
             if (spots.Count > 0) await FetchAndSaveSpots(spots, cancellationToken);
 
             _logger.SpotImportBatchFinished(i + 1, articleRanges.Count, DateTimeOffset.Now, spots.Count);
         }
     }
 
-    private async Task<NntpGroup?> GetGroup(string group)
+    private async Task<NntpGroup?> GetGroup(string group, CancellationToken cancellationToken)
     {
         try
         {
@@ -139,8 +134,16 @@ internal sealed class SpotImportService : ISpotImportService
 
     private async Task FetchAndSaveSpots(IReadOnlyList<Spot> spots, CancellationToken cancellationToken)
     {
+        // Limit the number of jobs we run in parallel to the maximum number of connections to prevent waiting for
+        // a connection to become available in the pool
+        var parallelOptions = new ParallelOptions
+        {
+            MaxDegreeOfParallelism = _usenetOptions.Value.MaxConnections,
+            CancellationToken = cancellationToken
+        };
+
         // Fetch the article headers, we will do this in parallel to speed up the process
-        await Parallel.ForEachAsync(spots, _fetchParallelOptions, GetSpotDetails);
+        await Parallel.ForEachAsync(spots, parallelOptions, GetSpotDetails);
 
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
@@ -189,8 +192,9 @@ internal sealed class SpotImportService : ISpotImportService
     /// etc.
     /// </example>
     /// <param name="options"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    private async Task<long> GetArticleNumberByDate(SpotnetOptions options)
+    private async Task<long> GetArticleNumberByDate(SpotnetOptions options, CancellationToken cancellationToken)
     {
         var articleNumber = 0L;
         var attempts = 0;
@@ -293,7 +297,7 @@ internal sealed class SpotImportService : ISpotImportService
 
         // No imports yet, determine the article number closest to the given retrieve after date
         var lowWaterMark = lastImportedMessage == 0
-            ? await GetArticleNumberByDate(spotnetOptions)
+            ? await GetArticleNumberByDate(spotnetOptions, cancellationToken)
             : Math.Max(lastImportedMessage + 1, group.LowWaterMark);
 
         return lowWaterMark <= group.HighWaterMark
@@ -301,7 +305,8 @@ internal sealed class SpotImportService : ISpotImportService
             : [];
     }
 
-    private async Task<IReadOnlyList<Spot>> FetchSpotHeaders(SpotnetOptions options, NntpArticleRange batch)
+    private async Task<IReadOnlyList<Spot>> FetchSpotHeaders(SpotnetOptions options, NntpArticleRange batch,
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -324,7 +329,13 @@ internal sealed class SpotImportService : ISpotImportService
 
             // Parallelize to speed up parsing
             var spots = new ConcurrentBag<Spot>();
-            Parallel.ForEach(xOverResponse.Lines, _parseParallelOptions, spot =>
+            var parallelOptions = new ParallelOptions
+            {
+                MaxDegreeOfParallelism = 10,
+                CancellationToken = cancellationToken
+            };
+
+            Parallel.ForEach(xOverResponse.Lines, parallelOptions, spot =>
                 ParseSpotHeader(spot, spots, options.RetrieveAfter, options.ImportAdultContent)
             );
 
@@ -370,7 +381,7 @@ internal sealed class SpotImportService : ISpotImportService
         spots.Add(spot);
     }
 
-    private async ValueTask GetSpotDetails(Spot spot, CancellationToken ct)
+    private async ValueTask GetSpotDetails(Spot spot, CancellationToken cancellationToken)
     {
         try
         {
@@ -394,7 +405,7 @@ internal sealed class SpotImportService : ISpotImportService
                 return;
             }
 
-            var result = await SpotnetXmlParser.Parse(spotnetXmlValues);
+            var result = await SpotnetXmlParser.Parse(spotnetXmlValues, cancellationToken);
             if (result.HasError)
             {
                 _logger.ArticleContainsInvalidSpotXmlHeader(spot.MessageId, result.Error);
