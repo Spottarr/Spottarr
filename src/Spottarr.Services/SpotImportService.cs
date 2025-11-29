@@ -49,10 +49,10 @@ internal sealed class SpotImportService : ISpotImportService
         _parseParallelOptions = new() { MaxDegreeOfParallelism = 10 };
     }
 
-    public async Task<MemoryStream?> RetrieveNzb(int spotId)
+    public async Task<MemoryStream?> RetrieveNzb(int spotId, CancellationToken cancellationToken)
     {
-        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-        var spot = await dbContext.Spots.FirstOrDefaultAsync(s => s.Id == spotId);
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+        var spot = await dbContext.Spots.FirstOrDefaultAsync(s => s.Id == spotId, cancellationToken);
         if (spot == null || string.IsNullOrEmpty(spot.NzbMessageId))
             return null;
 
@@ -79,7 +79,7 @@ internal sealed class SpotImportService : ISpotImportService
         }
     }
 
-    public Task<MemoryStream?> RetrieveImage(int spotId)
+    public Task<MemoryStream?> RetrieveImage(int spotId, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
