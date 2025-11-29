@@ -8,7 +8,7 @@ namespace Spottarr.Data.Helpers;
 
 public static class HostExtensions
 {
-    public static async Task MigrateDatabase(this IHost host)
+    public static async Task MigrateDatabase(this IHost host, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(host);
 
@@ -17,7 +17,7 @@ public static class HostExtensions
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<IHost>>();
         logger.DatabaseMigrationStarted();
         var dbContext = scope.ServiceProvider.GetRequiredService<SpottarrDbContext>();
-        await dbContext.Database.MigrateAsync();
+        await dbContext.Database.MigrateAsync(cancellationToken);
         logger.DatabaseMigrationFinished();
     }
 }

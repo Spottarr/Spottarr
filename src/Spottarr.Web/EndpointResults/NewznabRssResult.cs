@@ -32,6 +32,6 @@ internal sealed class NewznabRssResult : IResult
         ms.Position = 0;
 
         httpContext.Response.ContentType = MediaTypeNames.Application.Xml;
-        await ms.CopyToAsync(httpContext.Response.Body);
+        await ms.CopyToAsync(httpContext.Response.Body, httpContext.RequestAborted);
     }
 }

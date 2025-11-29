@@ -70,6 +70,7 @@ public static class NewznabEndpoints
         IHostEnvironment env,
         IApplicationVersionService versionService,
         HttpRequest request,
+        CancellationToken cancellationToken,
         [FromQuery(Name = "guid")] int id = 0,
         [FromQuery(Name = "limit")] int limit = DefaultPageSize,
         [FromQuery(Name = "imdbid")] string? imdbId = null,
@@ -103,13 +104,13 @@ public static class NewznabEndpoints
                 : $"tt{imdbId}"
         };
 
-        return ExecuteSearch(filter, spotSearchService, request);
+        return ExecuteSearch(filter, spotSearchService, request, cancellationToken);
     }
 
     private static async Task<IResult> ExecuteSearch(SpotSearchFilter filter, ISpotSearchService spotSearchService,
-        HttpRequest request)
+        HttpRequest request, CancellationToken cancellationToken)
     {
-        var results = await spotSearchService.Search(filter);
+        var results = await spotSearchService.Search(filter, cancellationToken);
         var items = results.Spots
             .Select(s => s.ToSyndicationItem(request.GetDetailsUri(s.Id).Uri, request.GetNzbUri(s.Id).Uri)).ToList();
 

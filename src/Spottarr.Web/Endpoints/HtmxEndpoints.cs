@@ -14,9 +14,10 @@ internal static class HtmxEndpoints
 
     private static void MapStats(this RouteGroupBuilder group) =>
         group.MapGet("/stats",
-            async (ISpotSearchService spotSearchService, IApplicationVersionService versionService) =>
+            async (ISpotSearchService spotSearchService, IApplicationVersionService versionService,
+                CancellationToken cancellationToken) =>
             {
-                var totalCount = await spotSearchService.Count();
+                var totalCount = await spotSearchService.Count(cancellationToken);
                 var version = versionService.Version.Split('+').FirstOrDefault();
 
                 return new HtmlResult($"""

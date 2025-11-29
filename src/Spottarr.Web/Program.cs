@@ -16,8 +16,9 @@ builder.Services.AddSpottarrWeb(builder.Environment);
 builder.WebHost.UseStaticWebAssets();
 
 var app = builder.Build();
+var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
 
-await app.MigrateDatabase();
+await app.MigrateDatabase(lifetime.ApplicationStopping);
 
 app.MapHealthChecks("/healthz");
 app.MapStaticAssets();
@@ -34,4 +35,4 @@ app.UseRouting();
 app.UseCors();
 app.UseAntiforgery();
 
-await app.RunAsync();
+await app.RunAsync(lifetime.ApplicationStopping);

@@ -13,10 +13,11 @@ builder.Services.AddSpottarrServices(builder.Configuration, false);
 
 var app = builder.Build();
 
-await app.MigrateDatabase();
+var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+await app.MigrateDatabase(lifetime.ApplicationStopping);
 
 var schedulerFactory = app.Services.GetRequiredService<ISchedulerFactory>();
 var scheduler = await schedulerFactory.GetScheduler();
-await scheduler.TriggerJob(JobKeys.ImportSpots);
+await scheduler.TriggerJob(JobKeys.ImportSpots, lifetime.ApplicationStopping);
 
-await app.RunAsync();
+await app.RunAsync(lifetime.ApplicationStopping);
