@@ -9,14 +9,6 @@ Spottarr is a small application that can index the spotnet messages (spots) and 
 
 Using Spottarr it becomes very easy to search spots directly from Radarr, Sonarr, Readarr, Lidarr, Prowlarr and many other newznab compatible tools. 
 
-
-## Motivation
-Spotnet provides a great decentralized source for Usenet indexing, but most existing clients are no longer maintained desktop applications, or building on top of a relatively outdated codebase.
-
-While some alternatives like [Spotweb](https://github.com/spotweb/spotweb) are still very much alive, I've personally had some issues matching the search results when searching from *Arrs.
-
-The aim of Spottarr is to provide a more modern application that aims for efficiency and more precise search results, while leaving the media management and browsing to the existing *Arrs.
-
 ## Installing and running
 Spottarr can easily be integrated in your existing *Arrs using docker compose:
 ```yaml
@@ -71,9 +63,37 @@ After starting Spottarr, it can easily be connected to the *Arr of your choice:
 
 **Note** Spottarr does not require an API key, anyone with access to your Spottarr instance can perform searches on it.
 
+## Postgres support
+
+> [!WARNING]
+> Postgres support is considered experimental at this time.
+> No migration path is provided from SQLite to Postgres, you will have to start with a fresh database.
+
+It's possible to bring your own Postgres database instead of using the built-in SQLite database.
+To do so, add the following environment variables:
+
+```yaml
+environment:
+  ...
+  - "DATABASE__PROVIDER=Postgres"
+  - "DATABASE__CONNECTIONSTRING=Host=yourhost;Database=spottarr;Username=postgres;Password=xxxxxxxxxxx"
+  ...
+```
+
 ## Issues, requests and improvements
 Issues can be used to submit application errors as long as the issue template is properly filled out.
 
 Requests for new functionality will only be considered if you can at the least provide a technical proposal and preferably a PR. 
 
 The aim is to keep Spottarr as simple as possible, but any suggestions to improve indexing are of course welcome. 
+
+## Motivation
+
+Spotnet provides a great decentralized source for Usenet indexing, but most existing clients are no longer maintained
+desktop applications, or building on top of a relatively outdated codebase.
+
+While some alternatives like [Spotweb](https://github.com/spotweb/spotweb) are still very much alive, I've personally
+had some issues matching the search results when searching from *Arrs.
+
+The aim of Spottarr is to provide a more modern application that aims for efficiency and more precise search results,
+while leaving the media management and browsing to the existing *Arrs.
