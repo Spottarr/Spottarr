@@ -370,7 +370,7 @@ internal sealed class SpotImportService : ISpotImportService
         spots.Add(spot);
     }
 
-    private async ValueTask GetSpotDetails(Spot spot, CancellationToken ct)
+    private async ValueTask GetSpotDetails(Spot spot, CancellationToken cancellationToken)
     {
         try
         {
@@ -394,7 +394,7 @@ internal sealed class SpotImportService : ISpotImportService
                 return;
             }
 
-            var result = await SpotnetXmlParser.Parse(spotnetXmlValues);
+            var result = await SpotnetXmlParser.Parse(spotnetXmlValues, cancellationToken);
             if (result.HasError)
             {
                 _logger.ArticleContainsInvalidSpotXmlHeader(spot.MessageId, result.Error);

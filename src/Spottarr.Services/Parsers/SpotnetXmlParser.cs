@@ -13,9 +13,10 @@ internal class SpotnetXmlParser
         CheckCharacters = false
     };
 
-    public static Task<ParserResult<SpotnetXml>> Parse(string xml) => Parse([xml]);
+    public static Task<ParserResult<SpotnetXml>> Parse(string xml, CancellationToken cancellationToken) =>
+        Parse([xml], cancellationToken);
 
-    public static async Task<ParserResult<SpotnetXml>> Parse(IList<string> xml)
+    public static async Task<ParserResult<SpotnetXml>> Parse(IList<string> xml, CancellationToken cancellationToken)
     {
         xml = xml.Select(SpotnetXmlCleaner.Clean).ToList();
 
