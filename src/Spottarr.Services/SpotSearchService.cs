@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Spottarr.Configuration.Options;
 using Spottarr.Data;
 using Spottarr.Data.Entities;
 using Spottarr.Services.Contracts;
@@ -18,7 +19,7 @@ public class SpotSearchService : ISpotSearchService
         ArgumentNullException.ThrowIfNull(filter);
 
         // If year / episode / season is not explicitly set, try to extract it from the query
-        var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(filter.Query ?? string.Empty);
+        var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(filter.Query ?? string.Empty, string.Empty);
         if (filter.Years.Count == 0) filter.Years.UnionWith(years);
         if (filter.Seasons.Count == 0) filter.Seasons.UnionWith(seasons);
         if (filter.Episodes.Count == 0) filter.Episodes.UnionWith(episodes);
@@ -69,49 +70,84 @@ public class SpotSearchService : ISpotSearchService
         };
     }
 
+    public Task<int> Count() => _dbContext.Spots.CountAsync();
+
     private static async Task<(IList<Spot>, int)> ExecuteSearch(IQueryable<Spot> query, SpotSearchFilter filter)
     {
-        var spotTask = query
+        var count = await query.CountAsync();
+        if (count == 0) return ([], count);
+
+        var spots = await query
             .OrderByDescending(s => s.SpottedAt)
             .Skip(filter.Offset)
             .Take(filter.Limit)
             .ToListAsync();
 
-        var countTask = query.CountAsync();
-
-        await Task.WhenAll(spotTask, countTask);
-
-        return (await spotTask, await countTask);
+        return (spots, count);
     }
 
-    private async Task<(IList<Spot>, int)> ExecuteFullTextSearch(IQueryable<Spot> query, SpotSearchFilter filter)
+    private Task<(IList<Spot> Spots, int Count)> ExecuteFullTextSearch(IQueryable<Spot> query, SpotSearchFilter filter)
     {
-        var keywords = QueryExclusionParser.Parse(filter.Query);
+        var keywords = QueryExclusionParser.Parse(filter.Query, _dbContext.Provider) ?? string.Empty;
 
+        return _dbContext.Provider switch
+        {
+            DatabaseProvider.Sqlite => ExecuteFullTextSearchSqlite(query, filter, keywords),
+            DatabaseProvider.Postgres => ExecuteFullTextSearchPostgres(query, filter, keywords),
+            _ => throw new InvalidOperationException(
+                $"Database provider '{_dbContext.Provider}' is not supported for full-text search.")
+        };
+    }
+
+    private async Task<(IList<Spot> Spots, int Count)> ExecuteFullTextSearchSqlite(IQueryable<Spot> query,
+        SpotSearchFilter filter, string keywords)
+    {
         // Force inner join on FTS table
         var ftsQuery = query.Join(_dbContext.FtsSpots,
                 spot => spot.Id,
-                fts => fts.RowId,
-                (spot, fts) => new
+                fts => fts.SpotId,
+                (spot, fts) => new SpotWithFts
                 {
                     Spot = spot,
                     Fts = fts
                 })
             .Where(x => x.Fts.Match == keywords);
 
-        var spotTask = ftsQuery.OrderBy(x => x.Fts.Rank)
+        var count = await ftsQuery.CountAsync();
+        if (count == 0) return ([], count);
+
+        var spots = await ftsQuery
+            .OrderBy(x => x.Fts.Rank)
             .ThenByDescending(x => x.Spot.SpottedAt)
             .Select(x => x.Spot)
             .Skip(filter.Offset)
             .Take(filter.Limit)
             .ToListAsync();
 
-        var countTask = ftsQuery.CountAsync();
-
-        await Task.WhenAll(spotTask, countTask);
-
-        return (await spotTask, await countTask);
+        return (spots, count);
     }
 
-    public Task<int> Count() => _dbContext.Spots.CountAsync();
+    private static async Task<(IList<Spot> Spots, int Count)> ExecuteFullTextSearchPostgres(IQueryable<Spot> query,
+        SpotSearchFilter filter, string keywords)
+    {
+        var ftsQuery = query.Where(s => s.SearchVector.Matches(EF.Functions.ToTsQuery(keywords)));
+
+        var count = await ftsQuery.CountAsync();
+        if (count == 0) return ([], count);
+
+        var spots = await ftsQuery
+            .OrderByDescending(s => s.SearchVector.Rank(EF.Functions.ToTsQuery(keywords)))
+            .ThenByDescending(s => s.SpottedAt)
+            .Skip(filter.Offset)
+            .Take(filter.Limit)
+            .ToListAsync();
+
+        return (spots, count);
+    }
+
+    private class SpotWithFts
+    {
+        public required Spot Spot { get; init; }
+        public required FtsSpot Fts { get; init; }
+    }
 }

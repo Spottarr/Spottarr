@@ -4,9 +4,13 @@ namespace Spottarr.Services.Parsers;
 
 internal static partial class ReleaseTitleParser
 {
-    public static string? Parse(string titleAndDescription)
+    public static string? Parse(string title, string description)
     {
-        var match = ReleaseTitleRegex().Match(titleAndDescription);
+        var regex = ReleaseTitleRegex();
+        var match = regex.Match(title);
+        if (match.Success) return match.Value;
+
+        match = regex.Match(description);
         return match.Success ? match.Value : null;
     }
 

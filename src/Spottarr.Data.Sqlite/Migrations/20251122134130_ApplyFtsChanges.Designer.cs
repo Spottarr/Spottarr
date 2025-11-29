@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Spottarr.Data;
 
@@ -10,9 +11,11 @@ using Spottarr.Data;
 namespace Spottarr.Data.Migrations
 {
     [DbContext(typeof(SpottarrDbContext))]
-    partial class SpottarrDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251122134130_ApplyFtsChanges")]
+    partial class ApplyFtsChanges
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.0-rc.2.25502.107");
@@ -36,8 +39,9 @@ namespace Spottarr.Data.Migrations
 
             modelBuilder.Entity("Spottarr.Data.Entities.FtsSpot", b =>
                 {
-                    b.Property<int>("RowId")
-                        .HasColumnType("INTEGER");
+                    b.Property<int>("SpotId")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("RowId");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -54,9 +58,9 @@ namespace Spottarr.Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.HasKey("RowId");
+                    b.HasKey("SpotId");
 
-                    b.ToTable("FtsSpots", (string)null);
+                    b.ToTable("FtsSpots");
                 });
 
             modelBuilder.Entity("Spottarr.Data.Entities.Spot", b =>
@@ -104,6 +108,7 @@ namespace Spottarr.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
+                        .HasMaxLength(32768)
                         .HasColumnType("TEXT");
 
                     b.PrimitiveCollection<string>("Episodes")
@@ -241,14 +246,14 @@ namespace Spottarr.Data.Migrations
                     b.HasIndex("TvdbId", "SpottedAt")
                         .IsDescending(false, true);
 
-                    b.ToTable("Spots", (string)null);
+                    b.ToTable("Spots");
                 });
 
             modelBuilder.Entity("Spottarr.Data.Entities.FtsSpot", b =>
                 {
                     b.HasOne("Spottarr.Data.Entities.Spot", "Spot")
                         .WithOne("FtsSpot")
-                        .HasForeignKey("Spottarr.Data.Entities.FtsSpot", "RowId")
+                        .HasForeignKey("Spottarr.Data.Entities.FtsSpot", "SpotId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

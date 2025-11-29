@@ -4,9 +4,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PhenX.EntityFrameworkCore.BulkInsert.Extensions;
 using PhenX.EntityFrameworkCore.BulkInsert.Options;
+using Spottarr.Configuration.Options;
 using Spottarr.Data;
 using Spottarr.Data.Entities;
-using Spottarr.Services.Configuration;
 using Spottarr.Services.Contracts;
 using Spottarr.Services.Helpers;
 using Spottarr.Services.Logging;
@@ -21,14 +21,15 @@ namespace Spottarr.Services;
 internal sealed class SpotReIndexingService : ISpotReIndexingService
 {
     private readonly ILogger<SpotReIndexingService> _logger;
-    private readonly SpottarrDbContext _dbContext;
+    private readonly IDbContextFactory<SpottarrDbContext> _dbContextFactory;
     private readonly IOptions<SpotnetOptions> _spotnetOptions;
 
-    public SpotReIndexingService(ILogger<SpotReIndexingService> logger, SpottarrDbContext dbContext,
+    public SpotReIndexingService(ILogger<SpotReIndexingService> logger,
+        IDbContextFactory<SpottarrDbContext> dbContextFactory,
         IOptions<SpotnetOptions> spotnetOptions)
     {
         _logger = logger;
-        _dbContext = dbContext;
+        _dbContextFactory = dbContextFactory;
         _spotnetOptions = spotnetOptions;
     }
 
@@ -37,7 +38,8 @@ internal sealed class SpotReIndexingService : ISpotReIndexingService
         _logger.SpotIndexingStarted(DateTimeOffset.Now);
 
         var options = _spotnetOptions.Value;
-        var unIndexedSpotsCount = await _dbContext.Spots.Where(s => s.IndexedAt == null).CountAsync(cancellationToken);
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+        var unIndexedSpotsCount = await dbContext.Spots.Where(s => s.IndexedAt == null).CountAsync(cancellationToken);
 
         if (unIndexedSpotsCount > 0)
         {
@@ -58,57 +60,57 @@ internal sealed class SpotReIndexingService : ISpotReIndexingService
 
     private async Task<int> IndexBatch(int batchSize, CancellationToken cancellationToken)
     {
-        var unIndexedSpots = await _dbContext.Spots.Where(s => s.IndexedAt == null)
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+        var spots = await dbContext.Spots.Where(s => s.IndexedAt == null)
             .AsNoTracking()
             .OrderBy(s => s.Id)
             .Take(batchSize)
             .ToListAsync(cancellationToken);
 
-        if (unIndexedSpots.Count == 0) return unIndexedSpots.Count;
+        if (spots.Count == 0) return spots.Count;
 
         var now = DateTimeOffset.Now.UtcDateTime;
-        var fullTextIndexSpots = new List<FtsSpot>();
 
-        foreach (var spot in unIndexedSpots)
+        var spotIds = new HashSet<int>();
+        foreach (var spot in spots)
         {
+            spotIds.Add(spot.Id);
+
             spot.Description = BbCodeParser.Parse(spot.Description);
 
-            var titleAndDescription = string.Join('\n', spot.Title, spot.Description);
-            var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(titleAndDescription);
+            var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(spot.Title, spot.Description);
 
             spot.Years.Replace(years);
             spot.Seasons.Replace(seasons);
             spot.Episodes.Replace(episodes);
             spot.NewznabCategories.Replace(NewznabCategoryMapper.Map(spot));
             spot.ImdbId = ImdbIdParser.Parse(spot.Url);
-            spot.ReleaseTitle = ReleaseTitleParser.Parse(titleAndDescription);
+            spot.ReleaseTitle = ReleaseTitleParser.Parse(spot.Title, spot.Description);
             spot.IndexedAt = now;
             spot.UpdatedAt = now;
-
-            var ftsSpot = new FtsSpot
-            {
-                RowId = spot.Id,
-                Title = FtsTitleParser.Parse(spot.Title),
-                Description = spot.Description
-            };
-
-            fullTextIndexSpots.Add(ftsSpot);
         }
-
-        var fullTextIndexSpotIds = fullTextIndexSpots
-            .Select(s => s.RowId).ToHashSet();
 
         try
         {
-            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
-            // EF does not natively support FTS tables, so we have to delete and re-insert the records in case any already exist
-            await _dbContext.FtsSpots
-                .Where(f => fullTextIndexSpotIds.Contains(f.RowId))
-                .ExecuteDeleteAsync(cancellationToken);
+            if (dbContext.Provider == DatabaseProvider.Sqlite)
+            {
+                // EF does not natively support FTS tables, so we have to delete and re-insert the records in case any already exist
+                await dbContext.FtsSpots
+                    .Where(f => spotIds.Contains(f.SpotId))
+                    .ExecuteDeleteAsync(cancellationToken);
 
-            await _dbContext.ExecuteBulkInsertAsync(fullTextIndexSpots, cancellationToken: cancellationToken);
-            await _dbContext.ExecuteBulkInsertAsync(unIndexedSpots, new OnConflictOptions<Spot>
+                var ftsSpots = spots.Select(s => new FtsSpot
+                {
+                    Title = s.Title,
+                    Description = s.Description ?? string.Empty
+                }).ToList();
+
+                await dbContext.ExecuteBulkInsertAsync(ftsSpots, cancellationToken: cancellationToken);
+            }
+
+            await dbContext.ExecuteBulkInsertAsync(spots, new OnConflictOptions<Spot>
             {
                 Update = (existing, inserted) => new Spot
                 {
@@ -130,6 +132,6 @@ internal sealed class SpotReIndexingService : ISpotReIndexingService
             _logger.FailedToSaveSpots(ex);
         }
 
-        return unIndexedSpots.Count;
+        return spots.Count;
     }
 }

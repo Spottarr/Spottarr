@@ -51,13 +51,15 @@ public static class NewznabEndpoints
             .Produces<Capabilities>(contentType: MediaTypeNames.Application.Xml)
             .WithDescription("Get the Newznab capabilities that Spottarr supports.");
 
-        group.MapGet("/get", async ([FromQuery(Name = "guid")] int id, ISpotImportService spotImportService) =>
-            {
-                var result = await spotImportService.RetrieveNzb(id);
-                return result == null
-                    ? Results.NotFound()
-                    : Results.File(result, "application/x-nzb", $"{id}.nzb");
-            })
+        group.MapGet("/get",
+                async ([FromQuery(Name = "guid")] int id, ISpotImportService spotImportService,
+                    CancellationToken cancellationToken) =>
+                {
+                    var result = await spotImportService.RetrieveNzb(id, cancellationToken);
+                    return result == null
+                        ? Results.NotFound()
+                        : Results.File(result, "application/x-nzb", $"{id}.nzb");
+                })
             .Produces(StatusCodes.Status200OK, contentType: "application/x-nzb")
             .Produces(StatusCodes.Status404NotFound)
             .WithDescription("Get the NZB file for a spot.");

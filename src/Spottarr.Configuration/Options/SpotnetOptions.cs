@@ -1,8 +1,10 @@
-namespace Spottarr.Services.Configuration;
+using Spottarr.Configuration.Contracts;
 
-public class SpotnetOptions
+namespace Spottarr.Configuration.Options;
+
+public sealed class SpotnetOptions : IOptionsSection
 {
-    public const string Section = "Spotnet";
+    public static string Section => "Spotnet";
 
     public string SpotGroup { get; init; } = string.Empty;
     public string CommentGroup { get; init; } = string.Empty;
