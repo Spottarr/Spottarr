@@ -161,7 +161,7 @@ internal sealed class SpotImportService : ISpotImportService
                 {
                     Title = s.Title,
                     Description = s.Description ?? string.Empty
-                });
+                }).ToList();
 
                 await dbContext.ExecuteBulkInsertAsync(ftsSpots, cancellationToken: cancellationToken);
             }

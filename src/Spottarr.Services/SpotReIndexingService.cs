@@ -105,7 +105,7 @@ internal sealed class SpotReIndexingService : ISpotReIndexingService
                 {
                     Title = s.Title,
                     Description = s.Description ?? string.Empty
-                });
+                }).ToList();
 
                 await dbContext.ExecuteBulkInsertAsync(ftsSpots, cancellationToken: cancellationToken);
             }
