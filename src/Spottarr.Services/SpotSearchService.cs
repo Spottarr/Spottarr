@@ -136,7 +136,7 @@ public class SpotSearchService : ISpotSearchService
         if (count == 0) return ([], count);
 
         var spots = await ftsQuery
-            .OrderBy(s => s.SearchVector.Rank(EF.Functions.ToTsQuery(keywords)))
+            .OrderByDescending(s => s.SearchVector.Rank(EF.Functions.ToTsQuery(keywords)))
             .ThenByDescending(s => s.SpottedAt)
             .Skip(filter.Offset)
             .Take(filter.Limit)
