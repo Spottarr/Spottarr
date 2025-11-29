@@ -28,22 +28,20 @@ namespace Spottarr.Services;
 internal sealed class SpotImportService : ISpotImportService
 {
     private readonly ILogger<SpotImportService> _logger;
-    private readonly IOptions<UsenetOptions> _usenetOptions;
     private readonly IOptions<SpotnetOptions> _spotnetOptions;
     private readonly INntpClientPool _nntpClientPool;
-    private readonly SpottarrDbContext _dbContext;
+    private readonly IDbContextFactory<SpottarrDbContext> _dbContextFactory;
     private readonly ParallelOptions _fetchParallelOptions;
     private readonly ParallelOptions _parseParallelOptions;
 
     public SpotImportService(ILogger<SpotImportService> logger,
         IOptions<UsenetOptions> usenetOptions, IOptions<SpotnetOptions> spotnetOptions,
-        INntpClientPool nntpClientPool, SpottarrDbContext dbContext)
+        INntpClientPool nntpClientPool, IDbContextFactory<SpottarrDbContext> dbContextFactory)
     {
         _logger = logger;
-        _usenetOptions = usenetOptions;
         _spotnetOptions = spotnetOptions;
         _nntpClientPool = nntpClientPool;
-        _dbContext = dbContext;
+        _dbContextFactory = dbContextFactory;
 
         // Limit the number of jobs we run in parallel to the maximum number of connections to prevent waiting for
         // a connection to become available in the pool
@@ -53,7 +51,8 @@ internal sealed class SpotImportService : ISpotImportService
 
     public async Task<MemoryStream?> RetrieveNzb(int spotId)
     {
-        var spot = await _dbContext.Spots.FirstOrDefaultAsync(s => s.Id == spotId);
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var spot = await dbContext.Spots.FirstOrDefaultAsync(s => s.Id == spotId);
         if (spot == null || string.IsNullOrEmpty(spot.NzbMessageId))
             return null;
 
@@ -89,20 +88,19 @@ internal sealed class SpotImportService : ISpotImportService
     {
         _logger.SpotImportStarted(DateTimeOffset.Now);
 
-        var usenetOptions = _usenetOptions.Value;
         var spotnetOptions = _spotnetOptions.Value;
 
         var group = await GetGroup(spotnetOptions.SpotGroup);
         if (group == null) return;
 
-        var articleRanges = await GetArticleRangesToImport(spotnetOptions, group);
-        await Import(spotnetOptions, usenetOptions, articleRanges, cancellationToken);
+        var articleRanges = await GetArticleRangesToImport(spotnetOptions, group, cancellationToken);
+        await Import(spotnetOptions, articleRanges, cancellationToken);
 
         _logger.SpotImportFinished(DateTimeOffset.Now);
     }
 
-    private async Task Import(SpotnetOptions spotnetOptions, UsenetOptions usenetOptions,
-        IReadOnlyList<NntpArticleRange> articleRanges, CancellationToken cancellationToken)
+    private async Task Import(SpotnetOptions spotnetOptions, IReadOnlyList<NntpArticleRange> articleRanges,
+        CancellationToken cancellationToken)
     {
         // The ranges only contains the article numbers to fetch, but no dates.
         // This means that within each batch we need to check if we reached the maximum age (retrieve after date).
@@ -113,7 +111,7 @@ internal sealed class SpotImportService : ISpotImportService
             _logger.SpotImportBatchStarted(i + 1, articleRanges.Count, DateTimeOffset.Now);
 
             var spots = await FetchSpotHeaders(spotnetOptions, articleRanges[i]);
-            if (spots.Count > 0) await FetchAndSaveSpots(usenetOptions, spots, cancellationToken);
+            if (spots.Count > 0) await FetchAndSaveSpots(spots, cancellationToken);
 
             _logger.SpotImportBatchFinished(i + 1, articleRanges.Count, DateTimeOffset.Now, spots.Count);
         }
@@ -139,24 +137,25 @@ internal sealed class SpotImportService : ISpotImportService
         return null;
     }
 
-    private async Task FetchAndSaveSpots(UsenetOptions usenetOptions, IReadOnlyList<Spot> spots,
-        CancellationToken cancellationToken)
+    private async Task FetchAndSaveSpots(IReadOnlyList<Spot> spots, CancellationToken cancellationToken)
     {
         // Fetch the article headers, we will do this in parallel to speed up the process
         await Parallel.ForEachAsync(spots, _fetchParallelOptions, GetSpotDetails);
 
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+
         // Save the fetched articles in bulk.
         try
         {
-            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
-            var insertedSpots = await _dbContext.ExecuteBulkInsertReturnEntitiesAsync(spots, new OnConflictOptions<Spot>
+            var insertedSpots = await dbContext.ExecuteBulkInsertReturnEntitiesAsync(spots, new OnConflictOptions<Spot>
             {
                 Match = spot => spot.MessageId
             }, cancellationToken);
 
             // Only Sqlite requires a separate virtual FTS table to enable full-text search
-            if (_dbContext.Provider == DatabaseProvider.Sqlite)
+            if (dbContext.Provider == DatabaseProvider.Sqlite)
             {
                 var ftsSpots = insertedSpots.Select(s => new FtsSpot
                 {
@@ -164,7 +163,7 @@ internal sealed class SpotImportService : ISpotImportService
                     Description = s.Description ?? string.Empty
                 });
 
-                await _dbContext.ExecuteBulkInsertAsync(ftsSpots, cancellationToken: cancellationToken);
+                await dbContext.ExecuteBulkInsertAsync(ftsSpots, cancellationToken: cancellationToken);
             }
 
             await transaction.CommitAsync(cancellationToken);
@@ -286,10 +285,11 @@ internal sealed class SpotImportService : ISpotImportService
     /// If this is the first import, the range of the entire group is returned
     /// </summary>
     private async Task<IReadOnlyList<NntpArticleRange>> GetArticleRangesToImport(SpotnetOptions spotnetOptions,
-        NntpGroup group)
+        NntpGroup group, CancellationToken cancellationToken)
     {
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         // Only fetch records after the last known record in the DB
-        var lastImportedMessage = await _dbContext.Spots.MaxAsync(s => (long?)s.MessageNumber) ?? 0L;
+        var lastImportedMessage = await dbContext.Spots.MaxAsync(s => (long?)s.MessageNumber, cancellationToken) ?? 0L;
 
         // No imports yet, determine the article number closest to the given retrieve after date
         var lowWaterMark = lastImportedMessage == 0

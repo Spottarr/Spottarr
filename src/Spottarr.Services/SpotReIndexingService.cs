@@ -21,14 +21,15 @@ namespace Spottarr.Services;
 internal sealed class SpotReIndexingService : ISpotReIndexingService
 {
     private readonly ILogger<SpotReIndexingService> _logger;
-    private readonly SpottarrDbContext _dbContext;
+    private readonly IDbContextFactory<SpottarrDbContext> _dbContextFactory;
     private readonly IOptions<SpotnetOptions> _spotnetOptions;
 
-    public SpotReIndexingService(ILogger<SpotReIndexingService> logger, SpottarrDbContext dbContext,
+    public SpotReIndexingService(ILogger<SpotReIndexingService> logger,
+        IDbContextFactory<SpottarrDbContext> dbContextFactory,
         IOptions<SpotnetOptions> spotnetOptions)
     {
         _logger = logger;
-        _dbContext = dbContext;
+        _dbContextFactory = dbContextFactory;
         _spotnetOptions = spotnetOptions;
     }
 
@@ -37,7 +38,8 @@ internal sealed class SpotReIndexingService : ISpotReIndexingService
         _logger.SpotIndexingStarted(DateTimeOffset.Now);
 
         var options = _spotnetOptions.Value;
-        var unIndexedSpotsCount = await _dbContext.Spots.Where(s => s.IndexedAt == null).CountAsync(cancellationToken);
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+        var unIndexedSpotsCount = await dbContext.Spots.Where(s => s.IndexedAt == null).CountAsync(cancellationToken);
 
         if (unIndexedSpotsCount > 0)
         {
@@ -58,7 +60,8 @@ internal sealed class SpotReIndexingService : ISpotReIndexingService
 
     private async Task<int> IndexBatch(int batchSize, CancellationToken cancellationToken)
     {
-        var spots = await _dbContext.Spots.Where(s => s.IndexedAt == null)
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+        var spots = await dbContext.Spots.Where(s => s.IndexedAt == null)
             .AsNoTracking()
             .OrderBy(s => s.Id)
             .Take(batchSize)
@@ -89,12 +92,12 @@ internal sealed class SpotReIndexingService : ISpotReIndexingService
 
         try
         {
-            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
-            if (_dbContext.Provider == DatabaseProvider.Sqlite)
+            if (dbContext.Provider == DatabaseProvider.Sqlite)
             {
                 // EF does not natively support FTS tables, so we have to delete and re-insert the records in case any already exist
-                await _dbContext.FtsSpots
+                await dbContext.FtsSpots
                     .Where(f => spotIds.Contains(f.SpotId))
                     .ExecuteDeleteAsync(cancellationToken);
 
@@ -104,10 +107,10 @@ internal sealed class SpotReIndexingService : ISpotReIndexingService
                     Description = s.Description ?? string.Empty
                 });
 
-                await _dbContext.ExecuteBulkInsertAsync(ftsSpots, cancellationToken: cancellationToken);
+                await dbContext.ExecuteBulkInsertAsync(ftsSpots, cancellationToken: cancellationToken);
             }
 
-            await _dbContext.ExecuteBulkInsertAsync(spots, new OnConflictOptions<Spot>
+            await dbContext.ExecuteBulkInsertAsync(spots, new OnConflictOptions<Spot>
             {
                 Update = (existing, inserted) => new Spot
                 {
