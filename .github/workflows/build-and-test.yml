@@ -71,8 +71,9 @@ jobs:
         --report-github
         --report-github-summary-include-passed=true
         --report-github-summary-include-skipped=true
-        --collect "XPlat Code Coverage"
-        --results-directory ./tests/coverage
+        --coverage
+        --coverage-output $GITHUB_WORKSPACE/tests/coverage/coverage.cobertura.xml
+        --coverage-output-format cobertura
         && mkdir -p ./tests/report
         && cp $GITHUB_STEP_SUMMARY ./tests/report/results.md
         
