@@ -162,6 +162,7 @@ internal sealed class SpotImportService : ISpotImportService
             {
                 var ftsSpots = insertedSpots.Select(s => new FtsSpot
                 {
+                    SpotId = s.Id,
                     Title = s.Title,
                     Description = s.Description ?? string.Empty
                 }).ToList();
