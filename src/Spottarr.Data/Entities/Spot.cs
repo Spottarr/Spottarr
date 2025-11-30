@@ -6,6 +6,10 @@ namespace Spottarr.Data.Entities;
 
 public class Spot : BaseEntity, IPostgreSqlFtsEntity
 {
+    public const int TinyMaxLength = 16;
+    public const int SmallMaxLength = 128;
+    public const int MediumMaxLength = 256;
+    public const int LargeMaxLength = 512;
     public const int DescriptionMaxLength = 32768;
 
     public string Title { get; set; } = string.Empty;

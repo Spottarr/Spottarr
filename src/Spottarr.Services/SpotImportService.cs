@@ -414,22 +414,22 @@ internal sealed class SpotImportService : ISpotImportService
 
             var spotDetails = result.Result;
 
-            spot.NzbMessageId = spotDetails.Posting.Nzb.Segment;
-            spot.ImageMessageId = spotDetails.Posting.Image?.Segment;
+            spot.NzbMessageId = spotDetails.Posting.Nzb.Segment.Truncate(Spot.SmallMaxLength);
+            spot.ImageMessageId = spotDetails.Posting.Image?.Segment.Truncate(Spot.SmallMaxLength);
             spot.Description = BbCodeParser.Parse(spotDetails.Posting.Description).Truncate(Spot.DescriptionMaxLength);
-            spot.Tag = spotDetails.Posting.Tag;
-            spot.Url = Uri.TryCreate(spotDetails.Posting.Website, UriKind.Absolute, out var uri) ? uri : null;
-            spot.Filename = spotDetails.Posting.Filename;
-            spot.Newsgroup = spotDetails.Posting.Newsgroup;
+            spot.Tag = spotDetails.Posting.Tag.Truncate(Spot.SmallMaxLength);
+            spot.Url = Uri.TryCreate(spotDetails.Posting.Website.Truncate(Spot.LargeMaxLength), UriKind.Absolute, out var uri) ? uri : null;
+            spot.Filename = spotDetails.Posting.Filename.Truncate(Spot.SmallMaxLength);
+            spot.Newsgroup = spotDetails.Posting.Newsgroup.Truncate(Spot.SmallMaxLength);
 
             var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(spot.Title, spot.Description);
 
-            spot.ReleaseTitle = ReleaseTitleParser.Parse(spot.Title, spot.Description);
+            spot.ReleaseTitle = ReleaseTitleParser.Parse(spot.Title, spot.Description)?.Truncate(Spot.MediumMaxLength);
             spot.Years.Replace(years);
             spot.Seasons.Replace(seasons);
             spot.Episodes.Replace(episodes);
             spot.NewznabCategories.Replace(NewznabCategoryMapper.Map(spot));
-            spot.ImdbId = ImdbIdParser.Parse(spot.Url);
+            spot.ImdbId = ImdbIdParser.Parse(spot.Url)?.Truncate(Spot.TinyMaxLength);
             spot.IndexedAt = DateTimeOffset.Now.UtcDateTime;
         }
         catch (InvalidOperationException ex)

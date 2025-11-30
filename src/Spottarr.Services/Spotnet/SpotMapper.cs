@@ -1,5 +1,6 @@
 using Spottarr.Data.Entities;
 using Spottarr.Data.Entities.Enums;
+using Spottarr.Services.Helpers;
 
 namespace Spottarr.Services.Spotnet;
 
@@ -31,12 +32,12 @@ internal static class SpotnetHeaderExtensions
         return new Spot
         {
             Type = spotType,
-            Title = header.Subject,
+            Title = header.Subject.Truncate(Spot.MediumMaxLength),
             Description = null,
-            Spotter = header.Nickname,
+            Spotter = header.Nickname.Truncate(Spot.SmallMaxLength),
             Bytes = header.Size,
             MessageNumber = header.NntpHeader.ArticleNumber,
-            MessageId = header.NntpHeader.MessageId,
+            MessageId = header.NntpHeader.MessageId.Truncate(Spot.SmallMaxLength),
             NzbMessageId = null,
             ImageMessageId = null,
             ImageFormats = imageFormats,
