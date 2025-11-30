@@ -47,19 +47,19 @@ public class SpottarrDbContext : DbContext, IDataProtectionKeyContext
 
         modelBuilder.Entity<Spot>(x =>
         {
-            x.Property(s => s.Title).HasMaxLength(256);
+            x.Property(s => s.Title).HasMaxLength(Spot.MediumMaxLength);
             x.Property(s => s.Description).HasMaxLength(Spot.DescriptionMaxLength);
-            x.Property(s => s.ReleaseTitle).HasMaxLength(256);
-            x.Property(s => s.Spotter).HasMaxLength(128);
-            x.Property(s => s.MessageId).HasMaxLength(128);
-            x.Property(s => s.NzbMessageId).HasMaxLength(128);
-            x.Property(s => s.ImageMessageId).HasMaxLength(128);
-            x.Property(s => s.Tag).HasMaxLength(128);
-            x.Property(s => s.Url).HasMaxLength(512);
-            x.Property(s => s.Filename).HasMaxLength(128);
-            x.Property(s => s.Newsgroup).HasMaxLength(128);
-            x.Property(s => s.ImdbId).HasMaxLength(16);
-            x.Property(s => s.TvdbId).HasMaxLength(16);
+            x.Property(s => s.ReleaseTitle).HasMaxLength(Spot.MediumMaxLength);
+            x.Property(s => s.Spotter).HasMaxLength(Spot.SmallMaxLength);
+            x.Property(s => s.MessageId).HasMaxLength(Spot.SmallMaxLength);
+            x.Property(s => s.NzbMessageId).HasMaxLength(Spot.SmallMaxLength);
+            x.Property(s => s.ImageMessageId).HasMaxLength(Spot.SmallMaxLength);
+            x.Property(s => s.Tag).HasMaxLength(Spot.SmallMaxLength);
+            x.Property(s => s.Url).HasMaxLength(Spot.LargeMaxLength);
+            x.Property(s => s.Filename).HasMaxLength(Spot.SmallMaxLength);
+            x.Property(s => s.Newsgroup).HasMaxLength(Spot.SmallMaxLength);
+            x.Property(s => s.ImdbId).HasMaxLength(Spot.TinyMaxLength);
+            x.Property(s => s.TvdbId).HasMaxLength(Spot.TinyMaxLength);
 
             x.Property(s => s.CreatedAt).HasConversion(DateConverters.UtcConverter);
             x.Property(s => s.UpdatedAt).HasConversion(DateConverters.UtcConverter);
