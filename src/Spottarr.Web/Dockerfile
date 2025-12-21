@@ -1,6 +1,6 @@
 ﻿FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS base
 RUN mkdir -p /data && chown -R $APP_UID /data && chmod -R 755 /data
-RUN apk add --no-cache curl tzdata
+RUN apk add --no-cache curl tzdata krb5-libs
 USER $APP_UID
 WORKDIR /app
 ENV DOTNET_RUNNING_IN_CONTAINER_FAST_MODE=true
