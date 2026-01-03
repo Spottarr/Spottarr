@@ -30,7 +30,7 @@ services:
       - "SPOTNET__IMPORTADULTCONTENT=false"
       - "TZ=Etc/GMT" # Set your timezone, e.g. Europe/Amsterdam
     volumes:
-      - /path/to/spottarr/data:/data
+      - spottarr-data:/data
     ports:
       - "8383:8383"
     restart: unless-stopped
@@ -38,6 +38,8 @@ services:
       resources:
         limits:
           memory: 200M # Adjust based on available memory
+volumes:
+  spottarr-data
 ```
 
 > [!NOTE]
@@ -46,7 +48,7 @@ services:
 > [!NOTE]
 > By default, Spottarr runs as the non-privileged user `app` with the UID `1654`.
 >
-> Make sure to either give this UID access to the mounted directory, or change the UID using the docker-compose `user`
+> When using bind mounts instead of a docker volume, make sure to either give this UID access to the mounted directory, or change the UID to a user that does have access to the bind mount using the docker-compose `user`
 > directive.
 
 Once the Spottarr is up and running, it will automatically start indexing the spotnet messages starting from the provided `SPOTNET_RETRIEVEAFTER` date.
