@@ -39,7 +39,7 @@ services:
         limits:
           memory: 200M # Adjust based on available memory
 volumes:
-  spottarr-data
+  spottarr-data:
 ```
 
 > [!NOTE]
