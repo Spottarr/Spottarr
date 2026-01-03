@@ -16,7 +16,6 @@ services:
   spottarr:
     image: ghcr.io/spottarr/spottarr:latest
     container_name: spottarr
-    user: "1654:1654" # Make sure to set the correct UID and GID for your system
     environment:
       - "USENET__HOSTNAME=my.news.server.com"
       - "USENET__USERNAME=username"
