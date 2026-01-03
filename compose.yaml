@@ -2,7 +2,6 @@ services:
   spottarr:
     image: ghcr.io/spottarr/spottarr:latest
     container_name: spottarr
-    user: "1654:1654"
     environment:
       - "USENET__HOSTNAME=my.news.server.com"
       - "USENET__USERNAME=username"
