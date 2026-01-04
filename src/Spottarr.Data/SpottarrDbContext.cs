@@ -82,7 +82,8 @@ public class SpottarrDbContext : DbContext, IDataProtectionKeyContext
                     // Add the full text index for Postgres
                     // Using Dutch text search configuration because most spotnet descriptions are in Dutch.
                     // You can list available configurations with: SELECT cfgname FROM pg_catalog.pg_ts_config;
-                    x.HasGeneratedTsVectorColumn(p => p.SearchVector, "dutch", p => new { p.Title, p.Description })
+                    x.HasGeneratedTsVectorColumn(p => p.SearchVector, SpottarrDataConstants.FullTextSearchLanguage,
+                            p => new { p.Title, p.Description })
                         .HasIndex(p => p.SearchVector)
                         .HasMethod("GIN");
                     break;
