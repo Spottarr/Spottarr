@@ -6,7 +6,7 @@ using Spottarr.Data;
 using Spottarr.Services.Contracts;
 using Spottarr.Services.Logging;
 
-namespace Spottarr.Services;
+namespace Spottarr.Services.Spots;
 
 internal sealed class SpotCleanUpService : ISpotCleanUpService
 {

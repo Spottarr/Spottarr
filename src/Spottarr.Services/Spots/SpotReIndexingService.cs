@@ -13,7 +13,7 @@ using Spottarr.Services.Logging;
 using Spottarr.Services.Newznab;
 using Spottarr.Services.Parsers;
 
-namespace Spottarr.Services;
+namespace Spottarr.Services.Spots;
 
 /// <summary>
 /// Extracts useful attributes from spots and cleans up their title and description

@@ -8,18 +8,18 @@ using Usenet.Exceptions;
 using Usenet.Nntp.Contracts;
 using Usenet.Nntp.Models;
 
-namespace Spottarr.Services;
+namespace Spottarr.Services.Spotnet;
 
-internal sealed class SpotAttachmentService : ISpotAttachmentService
+internal sealed class SpotnetAttachmentService : ISpotnetAttachmentService
 {
     private readonly IDbContextFactory<SpottarrDbContext> _dbContextFactory;
     private readonly INntpClientPool _nntpClientPool;
-    private readonly ILogger<SpotAttachmentService> _logger;
+    private readonly ILogger<SpotnetAttachmentService> _logger;
 
-    public SpotAttachmentService(
+    public SpotnetAttachmentService(
         IDbContextFactory<SpottarrDbContext> dbContextFactory,
         INntpClientPool nntpClientPool,
-        ILogger<SpotAttachmentService> logger)
+        ILogger<SpotnetAttachmentService> logger)
     {
         _dbContextFactory = dbContextFactory;
         _nntpClientPool = nntpClientPool;
