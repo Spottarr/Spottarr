@@ -56,7 +56,7 @@ public static class NewznabEndpoints
                 async ([FromQuery(Name = "guid")] int id, ISpotnetAttachmentService spotnetAttachmentService,
                     CancellationToken cancellationToken) =>
                 {
-                    var result = await spotnetAttachmentService.RetrieveNzb(id, cancellationToken);
+                    var result = await spotnetAttachmentService.FetchNzb(id, cancellationToken);
                     return result == null
                         ? Results.NotFound()
                         : Results.File(result, "application/x-nzb", $"{id}.nzb");

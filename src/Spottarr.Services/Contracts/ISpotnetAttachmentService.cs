@@ -2,6 +2,6 @@ namespace Spottarr.Services.Contracts;
 
 public interface ISpotnetAttachmentService
 {
-    public Task<MemoryStream?> RetrieveNzb(int spotId, CancellationToken cancellationToken);
-    public Task<MemoryStream?> RetrieveImage(int spotId, CancellationToken cancellationToken);
+    public Task<MemoryStream?> FetchNzb(int spotId, CancellationToken cancellationToken);
+    public Task<MemoryStream?> FetchImage(int spotId, CancellationToken cancellationToken);
 }

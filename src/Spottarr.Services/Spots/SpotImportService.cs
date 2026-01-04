@@ -107,7 +107,7 @@ internal sealed class SpotImportService : ISpotImportService
         };
 
         // Fetch the article headers, we will do this in parallel to speed up the process
-        await Parallel.ForEachAsync(spots, parallelOptions, _spotnetSpotService.GetSpotDetails);
+        await Parallel.ForEachAsync(spots, parallelOptions, _spotnetSpotService.FetchSpotDetails);
 
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 

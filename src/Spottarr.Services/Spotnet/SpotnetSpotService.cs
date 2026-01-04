@@ -70,7 +70,7 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
         }
     }
 
-    public async ValueTask GetSpotDetails(Spot spot, CancellationToken cancellationToken)
+    public async ValueTask FetchSpotDetails(Spot spot, CancellationToken cancellationToken)
     {
         try
         {

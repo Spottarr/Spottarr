@@ -26,7 +26,7 @@ internal sealed class SpotnetAttachmentService : ISpotnetAttachmentService
         _logger = logger;
     }
 
-    public async Task<MemoryStream?> RetrieveNzb(int spotId, CancellationToken cancellationToken)
+    public async Task<MemoryStream?> FetchNzb(int spotId, CancellationToken cancellationToken)
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         var spot = await dbContext.Spots.FirstOrDefaultAsync(s => s.Id == spotId, cancellationToken);
@@ -56,7 +56,7 @@ internal sealed class SpotnetAttachmentService : ISpotnetAttachmentService
         }
     }
 
-    public Task<MemoryStream?> RetrieveImage(int spotId, CancellationToken cancellationToken)
+    public Task<MemoryStream?> FetchImage(int spotId, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
