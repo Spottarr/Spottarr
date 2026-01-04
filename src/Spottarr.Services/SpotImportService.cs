@@ -44,41 +44,6 @@ internal sealed class SpotImportService : ISpotImportService
         _dbContextFactory = dbContextFactory;
     }
 
-    public async Task<MemoryStream?> RetrieveNzb(int spotId, CancellationToken cancellationToken)
-    {
-        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-        var spot = await dbContext.Spots.FirstOrDefaultAsync(s => s.Id == spotId, cancellationToken);
-        if (spot == null || string.IsNullOrEmpty(spot.NzbMessageId))
-            return null;
-
-        try
-        {
-            using var lease = await _nntpClientPool.GetLease();
-            var nzbMessageId = spot.NzbMessageId;
-
-            // Fetch the article headers which contains the NZB payload
-            var nzbArticleResponse = lease.Client.Article(new NntpMessageId(nzbMessageId));
-            if (!nzbArticleResponse.Success)
-            {
-                _logger.CouldNotRetrieveArticle(spot.MessageId, nzbArticleResponse.Code, nzbArticleResponse.Message);
-                return null;
-            }
-
-            var nzbData = string.Concat(nzbArticleResponse.Article.Body);
-            return await NzbArticleParser.Parse(nzbData, cancellationToken);
-        }
-        catch (NntpException ex)
-        {
-            _logger.CouldNotRetrieveArticle(ex, spot.MessageId);
-            return null;
-        }
-    }
-
-    public Task<MemoryStream?> RetrieveImage(int spotId, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task Import(CancellationToken cancellationToken)
     {
         _logger.SpotImportStarted(DateTimeOffset.Now);
@@ -419,7 +384,10 @@ internal sealed class SpotImportService : ISpotImportService
             spot.ImageMessageId = spotDetails.Posting.Image?.Segment.Truncate(Spot.SmallMaxLength);
             spot.Description = BbCodeParser.Parse(spotDetails.Posting.Description).Truncate(Spot.DescriptionMaxLength);
             spot.Tag = spotDetails.Posting.Tag.Truncate(Spot.SmallMaxLength);
-            spot.Url = Uri.TryCreate(spotDetails.Posting.Website.Truncate(Spot.LargeMaxLength), UriKind.Absolute, out var uri) ? uri : null;
+            spot.Url = Uri.TryCreate(spotDetails.Posting.Website.Truncate(Spot.LargeMaxLength), UriKind.Absolute,
+                out var uri)
+                ? uri
+                : null;
             spot.Filename = spotDetails.Posting.Filename.Truncate(Spot.SmallMaxLength);
             spot.Newsgroup = spotDetails.Posting.Newsgroup.Truncate(Spot.SmallMaxLength);
 

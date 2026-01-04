@@ -53,10 +53,10 @@ public static class NewznabEndpoints
             .WithDescription("Get the Newznab capabilities that Spottarr supports.");
 
         group.MapGet("/get",
-                async ([FromQuery(Name = "guid")] int id, ISpotImportService spotImportService,
+                async ([FromQuery(Name = "guid")] int id, ISpotAttachmentService spotAttachmentService,
                     CancellationToken cancellationToken) =>
                 {
-                    var result = await spotImportService.RetrieveNzb(id, cancellationToken);
+                    var result = await spotAttachmentService.RetrieveNzb(id, cancellationToken);
                     return result == null
                         ? Results.NotFound()
                         : Results.File(result, "application/x-nzb", $"{id}.nzb");

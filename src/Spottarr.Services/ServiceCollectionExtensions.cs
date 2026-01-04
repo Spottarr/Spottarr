@@ -40,6 +40,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<ISpotReIndexingService, SpotReIndexingService>()
             .AddScoped<ISpotSearchService, SpotSearchService>()
             .AddScoped<ISpotCleanUpService, SpotCleanUpService>()
+            .AddScoped<ISpotAttachmentService, SpotAttachmentService>()
             .AddScoped<IDatabaseMaintenanceService, DatabaseMaintenanceService>();
     }
 }
