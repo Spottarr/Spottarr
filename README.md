@@ -62,7 +62,13 @@ After starting Spottarr, it can easily be connected to the *Arr of your choice:
 3. Spottarr will now be used for searches
 ![Step 3](docs/arr-3.png)
 
-**Note** Spottarr does not require an API key, anyone with access to your Spottarr instance can perform searches on it.
+## Newznab API security
+
+> [!NOTE]
+> By default, the Spottarr newznab API does not require an API key.
+> Anyone with access to your Spottarr instance can perform searches on it.
+> To enable API key authorization, set the `NEWZNAB__APIKEY` environment variable to a secure value and update your *Arr
+> indexer configuration accordingly.
 
 ## Postgres support
 
