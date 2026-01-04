@@ -69,7 +69,24 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
         }
     }
 
-    public async ValueTask FetchSpotDetails(Spot spot, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<Spot>> FetchSpotDetails(IReadOnlyList<Spot> spots, int maxDegreeOfParallelism,
+        CancellationToken cancellationToken)
+    {
+        // Limit the number of jobs we run in parallel to the maximum number of connections to prevent waiting for
+        // a connection to become available in the pool
+        var parallelOptions = new ParallelOptions
+        {
+            MaxDegreeOfParallelism = maxDegreeOfParallelism,
+            CancellationToken = cancellationToken
+        };
+
+        // Fetch the article headers, we will do this in parallel to speed up the process
+        await Parallel.ForEachAsync(spots, parallelOptions, FetchSpotDetails);
+
+        return spots;
+    }
+
+    private async ValueTask FetchSpotDetails(Spot spot, CancellationToken cancellationToken)
     {
         try
         {

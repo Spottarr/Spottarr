@@ -7,5 +7,6 @@ public interface ISpotnetSpotService
 {
     Task<IReadOnlyList<Spot>> FetchSpotHeaders(NntpArticleRange batch, CancellationToken cancellationToken);
 
-    ValueTask FetchSpotDetails(Spot spot, CancellationToken cancellationToken);
+    Task<IReadOnlyList<Spot>> FetchSpotDetails(IReadOnlyList<Spot> spots, int maxDegreeOfParallelism,
+        CancellationToken cancellationToken);
 }

@@ -64,12 +64,15 @@ internal sealed class SpotImportService : ISpotImportService
         // This means that within each batch we need to check if we reached the maximum age (retrieve after date).
         // We will stop fetching articles when we reach the retrieve after date or an error occurs.
         // For each batch of articles we will fetch the spot details and save it to the database.
+        var options = _usenetOptions.Value;
         for (var i = 0; i < articleRanges.Count; i++)
         {
             _logger.SpotImportBatchStarted(i + 1, articleRanges.Count, DateTimeOffset.Now);
 
             var spots = await _spotnetSpotService.FetchSpotHeaders(articleRanges[i], cancellationToken);
-            if (spots.Count > 0) await FetchAndSaveSpots(spots, cancellationToken);
+            spots = await _spotnetSpotService.FetchSpotDetails(spots, options.MaxConnections, cancellationToken);
+
+            if (spots.Count > 0) await SaveSpots(spots, cancellationToken);
 
             _logger.SpotImportBatchFinished(i + 1, articleRanges.Count, DateTimeOffset.Now, spots.Count);
         }
@@ -95,19 +98,8 @@ internal sealed class SpotImportService : ISpotImportService
         return null;
     }
 
-    private async Task FetchAndSaveSpots(IReadOnlyList<Spot> spots, CancellationToken cancellationToken)
+    private async Task SaveSpots(IReadOnlyList<Spot> spots, CancellationToken cancellationToken)
     {
-        // Limit the number of jobs we run in parallel to the maximum number of connections to prevent waiting for
-        // a connection to become available in the pool
-        var parallelOptions = new ParallelOptions
-        {
-            MaxDegreeOfParallelism = _usenetOptions.Value.MaxConnections,
-            CancellationToken = cancellationToken
-        };
-
-        // Fetch the article headers, we will do this in parallel to speed up the process
-        await Parallel.ForEachAsync(spots, parallelOptions, _spotnetSpotService.FetchSpotDetails);
-
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
         // Save the fetched articles in bulk.
