@@ -53,13 +53,12 @@ internal sealed class SpotImportService : ISpotImportService
         if (group == null) return;
 
         var articleRanges = await GetArticleRangesToImport(spotnetOptions, group, cancellationToken);
-        await Import(spotnetOptions, articleRanges, cancellationToken);
+        await Import(articleRanges, cancellationToken);
 
         _logger.SpotImportFinished(DateTimeOffset.Now);
     }
 
-    private async Task Import(SpotnetOptions spotnetOptions, IReadOnlyList<NntpArticleRange> articleRanges,
-        CancellationToken cancellationToken)
+    private async Task Import(IReadOnlyList<NntpArticleRange> articleRanges, CancellationToken cancellationToken)
     {
         // The ranges only contains the article numbers to fetch, but no dates.
         // This means that within each batch we need to check if we reached the maximum age (retrieve after date).
@@ -69,7 +68,7 @@ internal sealed class SpotImportService : ISpotImportService
         {
             _logger.SpotImportBatchStarted(i + 1, articleRanges.Count, DateTimeOffset.Now);
 
-            var spots = await _spotnetSpotService.FetchSpotHeaders(spotnetOptions, articleRanges[i], cancellationToken);
+            var spots = await _spotnetSpotService.FetchSpotHeaders(articleRanges[i], cancellationToken);
             if (spots.Count > 0) await FetchAndSaveSpots(spots, cancellationToken);
 
             _logger.SpotImportBatchFinished(i + 1, articleRanges.Count, DateTimeOffset.Now, spots.Count);

@@ -1,5 +1,5 @@
-using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Spottarr.Configuration.Options;
 using Spottarr.Data.Entities;
 using Spottarr.Services.Contracts;
@@ -20,19 +20,23 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
 {
     private readonly ILogger<SpotnetSpotService> _logger;
     private readonly INntpClientPool _nntpClientPool;
+    private readonly IOptions<SpotnetOptions> _options;
 
-    public SpotnetSpotService(ILogger<SpotnetSpotService> logger, INntpClientPool nntpClientPool)
+    public SpotnetSpotService(ILogger<SpotnetSpotService> logger, INntpClientPool nntpClientPool,
+        IOptions<SpotnetOptions> options)
     {
         _logger = logger;
         _nntpClientPool = nntpClientPool;
+        _options = options;
     }
 
-    public async Task<IReadOnlyList<Spot>> FetchSpotHeaders(SpotnetOptions options, NntpArticleRange batch,
-        CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<Spot>> FetchSpotHeaders(NntpArticleRange batch, CancellationToken cancellationToken)
     {
         try
         {
             using var lease = await _nntpClientPool.GetLease();
+
+            var options = _options.Value;
 
             // Group is set for the lifetime of the connection
             var groupResponse = lease.Client.Group(options.SpotGroup);
@@ -49,19 +53,14 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
                 return [];
             }
 
-            // Parallelize to speed up parsing
-            var spots = new ConcurrentBag<Spot>();
-            var parallelOptions = new ParallelOptions
+            var spots = new List<Spot>();
+
+            foreach (var header in xOverResponse.Lines)
             {
-                MaxDegreeOfParallelism = 10,
-                CancellationToken = cancellationToken
-            };
+                ParseSpotHeader(header, spots);
+            }
 
-            Parallel.ForEach(xOverResponse.Lines, parallelOptions, spot =>
-                ParseSpotHeader(spot, spots, options.RetrieveAfter, options.ImportAdultContent)
-            );
-
-            return spots.ToList();
+            return spots;
         }
         catch (NntpException exception)
         {
@@ -134,8 +133,7 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
         }
     }
 
-    private void ParseSpotHeader(string header, ConcurrentBag<Spot> spots, DateTimeOffset retrieveAfter,
-        bool importAdultContent)
+    private void ParseSpotHeader(string header, List<Spot> spots)
     {
         var nntpHeaderResult = NntpHeaderParser.Parse(header);
         if (nntpHeaderResult.HasError)
@@ -161,7 +159,10 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
 
         var spot = spotnetHeader.ToSpot();
 
-        if (spot.SpottedAt < retrieveAfter || (!importAdultContent && spot.IsAdultContent()) || spot.IsTest())
+        var options = _options.Value;
+
+        if (spot.SpottedAt < options.RetrieveAfter || (!options.ImportAdultContent && spot.IsAdultContent()) ||
+            spot.IsTest())
             return;
 
         spots.Add(spot);
