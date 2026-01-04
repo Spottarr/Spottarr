@@ -44,6 +44,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<ISpotCleanUpService, SpotCleanUpService>()
             .AddScoped<ISpotnetAttachmentService, SpotnetAttachmentService>()
             .AddScoped<ISpotnetSpotService, SpotnetSpotService>()
+            .AddScoped<ISpotnetArticleNumberService, SpotnetArticleNumberService>()
             .AddScoped<IDatabaseMaintenanceService, DatabaseMaintenanceService>();
     }
 }
