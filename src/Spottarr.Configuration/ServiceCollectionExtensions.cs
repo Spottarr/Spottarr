@@ -13,6 +13,7 @@ public static class ServiceCollectionExtensions
         services.AddSettings<UsenetOptions>(configuration);
         services.AddSettings<SpotnetOptions>(configuration);
         services.AddSettings<DatabaseOptions>(configuration);
+        services.AddSettings<NewznabOptions>(configuration);
         return services;
     }
 
