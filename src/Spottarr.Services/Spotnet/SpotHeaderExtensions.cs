@@ -4,7 +4,7 @@ using Spottarr.Services.Helpers;
 
 namespace Spottarr.Services.Spotnet;
 
-internal static class SpotnetHeaderExtensions
+internal static class SpotHeaderExtensions
 {
     public static Spot ToSpot(this SpotHeader header)
     {
@@ -16,19 +16,21 @@ internal static class SpotnetHeaderExtensions
         {
             throw new InvalidOperationException(header.NntpHeader.Subject, ex);
         }
-        
     }
 
     private static Spot MapSpotHeader(SpotHeader header)
     {
         var now = DateTimeOffset.Now;
         var spotType = (SpotType)header.Category;
-        
-        var (imageFormats, imageSources, imageLanguages, imageGenres, imageTypes) = MapImageSubCategories(spotType, header.SubCategories);
-        var (audioFormats, audioSources, audioBitrates, audioGenres, audioTypes) = MapAudioSubCategories(spotType, header.SubCategories);
+
+        var (imageFormats, imageSources, imageLanguages, imageGenres, imageTypes) =
+            MapImageSubCategories(spotType, header.SubCategories);
+        var (audioFormats, audioSources, audioBitrates, audioGenres, audioTypes) =
+            MapAudioSubCategories(spotType, header.SubCategories);
         var (gamePlatforms, gameFormats, gameGenres, gameTypes) = MapGameSubCategories(spotType, header.SubCategories);
-        var (applicationPlatforms, applicationGenres, applicationTypes) = MapApplicationSubCategories(spotType, header.SubCategories);
-        
+        var (applicationPlatforms, applicationGenres, applicationTypes) =
+            MapApplicationSubCategories(spotType, header.SubCategories);
+
         return new Spot
         {
             Type = spotType,
@@ -63,7 +65,7 @@ internal static class SpotnetHeaderExtensions
         };
     }
 
-    private static(ICollection<ImageFormat> Formats,
+    private static (ICollection<ImageFormat> Formats,
         ICollection<ImageSource> Sources,
         ICollection<ImageLanguage> languages,
         ICollection<ImageGenre> Genres,
@@ -105,7 +107,7 @@ internal static class SpotnetHeaderExtensions
 
         return (formats, sources, languages, genres, types);
     }
-    
+
     private static (ICollection<AudioFormat> Formats,
         ICollection<AudioSource> Sources,
         ICollection<AudioBitrate> Bitrates,
@@ -118,7 +120,7 @@ internal static class SpotnetHeaderExtensions
         var bitrates = new List<AudioBitrate>();
         var genres = new List<AudioGenre>();
         var types = new List<AudioType>();
-        
+
         if (spotType == SpotType.Audio)
         {
             foreach (var (t, c) in subCategories)
@@ -148,7 +150,7 @@ internal static class SpotnetHeaderExtensions
 
         return (formats, sources, bitrates, genres, types);
     }
-    
+
     private static (ICollection<GamePlatform> Platforms,
         ICollection<GameFormat> Formats,
         ICollection<GameGenre> Genres,

@@ -6,6 +6,8 @@ using Spottarr.Configuration.Options;
 using Spottarr.Data;
 using Spottarr.Services.Contracts;
 using Spottarr.Services.Jobs;
+using Spottarr.Services.Spotnet;
+using Spottarr.Services.Spots;
 using Usenet.Nntp;
 using Usenet.Nntp.Contracts;
 
@@ -40,6 +42,9 @@ public static class ServiceCollectionExtensions
             .AddScoped<ISpotReIndexingService, SpotReIndexingService>()
             .AddScoped<ISpotSearchService, SpotSearchService>()
             .AddScoped<ISpotCleanUpService, SpotCleanUpService>()
+            .AddScoped<ISpotnetAttachmentService, SpotnetAttachmentService>()
+            .AddScoped<ISpotnetSpotService, SpotnetSpotService>()
+            .AddScoped<ISpotnetArticleNumberService, SpotnetArticleNumberService>()
             .AddScoped<IDatabaseMaintenanceService, DatabaseMaintenanceService>();
     }
 }

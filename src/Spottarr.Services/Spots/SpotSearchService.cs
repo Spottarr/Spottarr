@@ -7,7 +7,7 @@ using Spottarr.Services.Contracts;
 using Spottarr.Services.Models;
 using Spottarr.Services.Parsers;
 
-namespace Spottarr.Services;
+namespace Spottarr.Services.Spots;
 
 public class SpotSearchService : ISpotSearchService
 {
