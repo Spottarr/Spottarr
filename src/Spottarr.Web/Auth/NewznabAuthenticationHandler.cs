@@ -48,8 +48,8 @@ internal sealed class NewznabAuthenticationHandler : AuthenticationHandler<Authe
         return Task.FromResult(AuthenticateResult.Success(ticket));
     }
 
-    protected override Task HandleChallengeAsync(AuthenticationProperties properties) => WriteErrorResponse(Response);
-    protected override Task HandleForbiddenAsync(AuthenticationProperties properties) => WriteErrorResponse(Response);
+    protected override Task HandleChallengeAsync(AuthenticationProperties _) => WriteErrorResponse(Response);
+    protected override Task HandleForbiddenAsync(AuthenticationProperties _) => WriteErrorResponse(Response);
 
     private static Task WriteErrorResponse(HttpResponse response)
     {
