@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Spottarr.Configuration.Options;
 using Spottarr.Data;
 using Spottarr.Data.Entities;
+using Spottarr.Data.Helpers;
 using Spottarr.Services.Contracts;
 using Spottarr.Services.Models;
 using Spottarr.Services.Parsers;
@@ -132,13 +133,15 @@ public class SpotSearchService : ISpotSearchService
     private static async Task<(IList<Spot> Spots, int Count)> ExecuteFullTextSearchPostgres(IQueryable<Spot> query,
         SpotSearchFilter filter, string keywords, CancellationToken cancellationToken)
     {
-        var ftsQuery = query.Where(s => s.SearchVector.Matches(EF.Functions.ToTsQuery(keywords)));
+        var ftsQuery = query.Where(s =>
+            s.SearchVector.Matches(EF.Functions.ToTsQuery(SpottarrDataConstants.FullTextSearchLanguage, keywords)));
 
         var count = await ftsQuery.CountAsync(cancellationToken);
         if (count == 0) return ([], count);
 
         var spots = await ftsQuery
-            .OrderByDescending(s => s.SearchVector.Rank(EF.Functions.ToTsQuery(keywords)))
+            .OrderByDescending(s =>
+                s.SearchVector.Rank(EF.Functions.ToTsQuery(SpottarrDataConstants.FullTextSearchLanguage, keywords)))
             .ThenByDescending(s => s.SpottedAt)
             .Skip(filter.Offset)
             .Take(filter.Limit)
