@@ -5,7 +5,7 @@ namespace Spottarr.Web;
 
 internal static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddSpottarrWeb(this IServiceCollection services, IHostEnvironment environment)
+    public static IServiceCollection AddSpottarrWeb(this IServiceCollection services)
     {
         services.ConfigureHttpJsonOptions(options =>
         {
@@ -30,6 +30,16 @@ internal static class ServiceCollectionExtensions
             options.KnownProxies.Clear();
             options.ForwardedHeaders = ForwardedHeaders.All;
         });
+
+        services.AddAuthentication()
+            .AddCookie() // Default scheme for browser access
+            .AddNewznab();
+
+        services.AddAuthorization(options => options.AddPolicy("newznab", policy =>
+        {
+            policy.AddAuthenticationSchemes("newznab");
+            policy.RequireAuthenticatedUser();
+        }));
 
         services.AddAntiforgery();
         services.AddCors(c => c.AddDefaultPolicy(p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));

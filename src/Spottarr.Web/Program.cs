@@ -12,7 +12,7 @@ var builder = WebApplication.CreateSlimBuilder(args);
 builder.Logging.AddConsole(builder.Environment);
 builder.Configuration.MapConfigurationSources(builder.Environment);
 builder.Services.AddSpottarrServices(builder.Configuration);
-builder.Services.AddSpottarrWeb(builder.Environment);
+builder.Services.AddSpottarrWeb();
 builder.WebHost.UseStaticWebAssets();
 
 var app = builder.Build();
@@ -32,6 +32,8 @@ app.UseForwardedHeaders();
 app.UseDefaultFiles();
 app.UseMiddleware<NewznabQueryActionMiddleware>();
 app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseCors();
 app.UseAntiforgery();
 

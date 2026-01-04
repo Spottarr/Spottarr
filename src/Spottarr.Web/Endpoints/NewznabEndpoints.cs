@@ -24,7 +24,8 @@ public static class NewznabEndpoints
 
     private static RouteHandlerBuilder MapNewznabSearch(this RouteGroupBuilder group, string route) =>
         group.MapGet(route, SearchHandler)
-            .Produces(StatusCodes.Status200OK, contentType: MediaTypeNames.Application.Xml);
+            .Produces(StatusCodes.Status200OK, contentType: MediaTypeNames.Application.Xml)
+            .RequireAuthorization("newznab");
 
     private static void MapNewznab(this RouteGroupBuilder group)
     {
