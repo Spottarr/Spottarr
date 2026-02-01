@@ -33,6 +33,8 @@ internal sealed class SpotCleanUpService : ISpotCleanUpService
 
         var ftsRowCount = 0;
 
+        // SQLite stores the full text index in a separate virtual table
+        // so we need to clean that one up as well
         if (_dbContext.Provider == DatabaseProvider.Sqlite)
         {
             ftsRowCount = await _dbContext.FtsSpots
