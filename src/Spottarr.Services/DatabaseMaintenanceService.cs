@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Spottarr.Configuration.Options;
 using Spottarr.Data;
 using Spottarr.Data.Helpers;
 using Spottarr.Services.Contracts;
@@ -20,8 +19,6 @@ internal class DatabaseMaintenanceService : IDatabaseMaintenanceService
 
     public async Task Optimize(CancellationToken cancellationToken)
     {
-        if (_dbContext.Provider != DatabaseProvider.Sqlite) return;
-
         _logger.DatabaseOptimizationStarted(DateTimeOffset.Now);
 
         // Run SQLite vacuum command to shrink the database file size

@@ -31,9 +31,14 @@ internal sealed class SpotCleanUpService : ISpotCleanUpService
 
         _logger.SpotCleanupStarted(DateTimeOffset.Now, retentionCutoff);
 
-        var ftsRowCount = await _dbContext.FtsSpots
-            .Where(s => s.Spot != null && s.Spot.SpottedAt < retentionCutoff.UtcDateTime)
-            .ExecuteDeleteAsync(cancellationToken);
+        var ftsRowCount = 0;
+
+        if (_dbContext.Provider == DatabaseProvider.Sqlite)
+        {
+            ftsRowCount = await _dbContext.FtsSpots
+                .Where(s => s.Spot != null && s.Spot.SpottedAt < retentionCutoff.UtcDateTime)
+                .ExecuteDeleteAsync(cancellationToken);
+        }
 
         var rowCount = await _dbContext.Spots
             .Where(s => s.SpottedAt < retentionCutoff.UtcDateTime)
