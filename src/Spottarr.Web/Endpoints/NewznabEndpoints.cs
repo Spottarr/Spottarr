@@ -59,7 +59,7 @@ public static class NewznabEndpoints
                     var result = await spotnetAttachmentService.FetchNzb(id, cancellationToken);
                     return result == null
                         ? Results.NotFound()
-                        : Results.File(result, "application/x-nzb", $"{id}.nzb");
+                        : Results.File(result.Stream, "application/x-nzb", $"{result.FileName}.nzb");
                 })
             .Produces(StatusCodes.Status200OK, contentType: "application/x-nzb")
             .Produces(StatusCodes.Status404NotFound)

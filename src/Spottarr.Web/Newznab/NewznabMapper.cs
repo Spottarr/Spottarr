@@ -30,10 +30,10 @@ internal static class NewznabMapper
 
         return spot.Type switch
         {
-            SpotType.Image => MapImageSpot(spot, item),
-            SpotType.Audio => MapAudioSpot(spot, item),
-            SpotType.Game => MapGameSpot(spot, item),
-            SpotType.Application => MapApplicationSpot(spot, item),
+            SpotType.Image => spot.MapImageSpot(item),
+            SpotType.Audio => spot.MapAudioSpot(item),
+            SpotType.Game => spot.MapGameSpot(item),
+            SpotType.Application => spot.MapApplicationSpot(item),
             _ => item
         };
     }
@@ -66,23 +66,23 @@ internal static class NewznabMapper
     /// Adds newznab attributes for tv, movies, books and erotic categories
     /// An image spot can have multiple types, e.g. Erotic AND Series
     /// </summary>
-    private static SyndicationItem MapImageSpot(Spot spot, SyndicationItem item) =>
-        spot.ImageTypes.Aggregate(item, (current, type) => MapImageSpotType(type, spot, current));
+    private static SyndicationItem MapImageSpot(this Spot spot, SyndicationItem item) =>
+        spot.ImageTypes.Aggregate(item, (current, type) => spot.MapImageSpotType(type, current));
 
-    private static SyndicationItem MapImageSpotType(ImageType type, Spot spot, SyndicationItem item) =>
+    private static SyndicationItem MapImageSpotType(this Spot spot, ImageType type, SyndicationItem item) =>
         type switch
         {
-            ImageType.Series => MapTvSpot(spot, item),
-            ImageType.Movie => MapMovieSpot(spot, item),
-            ImageType.Erotic => MapEroticSpot(spot, item),
-            ImageType.Book => MapBookSpot(spot, item),
+            ImageType.Series => spot.MapTvSpot(item),
+            ImageType.Movie => spot.MapMovieSpot(item),
+            ImageType.Erotic => spot.MapEroticSpot(item),
+            ImageType.Book => spot.MapBookSpot(item),
             _ => item,
         };
 
     /// <summary>
     /// Adds newznab attributes for tv category
     /// </summary>
-    private static SyndicationItem MapTvSpot(Spot spot, SyndicationItem item) =>
+    private static SyndicationItem MapTvSpot(this Spot spot, SyndicationItem item) =>
         item.AddNewznabAttribute("season", string.Join(',', spot.Seasons))
             .AddNewznabAttribute("episode", string.Join(',', spot.Episodes))
             .AddNewznabAttribute("rageid", null)
@@ -103,7 +103,7 @@ internal static class NewznabMapper
     /// <summary>
     /// Adds newznab attributes for movies category
     /// </summary>
-    private static SyndicationItem MapMovieSpot(Spot spot, SyndicationItem item) =>
+    private static SyndicationItem MapMovieSpot(this Spot spot, SyndicationItem item) =>
         item.AddNewznabAttribute("video", string.Join(',', spot.ImageFormats.Select(Enum.GetName)))
             .AddNewznabAttribute("audio", null)
             .AddNewznabAttribute("resolution", null)
@@ -128,7 +128,7 @@ internal static class NewznabMapper
     /// Adds newznab attributes for erotic (unofficial) category
     /// </summary>
     /// <returns></returns>
-    private static SyndicationItem MapEroticSpot(Spot spot, SyndicationItem item) =>
+    private static SyndicationItem MapEroticSpot(this Spot spot, SyndicationItem item) =>
         item.AddNewznabAttribute("video", string.Join(',', spot.ImageFormats.Select(Enum.GetName)))
             .AddNewznabAttribute("audio", null)
             .AddNewznabAttribute("resolution", null)
@@ -142,7 +142,7 @@ internal static class NewznabMapper
     /// <summary>
     /// Adds newznab attributes for books category
     /// </summary>
-    private static SyndicationItem MapBookSpot(Spot spot, SyndicationItem item) =>
+    private static SyndicationItem MapBookSpot(this Spot spot, SyndicationItem item) =>
         item.AddNewznabAttribute("publisher", null)
             .AddNewznabAttribute("coverurl", null)
             .AddNewznabAttribute("review", null)
