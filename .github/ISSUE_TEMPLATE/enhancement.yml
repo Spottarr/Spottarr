@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        **Please note:** This template is for feature requests and enhancement ideas. If you're reporting a bug with existing functionality, please use the [Bug report](/issues/new?template=bug_report.yml) template instead.
+        ℹ️ This template is for feature requests and enhancement ideas. If you're reporting a bug with existing functionality, please use the **bug report** template instead.
         
         ⚠️ **AI-generated suggestions will be rejected.** Please describe your idea in your own words.
         ⚠️ **Incomplete suggestions will be rejected.** Please provide all required items below.
