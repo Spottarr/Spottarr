@@ -1,0 +1,34 @@
+name: Enhancement request
+description: Suggest an idea or new feature for this project
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Please note:** This template is for feature requests and enhancement ideas. If you're reporting a bug with existing functionality, please use the [Bug report](/issues/new?template=bug_report.yml) template instead.
+        
+        ⚠️ **AI-generated suggestions will be rejected.** Please describe your idea in your own words.
+        ⚠️ **Incomplete suggestions will be rejected.** Please provide all required items below.
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe what you would like to be added
+      description: A clear and concise description of what you want to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivate why you need this enhancement
+      description: A clear and concise motivation of why you need this feature.
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Add any other context or screenshots about the feature request here.
+    validations:
+      required: false

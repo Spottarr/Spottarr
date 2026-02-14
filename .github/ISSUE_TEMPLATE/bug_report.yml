@@ -1,0 +1,99 @@
+name: Bug report
+description: Report a bug with existing functionality
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Please note:** This template is only for reporting bugs with existing functionality. If you have a feature request or enhancement idea, please use the [Enhancement request](/issues/new?template=enhancement.yml) template instead.
+        
+        ⚠️ **AI-generated bug reports will be rejected.** Please describe the issue in your own words.
+        ⚠️ **Incomplete bug reports will be rejected.** Please provide all required items below.
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: To Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain your problem. You can attach images or log files by clicking this area to highlight it and then dragging files in.
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error message
+      description: If applicable, add any logs or error messages to help explain your problem.
+      render: shell
+    validations:
+      required: false
+
+  - type: input
+    id: os
+    attributes:
+      label: OS and version
+      placeholder: e.g. macOS 14 Sonoma
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: OS Platform
+      options:
+        - x64
+        - arm64
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Spottarr Version
+      placeholder: e.g. 1.1.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: docker-compose
+    attributes:
+      label: Docker compose configuration
+      description: Make sure to remove any sensitive credentials
+      render: yaml
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Add any other context about the problem here.
+    validations:
+      required: false
