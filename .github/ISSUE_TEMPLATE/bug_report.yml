@@ -1,5 +1,6 @@
 name: Bug report
 description: Report a bug with existing functionality
+type: Bug
 labels: ["bug"]
 body:
   - type: markdown
