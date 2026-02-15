@@ -34,19 +34,19 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
     {
         try
         {
-            using var lease = await _nntpClientPool.GetLease();
+            using var lease = await _nntpClientPool.GetLease(cancellationToken);
 
             var options = _options.Value;
 
             // Group is set for the lifetime of the connection
-            var groupResponse = lease.Client.Group(options.SpotGroup);
+            var groupResponse = await lease.Client.GroupAsync(options.SpotGroup, cancellationToken);
             if (!groupResponse.Success)
             {
                 _logger.CouldNotRetrieveSpotGroup(options.SpotGroup, groupResponse.Code, groupResponse.Message);
                 return [];
             }
 
-            var xOverResponse = lease.Client.Xover(batch);
+            var xOverResponse = await lease.Client.XoverAsync(batch, cancellationToken);
             if (!xOverResponse.Success)
             {
                 _logger.CouldNotRetrieveArticleHeaders(batch.From, batch.To, xOverResponse.Code, xOverResponse.Message);
@@ -90,10 +90,11 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
     {
         try
         {
-            using var lease = await _nntpClientPool.GetLease();
+            using var lease = await _nntpClientPool.GetLease(cancellationToken);
 
             // Fetch the article headers which contains the full spot detail in XML format
-            var spotArticleResponse = lease.Client.Article(new NntpMessageId(spot.MessageId));
+            var spotArticleResponse =
+                await lease.Client.ArticleAsync(new NntpMessageId(spot.MessageId), cancellationToken);
             if (!spotArticleResponse.Success)
             {
                 _logger.CouldNotRetrieveArticle(spot.MessageId, spotArticleResponse.Code, spotArticleResponse.Message);
