@@ -15,13 +15,13 @@ internal static class NntpHeaderParser
 
         var articleNumber = long.Parse(fields[0], CultureInfo.InvariantCulture);
         var date = HeaderDateParser.Parse(fields[3]);
-        
+
         if (date.HasError)
             return new ParserResult<NntpHeader>(date.Error);
-        
+
         var bytes = fields[6].Length == 0 ? 0 : long.Parse(fields[6], CultureInfo.InvariantCulture);
         var lines = fields[7].Length == 0 ? 0 : int.Parse(fields[7], CultureInfo.InvariantCulture);
-        
+
         return new ParserResult<NntpHeader>(new NntpHeader
         {
             ArticleNumber = articleNumber,
