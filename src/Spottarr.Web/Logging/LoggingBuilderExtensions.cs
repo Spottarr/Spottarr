@@ -2,7 +2,7 @@ using Spottarr.Services.Helpers;
 
 namespace Spottarr.Web.Logging;
 
-public static class LoggingBuilderExtensions
+internal static class LoggingBuilderExtensions
 {
     public static ILoggingBuilder AddConsole(this ILoggingBuilder builder, IHostEnvironment environment) =>
         environment.IsContainer()

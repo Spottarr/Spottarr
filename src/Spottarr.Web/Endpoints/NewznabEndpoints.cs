@@ -11,7 +11,7 @@ using Spottarr.Web.Newznab.Models;
 
 namespace Spottarr.Web.Endpoints;
 
-public static class NewznabEndpoints
+internal static class NewznabEndpoints
 {
     public const string PathPrefix = "/newznab/api";
     public const string ActionParameter = "t";
