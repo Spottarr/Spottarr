@@ -34,7 +34,7 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
     {
         try
         {
-            using var lease = await _nntpClientPool.GetLease();
+            using var lease = await _nntpClientPool.GetLease(cancellationToken);
 
             var options = _options.Value;
 
@@ -90,7 +90,7 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
     {
         try
         {
-            using var lease = await _nntpClientPool.GetLease();
+            using var lease = await _nntpClientPool.GetLease(cancellationToken);
 
             // Fetch the article headers which contains the full spot detail in XML format
             var spotArticleResponse = lease.Client.Article(new NntpMessageId(spot.MessageId));

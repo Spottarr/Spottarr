@@ -36,7 +36,7 @@ internal sealed class SpotnetAttachmentService : ISpotnetAttachmentService
 
         try
         {
-            using var lease = await _nntpClientPool.GetLease();
+            using var lease = await _nntpClientPool.GetLease(cancellationToken);
             var nzbMessageId = spot.NzbMessageId;
 
             // Fetch the article headers which contains the NZB payload
