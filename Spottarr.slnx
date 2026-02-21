@@ -2,7 +2,6 @@
     <Folder Name="/solution/">
       <File Path=".editorconfig" />
       <File Path=".gitignore" />
-      <File Path=".globalconfig" />
       <File Path="appsettings.Development.json" />
       <File Path="appsettings.json" />
       <File Path="appsettings.Production.json" />
