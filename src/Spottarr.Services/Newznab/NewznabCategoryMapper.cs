@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using Spottarr.Data.Entities;
 using Spottarr.Data.Entities.Enums;
+
 #pragma warning disable CS0618 // Type or member is obsolete
 
 namespace Spottarr.Services.Newznab;
@@ -113,7 +114,7 @@ internal static class NewznabCategoryMapper
     private static void MapSeries(Spot spot, HashSet<NewznabCategory> categories)
     {
         categories.Add(NewznabCategory.Tv);
-        
+
         foreach (var imageSource in spot.ImageSources)
         {
             categories.Add(imageSource switch
@@ -164,7 +165,7 @@ internal static class NewznabCategoryMapper
     private static void MapBook(Spot spot, HashSet<NewznabCategory> categories)
     {
         categories.Add(NewznabCategory.Books);
-        
+
         foreach (var imageSource in spot.ImageSources)
         {
             categories.Add(imageSource switch
@@ -215,7 +216,7 @@ internal static class NewznabCategoryMapper
     private static void MapErotic(Spot spot, HashSet<NewznabCategory> categories)
     {
         categories.Add(NewznabCategory.Xxx);
-        
+
         foreach (var imageSource in spot.ImageSources)
         {
             categories.Add(imageSource switch
@@ -271,7 +272,7 @@ internal static class NewznabCategoryMapper
     private static void MapAudio(Spot spot, HashSet<NewznabCategory> categories)
     {
         categories.Add(NewznabCategory.Audio);
-        
+
         foreach (var audioType in spot.AudioTypes)
         {
             categories.Add(audioType switch
@@ -283,7 +284,7 @@ internal static class NewznabCategoryMapper
                 _ => NewznabCategory.None
             });
         }
-        
+
         foreach (var audioFormat in spot.AudioFormats)
         {
             categories.Add(audioFormat switch
@@ -306,7 +307,7 @@ internal static class NewznabCategoryMapper
     {
         categories.Add(NewznabCategory.Pc);
         categories.Add(NewznabCategory.PcGames);
-        
+
         foreach (var gamePlatform in spot.GamePlatforms)
         {
             categories.Add(gamePlatform switch
@@ -319,10 +320,10 @@ internal static class NewznabCategoryMapper
                 GamePlatform.Psp => NewznabCategory.None,
                 GamePlatform.XBox => NewznabCategory.None,
                 GamePlatform.XBox360 => NewznabCategory.None,
-                GamePlatform.GameboyAdvance =>  NewznabCategory.None,
+                GamePlatform.GameboyAdvance => NewznabCategory.None,
                 GamePlatform.Gamecube => NewznabCategory.None,
                 GamePlatform.NintendoDs => NewznabCategory.None,
-                GamePlatform.NintendoWii =>  NewznabCategory.None,
+                GamePlatform.NintendoWii => NewznabCategory.None,
                 GamePlatform.Playstation3 => NewznabCategory.None,
                 GamePlatform.WindowsPhone => NewznabCategory.PcMobileOther,
                 GamePlatform.IOs => NewznabCategory.PcMobileiOs,
@@ -338,7 +339,7 @@ internal static class NewznabCategoryMapper
     private static void MapApplication(Spot spot, HashSet<NewznabCategory> categories)
     {
         categories.Add(NewznabCategory.Pc);
-        
+
         foreach (var gamePlatform in spot.ApplicationPlatforms)
         {
             categories.Add(gamePlatform switch

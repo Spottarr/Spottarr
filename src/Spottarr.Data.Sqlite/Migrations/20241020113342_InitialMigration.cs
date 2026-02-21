@@ -78,7 +78,7 @@ namespace Spottarr.Data.Migrations
                 });
             */
             migrationBuilder.Sql("CREATE VIRTUAL TABLE FtsSpots USING fts5(Title, Description)");
-            
+
             migrationBuilder.CreateIndex(
                 name: "IX_Spots_MessageId",
                 table: "Spots",
