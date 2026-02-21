@@ -82,7 +82,7 @@ internal sealed class SpotImportService : ISpotImportService
     {
         try
         {
-            using var lease = await _nntpClientPool.GetLease();
+            using var lease = await _nntpClientPool.GetLease(cancellationToken);
 
             // Switch to the configured usenet group to verify that it exists.
             var groupResponse = lease.Client.Group(group);

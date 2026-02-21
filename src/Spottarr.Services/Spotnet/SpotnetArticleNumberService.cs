@@ -51,7 +51,7 @@ internal sealed class SpotnetArticleNumberService : ISpotnetArticleNumberService
         {
             var options = _options.Value;
 
-            using var lease = await _nntpClientPool.GetLease();
+            using var lease = await _nntpClientPool.GetLease(cancellationToken);
 
             // Group is set for the lifetime of the connection
             var groupResponse = lease.Client.Group(options.SpotGroup);
