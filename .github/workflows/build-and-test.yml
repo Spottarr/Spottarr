@@ -54,6 +54,9 @@ jobs:
     
     - name: Restore packages
       run: dotnet restore
+      
+    - name: Format
+      run: dotnet format --verify-no-changes --verbosity diagnostic
     
     - name: Build
       run: dotnet build --no-restore
