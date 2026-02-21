@@ -1,3 +1,9 @@
+root = true
+
+# Consider calling ConfigureAwait on the awaited task
+[*.cs]
+dotnet_diagnostic.CA2007.severity = none
+
 # Disable checks in generated migrations
 [{src/Spottarr.Data.Sqlite/Migrations/*.cs,src/Spottarr.Data.PostgreSql/Migrations/*.cs}]
 dotnet_diagnostic.CA1062.severity = none
@@ -5,9 +11,6 @@ dotnet_diagnostic.CA1861.severity = none
 dotnet_diagnostic.CA1825.severity = none
 
 # xUnit requires public test classes, disable warning about making them internal
-[{tests/Spottarr.Tests/*.cs}]
+[tests/Spottarr.Tests/*.cs]
 dotnet_diagnostic.CA1515.severity = none
 
-# Consider calling ConfigureAwait on the awaited task
-[*.cs]
-dotnet_diagnostic.CA2007.severity = none
