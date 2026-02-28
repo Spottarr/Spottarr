@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <OutputType>Exe</OutputType>
@@ -19,5 +18,4 @@
     <ProjectReference Include="..\..\src\Spottarr.Services\Spottarr.Services.csproj" />
     <ProjectReference Include="..\..\src\Spottarr.Web\Spottarr.Web.csproj" />
   </ItemGroup>
-
 </Project>

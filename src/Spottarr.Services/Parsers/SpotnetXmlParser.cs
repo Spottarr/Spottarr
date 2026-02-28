@@ -10,13 +10,18 @@ internal class SpotnetXmlParser
     {
         Async = true,
         // Spot XML headers often contain invalid characters
-        CheckCharacters = false
+        CheckCharacters = false,
     };
 
-    public static Task<ParserResult<SpotnetXml>> Parse(string xml, CancellationToken cancellationToken) =>
-        Parse([xml], cancellationToken);
+    public static Task<ParserResult<SpotnetXml>> Parse(
+        string xml,
+        CancellationToken cancellationToken
+    ) => Parse([xml], cancellationToken);
 
-    public static async Task<ParserResult<SpotnetXml>> Parse(IList<string> xml, CancellationToken cancellationToken)
+    public static async Task<ParserResult<SpotnetXml>> Parse(
+        IList<string> xml,
+        CancellationToken cancellationToken
+    )
     {
         xml = xml.Select(SpotnetXmlCleaner.Clean).ToList();
 

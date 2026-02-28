@@ -10,8 +10,11 @@ internal sealed partial class NewznabOperationTransformer : IOpenApiDocumentTran
     [GeneratedRegex($"^({NewznabEndpoints.PathPrefix})/(?<action>[^/]+)", RegexOptions.IgnoreCase)]
     private static partial Regex NewznabPathRegex();
 
-    public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context,
-        CancellationToken cancellationToken)
+    public Task TransformAsync(
+        OpenApiDocument document,
+        OpenApiDocumentTransformerContext context,
+        CancellationToken cancellationToken
+    )
     {
         var regex = NewznabPathRegex();
         var adjustedPaths = new OpenApiPaths();

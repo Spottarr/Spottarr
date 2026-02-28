@@ -10,150 +10,223 @@ public enum ImageGenre
 {
     [Display(Name = "Action (Movies)")]
     Action = 0,
+
     [Display(Name = "Adventure (Movies/Books)")]
     Adventure = 1,
+
     [Display(Name = "Animation (Movies)")]
     Animation = 2,
+
     [Display(Name = "Cabaret (Movies)")]
     Cabaret = 3,
+
     [Display(Name = "Comedy (Movies)")]
     Comedy = 4,
+
     [Display(Name = "Crime (Movies/Books)")]
     Crime = 5,
+
     [Display(Name = "Documentary (Movies)")]
     Documentary = 6,
+
     [Display(Name = "Drama (Movies/Books)")]
     Drama = 7,
+
     [Display(Name = "Family (Movies)")]
     Family = 8,
+
     [Display(Name = "Fantasy (Movies/Books)")]
     Fantasy = 9,
+
     [Display(Name = "Arthouse (Movies)")]
     Arthouse = 10,
+
     [Display(Name = "Television (Movies)")]
     Television = 11,
+
     [Display(Name = "Horror (Movies)")]
     Horror = 12,
+
     [Display(Name = "Music (Movies)")]
     Music = 13,
+
     [Display(Name = "Musical (Movies)")]
     Musical = 14,
+
     [Display(Name = "Mystery (Movies/Books)")]
     Mystery = 15,
+
     [Display(Name = "Romance (Movies/Books)")]
     Romance = 16,
+
     [Display(Name = "Science Fiction (Movies/Books)")]
     ScienceFiction = 17,
+
     [Display(Name = "Sports (Movies)")]
     Sports = 18,
+
     [Display(Name = "Short (Movies)")]
     ShortMovies = 19,
+
     [Display(Name = "Thriller (Movies)")]
     Thriller = 20,
+
     [Display(Name = "War (Movies/Books)")]
     War = 21,
+
     [Display(Name = "Western (Movies)")]
     Western = 22,
+
     [Display(Name = "Other")]
     Other = 27,
+
     [Display(Name = "Asian (Movies)")]
     Asian = 28,
+
     [Display(Name = "Anime (Movies)")]
     Anime = 29,
+
     [Display(Name = "Cover (Books)")]
     Cover = 30,
+
     [Display(Name = "Comic (Books)")]
     Comic = 31,
+
     [Display(Name = "Cartoon (Movies)")]
     Cartoon = 32,
+
     [Display(Name = "Kids (Movies)")]
     Kids = 33,
+
     [Display(Name = "Business (Books)")]
     Business = 34,
+
     [Display(Name = "Computer (Books)")]
     Computer = 35,
+
     [Display(Name = "Hobby (Books)")]
     Hobby = 36,
+
     [Display(Name = "Cooking (Books)")]
     Cooking = 37,
+
     [Display(Name = "Knutselen (Books)")]
     Knutselen = 38,
+
     [Display(Name = "Handwerk (Books)")]
     Handwerk = 39,
+
     [Display(Name = "Health (Books)")]
     Health = 40,
+
     [Display(Name = "History (Movies/Books)")]
     History = 41,
+
     [Display(Name = "Psychology (Books)")]
     Psychology = 42,
+
     [Display(Name = "Newspaper (Books)")]
     Newspaper = 43,
+
     [Display(Name = "Magazine (Books)")]
     Magazine = 44,
+
     [Display(Name = "Science (Books)")]
     Science = 45,
+
     [Display(Name = "Woman (Books)")]
     Woman = 46,
+
     [Display(Name = "Religion (Books)")]
     Religion = 47,
+
     [Display(Name = "Roman (Books)")]
     Roman = 48,
+
     [Display(Name = "Biography (Books)")]
     Biography = 49,
+
     [Display(Name = "Detective (Movies/Books)")]
     Detective = 50,
+
     [Display(Name = "Animals (Movies/Books)")]
     Animals = 51,
+
     [Display(Name = "Travel (Books)")]
     Travel = 53,
+
     [Display(Name = "Non-fiction (Books)")]
     NonFiction = 55,
+
     [Display(Name = "Poetry (Books)")]
     Poetry = 57,
+
     [Display(Name = "Fairytale (Books)")]
     Fairytale = 58,
+
     [Display(Name = "Bi (Erotic)")]
     BiLegacy = 26,
+
     [Display(Name = "Lesbian (Erotic)")]
     LesbianLegacy = 25,
+
     [Display(Name = "Gay (Erotic)")]
     GayLegacy = 24,
+
     [Display(Name = "Straight (Erotic)")]
     StraightLegacy = 23,
+
     [Display(Name = "Bi (Erotic)")]
     Bi = 72,
+
     [Display(Name = "Lesbian (Erotic)")]
     Lesbian = 73,
+
     [Display(Name = "Gay (Erotic)")]
     Gay = 74,
+
     [Display(Name = "Straight (Erotic)")]
     Straight = 75,
+
     [Display(Name = "Amateur (Erotic)")]
     Amateur = 76,
+
     [Display(Name = "Group (Erotic)")]
     Group = 77,
+
     [Display(Name = "POV (Erotic)")]
     Pov = 78,
+
     [Display(Name = "Solo (Erotic)")]
     Solo = 79,
+
     [Display(Name = "Young (Erotic)")]
     Young = 80,
+
     [Display(Name = "Soft (Erotic)")]
     Soft = 81,
+
     [Display(Name = "Fetish (Erotic)")]
     Fetish = 82,
+
     [Display(Name = "Old (Erotic)")]
     Old = 83,
+
     [Display(Name = "BBW (Erotic)")]
     Bbw = 84,
+
     [Display(Name = "SM (Erotic)")]
     Sm = 85,
+
     [Display(Name = "Rough (Erotic)")]
     Rough = 86,
+
     [Display(Name = "Ebony (Erotic)")]
     Ebony = 87,
+
     [Display(Name = "Hentai (Erotic)")]
     Hentai = 88,
+
     [Display(Name = "Outdoors (Erotic)")]
     Outdoors = 89,
 }

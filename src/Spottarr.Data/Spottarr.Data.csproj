@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
@@ -12,5 +11,4 @@
   <ItemGroup>
     <ProjectReference Include="..\Spottarr.Configuration\Spottarr.Configuration.csproj" />
   </ItemGroup>
-
 </Project>

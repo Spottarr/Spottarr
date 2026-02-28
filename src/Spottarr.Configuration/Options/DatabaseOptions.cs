@@ -14,5 +14,5 @@ public sealed class DatabaseOptions : IOptionsSection
 public enum DatabaseProvider
 {
     Sqlite,
-    Postgres
+    Postgres,
 }

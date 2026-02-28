@@ -8,9 +8,14 @@ namespace Spottarr.Web.Newznab.Models;
 
 internal sealed class MainCategory : IXmlWritable
 {
-    [XmlAttribute("id")] public int Id { get; init; }
-    [XmlAttribute("name")] public required string Name { get; init; }
-    [XmlElement("subcat")] public required Collection<Category> SubCategories { get; init; }
+    [XmlAttribute("id")]
+    public int Id { get; init; }
+
+    [XmlAttribute("name")]
+    public required string Name { get; init; }
+
+    [XmlElement("subcat")]
+    public required Collection<Category> SubCategories { get; init; }
 
     public void WriteXml(XmlWriter writer)
     {

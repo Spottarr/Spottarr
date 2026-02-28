@@ -6,8 +6,11 @@ namespace Spottarr.Web.Newznab.Models;
 
 internal sealed class Search : IXmlWritable
 {
-    [XmlAttribute("available")] public required string Available { get; init; }
-    [XmlAttribute("supportedParams")] public required string SupportedParams { get; init; }
+    [XmlAttribute("available")]
+    public required string Available { get; init; }
+
+    [XmlAttribute("supportedParams")]
+    public required string SupportedParams { get; init; }
 
     public void WriteXml(XmlWriter writer)
     {

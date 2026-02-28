@@ -15,15 +15,14 @@ namespace Spottarr.Data.Migrations
                 table: "Spots",
                 type: "TEXT",
                 nullable: false,
-                defaultValue: "[]");
+                defaultValue: "[]"
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "NewznabCategories",
-                table: "Spots");
+            migrationBuilder.DropColumn(name: "NewznabCategories", table: "Spots");
         }
     }
 }

@@ -22,7 +22,12 @@ internal sealed class NewznabQueryActionMiddleware
 
         var path = context.Request.Path;
 
-        if (!path.StartsWithSegments(NewznabEndpoints.PathPrefix, StringComparison.OrdinalIgnoreCase))
+        if (
+            !path.StartsWithSegments(
+                NewznabEndpoints.PathPrefix,
+                StringComparison.OrdinalIgnoreCase
+            )
+        )
         {
             await _next.Invoke(context);
             return;

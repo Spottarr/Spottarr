@@ -24,9 +24,11 @@ internal sealed class SpotReIndexingService : ISpotReIndexingService
     private readonly IDbContextFactory<SpottarrDbContext> _dbContextFactory;
     private readonly IOptions<SpotnetOptions> _spotnetOptions;
 
-    public SpotReIndexingService(ILogger<SpotReIndexingService> logger,
+    public SpotReIndexingService(
+        ILogger<SpotReIndexingService> logger,
         IDbContextFactory<SpottarrDbContext> dbContextFactory,
-        IOptions<SpotnetOptions> spotnetOptions)
+        IOptions<SpotnetOptions> spotnetOptions
+    )
     {
         _logger = logger;
         _dbContextFactory = dbContextFactory;
@@ -39,7 +41,9 @@ internal sealed class SpotReIndexingService : ISpotReIndexingService
 
         var options = _spotnetOptions.Value;
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-        var unIndexedSpotsCount = await dbContext.Spots.Where(s => s.IndexedAt == null).CountAsync(cancellationToken);
+        var unIndexedSpotsCount = await dbContext
+            .Spots.Where(s => s.IndexedAt == null)
+            .CountAsync(cancellationToken);
 
         if (unIndexedSpotsCount > 0)
         {
@@ -51,7 +55,12 @@ internal sealed class SpotReIndexingService : ISpotReIndexingService
 
                 var indexedSpots = await IndexBatch(options.ImportBatchSize, cancellationToken);
 
-                _logger.SpotIndexingBatchFinished(i + 1, batchCount, DateTimeOffset.Now, indexedSpots);
+                _logger.SpotIndexingBatchFinished(
+                    i + 1,
+                    batchCount,
+                    DateTimeOffset.Now,
+                    indexedSpots
+                );
             }
         }
 
@@ -61,13 +70,15 @@ internal sealed class SpotReIndexingService : ISpotReIndexingService
     private async Task<int> IndexBatch(int batchSize, CancellationToken cancellationToken)
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-        var spots = await dbContext.Spots.Where(s => s.IndexedAt == null)
+        var spots = await dbContext
+            .Spots.Where(s => s.IndexedAt == null)
             .AsNoTracking()
             .OrderBy(s => s.Id)
             .Take(batchSize)
             .ToListAsync(cancellationToken);
 
-        if (spots.Count == 0) return spots.Count;
+        if (spots.Count == 0)
+            return spots.Count;
 
         var now = DateTimeOffset.Now.UtcDateTime;
 
@@ -78,7 +89,10 @@ internal sealed class SpotReIndexingService : ISpotReIndexingService
 
             spot.Description = BbCodeParser.Parse(spot.Description);
 
-            var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(spot.Title, spot.Description);
+            var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(
+                spot.Title,
+                spot.Description
+            );
 
             spot.Years.Replace(years);
             spot.Seasons.Replace(seasons);
@@ -92,39 +106,51 @@ internal sealed class SpotReIndexingService : ISpotReIndexingService
 
         try
         {
-            await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(
+                cancellationToken
+            );
 
             if (dbContext.Provider == DatabaseProvider.Sqlite)
             {
                 // EF does not natively support FTS tables, so we have to delete and re-insert the records in case any already exist
-                await dbContext.FtsSpots
-                    .Where(f => spotIds.Contains(f.SpotId))
+                await dbContext
+                    .FtsSpots.Where(f => spotIds.Contains(f.SpotId))
                     .ExecuteDeleteAsync(cancellationToken);
 
-                var ftsSpots = spots.Select(s => new FtsSpot
-                {
-                    Title = s.Title,
-                    Description = s.Description ?? string.Empty
-                }).ToList();
+                var ftsSpots = spots
+                    .Select(s => new FtsSpot
+                    {
+                        Title = s.Title,
+                        Description = s.Description ?? string.Empty,
+                    })
+                    .ToList();
 
-                await dbContext.ExecuteBulkInsertAsync(ftsSpots, cancellationToken: cancellationToken);
+                await dbContext.ExecuteBulkInsertAsync(
+                    ftsSpots,
+                    cancellationToken: cancellationToken
+                );
             }
 
-            await dbContext.ExecuteBulkInsertAsync(spots, new OnConflictOptions<Spot>
-            {
-                Update = (existing, inserted) => new Spot
+            await dbContext.ExecuteBulkInsertAsync(
+                spots,
+                new OnConflictOptions<Spot>
                 {
-                    ReleaseTitle = inserted.ReleaseTitle,
-                    Years = inserted.Years,
-                    Seasons = inserted.Seasons,
-                    Episodes = inserted.Episodes,
-                    NewznabCategories = inserted.NewznabCategories,
-                    ImdbId = inserted.ImdbId,
-                    TvdbId = inserted.TvdbId,
-                    IndexedAt = inserted.IndexedAt,
-                    UpdatedAt = inserted.UpdatedAt,
-                }
-            }, cancellationToken);
+                    Update = (existing, inserted) =>
+                        new Spot
+                        {
+                            ReleaseTitle = inserted.ReleaseTitle,
+                            Years = inserted.Years,
+                            Seasons = inserted.Seasons,
+                            Episodes = inserted.Episodes,
+                            NewznabCategories = inserted.NewznabCategories,
+                            ImdbId = inserted.ImdbId,
+                            TvdbId = inserted.TvdbId,
+                            IndexedAt = inserted.IndexedAt,
+                            UpdatedAt = inserted.UpdatedAt,
+                        },
+                },
+                cancellationToken
+            );
             await transaction.CommitAsync(cancellationToken);
         }
         catch (DbException ex)

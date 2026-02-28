@@ -7,15 +7,24 @@ namespace Spottarr.Data.Helpers;
 
 internal static class DbContextOptionsBuilderExtensions
 {
-    public static DbContextOptionsBuilder UseProvider(this DbContextOptionsBuilder builder, DatabaseOptions options) =>
+    public static DbContextOptionsBuilder UseProvider(
+        this DbContextOptionsBuilder builder,
+        DatabaseOptions options
+    ) =>
         options.Provider switch
         {
             DatabaseProvider.Sqlite => builder
-                .UseSqlite($"Data Source={DbPathHelper.GetDbPath()}", x => x.MigrationsAssembly("Spottarr.Data.Sqlite"))
+                .UseSqlite(
+                    $"Data Source={DbPathHelper.GetDbPath()}",
+                    x => x.MigrationsAssembly("Spottarr.Data.Sqlite")
+                )
                 .UseBulkInsertSqlite(),
             DatabaseProvider.Postgres => builder
-                .UseNpgsql(options.ConnectionString, x => x.MigrationsAssembly("Spottarr.Data.PostgreSql"))
+                .UseNpgsql(
+                    options.ConnectionString,
+                    x => x.MigrationsAssembly("Spottarr.Data.PostgreSql")
+                )
                 .UseBulkInsertPostgreSql(),
-            _ => throw new InvalidOperationException("Invalid database provider")
+            _ => throw new InvalidOperationException("Invalid database provider"),
         };
 }

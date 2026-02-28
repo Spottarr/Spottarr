@@ -9,7 +9,8 @@ public sealed class SpotnetXml : IXmlReadable<SpotnetXml>
 {
     public const string HeaderName = "X-XML";
 
-    [XmlElement(ElementName = "Posting")] public Posting Posting { get; set; } = null!;
+    [XmlElement(ElementName = "Posting")]
+    public Posting Posting { get; set; } = null!;
 
     public static async Task<SpotnetXml> ReadXml(XmlReader reader)
     {

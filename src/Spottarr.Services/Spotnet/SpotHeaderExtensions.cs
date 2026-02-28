@@ -27,7 +27,10 @@ internal static class SpotHeaderExtensions
             MapImageSubCategories(spotType, header.SubCategories);
         var (audioFormats, audioSources, audioBitrates, audioGenres, audioTypes) =
             MapAudioSubCategories(spotType, header.SubCategories);
-        var (gamePlatforms, gameFormats, gameGenres, gameTypes) = MapGameSubCategories(spotType, header.SubCategories);
+        var (gamePlatforms, gameFormats, gameGenres, gameTypes) = MapGameSubCategories(
+            spotType,
+            header.SubCategories
+        );
         var (applicationPlatforms, applicationGenres, applicationTypes) =
             MapApplicationSubCategories(spotType, header.SubCategories);
 
@@ -65,12 +68,13 @@ internal static class SpotHeaderExtensions
         };
     }
 
-    private static (ICollection<ImageFormat> Formats,
+    private static (
+        ICollection<ImageFormat> Formats,
         ICollection<ImageSource> Sources,
         ICollection<ImageLanguage> languages,
         ICollection<ImageGenre> Genres,
-        ICollection<ImageType> Types)
-        MapImageSubCategories(SpotType spotType, IReadOnlyList<(char Type, int Code)> subCategories)
+        ICollection<ImageType> Types
+    ) MapImageSubCategories(SpotType spotType, IReadOnlyList<(char Type, int Code)> subCategories)
     {
         var formats = new List<ImageFormat>();
         var sources = new List<ImageSource>();
@@ -100,7 +104,9 @@ internal static class SpotHeaderExtensions
                         types.Add((ImageType)c);
                         break;
                     default:
-                        throw new InvalidOperationException($"Unsupported category type '{t}{c}' for image spot.");
+                        throw new InvalidOperationException(
+                            $"Unsupported category type '{t}{c}' for image spot."
+                        );
                 }
             }
         }
@@ -108,12 +114,13 @@ internal static class SpotHeaderExtensions
         return (formats, sources, languages, genres, types);
     }
 
-    private static (ICollection<AudioFormat> Formats,
+    private static (
+        ICollection<AudioFormat> Formats,
         ICollection<AudioSource> Sources,
         ICollection<AudioBitrate> Bitrates,
         ICollection<AudioGenre> Genres,
-        ICollection<AudioType> Types)
-        MapAudioSubCategories(SpotType spotType, IReadOnlyList<(char Type, int Code)> subCategories)
+        ICollection<AudioType> Types
+    ) MapAudioSubCategories(SpotType spotType, IReadOnlyList<(char Type, int Code)> subCategories)
     {
         var formats = new List<AudioFormat>();
         var sources = new List<AudioSource>();
@@ -143,7 +150,9 @@ internal static class SpotHeaderExtensions
                         types.Add((AudioType)c);
                         break;
                     default:
-                        throw new InvalidOperationException($"Unsupported category type '{t}{c}' for audio spot.");
+                        throw new InvalidOperationException(
+                            $"Unsupported category type '{t}{c}' for audio spot."
+                        );
                 }
             }
         }
@@ -151,11 +160,12 @@ internal static class SpotHeaderExtensions
         return (formats, sources, bitrates, genres, types);
     }
 
-    private static (ICollection<GamePlatform> Platforms,
+    private static (
+        ICollection<GamePlatform> Platforms,
         ICollection<GameFormat> Formats,
         ICollection<GameGenre> Genres,
-        ICollection<GameType> Types)
-        MapGameSubCategories(SpotType spotType, IReadOnlyList<(char Type, int Code)> subCategories)
+        ICollection<GameType> Types
+    ) MapGameSubCategories(SpotType spotType, IReadOnlyList<(char Type, int Code)> subCategories)
     {
         var platforms = new List<GamePlatform>();
         var formats = new List<GameFormat>();
@@ -181,7 +191,9 @@ internal static class SpotHeaderExtensions
                         types.Add((GameType)c);
                         break;
                     default:
-                        throw new InvalidOperationException($"Unsupported category type '{t}{c}' for game spot.");
+                        throw new InvalidOperationException(
+                            $"Unsupported category type '{t}{c}' for game spot."
+                        );
                 }
             }
         }
@@ -189,10 +201,14 @@ internal static class SpotHeaderExtensions
         return (platforms, formats, genres, types);
     }
 
-    private static (ICollection<ApplicationPlatform> Platforms,
+    private static (
+        ICollection<ApplicationPlatform> Platforms,
         ICollection<ApplicationGenre> Genres,
-        ICollection<ApplicationType> Types)
-        MapApplicationSubCategories(SpotType spotType, IReadOnlyList<(char Type, int Code)> subCategories)
+        ICollection<ApplicationType> Types
+    ) MapApplicationSubCategories(
+        SpotType spotType,
+        IReadOnlyList<(char Type, int Code)> subCategories
+    )
     {
         var platforms = new List<ApplicationPlatform>();
         var genres = new List<ApplicationGenre>();
@@ -215,7 +231,8 @@ internal static class SpotHeaderExtensions
                         break;
                     default:
                         throw new InvalidOperationException(
-                            $"Unsupported category type '{t}{c}' for application spot.");
+                            $"Unsupported category type '{t}{c}' for application spot."
+                        );
                 }
             }
         }

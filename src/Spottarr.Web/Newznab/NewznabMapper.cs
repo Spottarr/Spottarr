@@ -21,9 +21,12 @@ internal static class NewznabMapper
 
         if (!string.IsNullOrEmpty(spot.ReleaseTitle))
         {
-            item.Title = spot.Title == spot.ReleaseTitle
-                ? new TextSyndicationContent(spot.ReleaseTitle)
-                : new TextSyndicationContent($"{spot.ReleaseTitle} | {spot.Title.SanitizeXmlString()}");
+            item.Title =
+                spot.Title == spot.ReleaseTitle
+                    ? new TextSyndicationContent(spot.ReleaseTitle)
+                    : new TextSyndicationContent(
+                        $"{spot.ReleaseTitle} | {spot.Title.SanitizeXmlString()}"
+                    );
 
             item.AddNewznabAttribute("title", spot.Title);
         }
@@ -34,7 +37,7 @@ internal static class NewznabMapper
             SpotType.Audio => spot.MapAudioSpot(item),
             SpotType.Game => spot.MapGameSpot(item),
             SpotType.Application => spot.MapApplicationSpot(item),
-            _ => item
+            _ => item,
         };
     }
 
@@ -42,13 +45,19 @@ internal static class NewznabMapper
     /// Adds attributes valid for all categories
     /// </summary>
     private static SyndicationItem MapSpot(Spot spot, Uri detailsUri, Uri nzbUri) =>
-        new SyndicationItem(spot.Title.SanitizeXmlString(), spot.Description?.SanitizeXmlString(), nzbUri,
-                spot.Id.ToString(CultureInfo.InvariantCulture),
-                spot.UpdatedAt)
+        new SyndicationItem(
+            spot.Title.SanitizeXmlString(),
+            spot.Description?.SanitizeXmlString(),
+            nzbUri,
+            spot.Id.ToString(CultureInfo.InvariantCulture),
+            spot.UpdatedAt
+        )
             .AddNewznabDetailsUrl(detailsUri)
             .AddNewznabAttribute("size", spot.Bytes.ToString(CultureInfo.InvariantCulture))
-            .AddNewznabAttributes("category",
-                spot.NewznabCategories.Select(c => ((int)c).ToString(CultureInfo.InvariantCulture)))
+            .AddNewznabAttributes(
+                "category",
+                spot.NewznabCategories.Select(c => ((int)c).ToString(CultureInfo.InvariantCulture))
+            )
             .AddNewznabAttribute("guid", spot.Id.ToString(CultureInfo.InvariantCulture))
             .AddNewznabAttribute("files", null)
             .AddNewznabAttribute("poster", spot.Spotter)
@@ -69,7 +78,11 @@ internal static class NewznabMapper
     private static SyndicationItem MapImageSpot(this Spot spot, SyndicationItem item) =>
         spot.ImageTypes.Aggregate(item, (current, type) => spot.MapImageSpotType(type, current));
 
-    private static SyndicationItem MapImageSpotType(this Spot spot, ImageType type, SyndicationItem item) =>
+    private static SyndicationItem MapImageSpotType(
+        this Spot spot,
+        ImageType type,
+        SyndicationItem item
+    ) =>
         type switch
         {
             ImageType.Series => spot.MapTvSpot(item),
@@ -88,8 +101,10 @@ internal static class NewznabMapper
             .AddNewznabAttribute("rageid", null)
             .AddNewznabAttribute("tvtitle", null)
             .AddNewznabAttribute("tvairdate", null)
-            .AddNewznabAttribute("imdb",
-                spot.ImdbId?.Replace("tt", string.Empty, StringComparison.OrdinalIgnoreCase) ?? null)
+            .AddNewznabAttribute(
+                "imdb",
+                spot.ImdbId?.Replace("tt", string.Empty, StringComparison.OrdinalIgnoreCase) ?? null
+            )
             .AddNewznabAttribute("video", string.Join(',', spot.ImageFormats.Select(Enum.GetName)))
             .AddNewznabAttribute("audio", null)
             .AddNewznabAttribute("resolution", null)
@@ -110,8 +125,10 @@ internal static class NewznabMapper
             .AddNewznabAttribute("framerate", null)
             .AddNewznabAttribute("language", MapImageAudioLanguage(spot.ImageLanguages))
             .AddNewznabAttribute("subs", MapImageSubtitleLanguage(spot.ImageLanguages))
-            .AddNewznabAttribute("imdb",
-                spot.ImdbId?.Replace("tt", string.Empty, StringComparison.OrdinalIgnoreCase) ?? null)
+            .AddNewznabAttribute(
+                "imdb",
+                spot.ImdbId?.Replace("tt", string.Empty, StringComparison.OrdinalIgnoreCase) ?? null
+            )
             .AddNewznabAttribute("imdbscore", null)
             .AddNewznabAttribute("imdbtitle", null)
             .AddNewznabAttribute("imdbtagline", null)
@@ -156,7 +173,10 @@ internal static class NewznabMapper
     /// </summary>
     private static SyndicationItem MapAudioSpot(this Spot spot, SyndicationItem item)
     {
-        return item.AddNewznabAttribute("audio", string.Join(',', spot.AudioFormats.Select(Enum.GetName)))
+        return item.AddNewznabAttribute(
+                "audio",
+                string.Join(',', spot.AudioFormats.Select(Enum.GetName))
+            )
             .AddNewznabAttribute("language", null)
             .AddNewznabAttribute("artist", null)
             .AddNewznabAttribute("album", null)
@@ -178,30 +198,44 @@ internal static class NewznabMapper
     private static SyndicationItem MapApplicationSpot(this Spot spot, SyndicationItem item) => item;
 
     private static string MapImageAudioLanguage(ICollection<ImageLanguage> languages) =>
-        string.Join(',', languages.Select(l => l switch
-        {
-            ImageLanguage.EnglishAudio => "English",
-            ImageLanguage.DutchAudio => "Dutch",
-            ImageLanguage.GermanAudioWritten => "German",
-            ImageLanguage.FrenchAudioWritten => "French",
-            ImageLanguage.SpanishAudioWritten => "Spanish",
-            ImageLanguage.AsianAudioWritten => "Japanese", // Asian, lol
-            _ => null
-        }).Where(s => s != null));
+        string.Join(
+            ',',
+            languages
+                .Select(l =>
+                    l switch
+                    {
+                        ImageLanguage.EnglishAudio => "English",
+                        ImageLanguage.DutchAudio => "Dutch",
+                        ImageLanguage.GermanAudioWritten => "German",
+                        ImageLanguage.FrenchAudioWritten => "French",
+                        ImageLanguage.SpanishAudioWritten => "Spanish",
+                        ImageLanguage.AsianAudioWritten => "Japanese", // Asian, lol
+                        _ => null,
+                    }
+                )
+                .Where(s => s != null)
+        );
 
     private static string MapImageSubtitleLanguage(ICollection<ImageLanguage> languages) =>
-        string.Join(',', languages.Select(l => l switch
-        {
-            ImageLanguage.DutchSubtitlesExternal => "Dutch",
-            ImageLanguage.DutchSubtitlesBakedIn => "Dutch",
-            ImageLanguage.EnglishSubtitlesExternal => "English",
-            ImageLanguage.EnglishSubtitlesBakedIn => "English",
-            ImageLanguage.DutchSubtitlesConfigurable => "Dutch",
-            ImageLanguage.EnglishSubtitlesConfigurable => "English",
-            ImageLanguage.GermanAudioWritten => "German",
-            ImageLanguage.FrenchAudioWritten => "French",
-            ImageLanguage.SpanishAudioWritten => "Spanish",
-            ImageLanguage.AsianAudioWritten => "Japanese", // Asian, lol
-            _ => null
-        }).Where(s => s != null));
+        string.Join(
+            ',',
+            languages
+                .Select(l =>
+                    l switch
+                    {
+                        ImageLanguage.DutchSubtitlesExternal => "Dutch",
+                        ImageLanguage.DutchSubtitlesBakedIn => "Dutch",
+                        ImageLanguage.EnglishSubtitlesExternal => "English",
+                        ImageLanguage.EnglishSubtitlesBakedIn => "English",
+                        ImageLanguage.DutchSubtitlesConfigurable => "Dutch",
+                        ImageLanguage.EnglishSubtitlesConfigurable => "English",
+                        ImageLanguage.GermanAudioWritten => "German",
+                        ImageLanguage.FrenchAudioWritten => "French",
+                        ImageLanguage.SpanishAudioWritten => "Spanish",
+                        ImageLanguage.AsianAudioWritten => "Japanese", // Asian, lol
+                        _ => null,
+                    }
+                )
+                .Where(s => s != null)
+        );
 }

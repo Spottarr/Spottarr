@@ -9,14 +9,19 @@ using Spottarr.Web.Newznab.Models;
 
 namespace Spottarr.Web.Auth;
 
-internal sealed class NewznabAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
+internal sealed class NewznabAuthenticationHandler
+    : AuthenticationHandler<AuthenticationSchemeOptions>
 {
     private const string ApiKeyQueryParameterName = "apikey";
 
     private readonly IOptions<NewznabOptions> _newznabOptions;
 
-    public NewznabAuthenticationHandler(IOptionsMonitor<AuthenticationSchemeOptions> options,
-        IOptions<NewznabOptions> newznabOptions, ILoggerFactory logger, UrlEncoder encoder)
+    public NewznabAuthenticationHandler(
+        IOptionsMonitor<AuthenticationSchemeOptions> options,
+        IOptions<NewznabOptions> newznabOptions,
+        ILoggerFactory logger,
+        UrlEncoder encoder
+    )
         : base(options, logger, encoder)
     {
         _newznabOptions = newznabOptions;
@@ -27,10 +32,10 @@ internal sealed class NewznabAuthenticationHandler : AuthenticationHandler<Authe
         var keyName = ApiKeyQueryParameterName;
         var expectedKey = _newznabOptions.Value.ApiKey;
 
-        var identity = new ClaimsIdentity([
-            new(ClaimTypes.NameIdentifier, Scheme.Name),
-            new(ClaimTypes.Name, Scheme.Name)
-        ], Scheme.Name);
+        var identity = new ClaimsIdentity(
+            [new(ClaimTypes.NameIdentifier, Scheme.Name), new(ClaimTypes.Name, Scheme.Name)],
+            Scheme.Name
+        );
 
         var principal = new ClaimsPrincipal(identity);
         var ticket = new AuthenticationTicket(principal, Scheme.Name);
@@ -39,8 +44,13 @@ internal sealed class NewznabAuthenticationHandler : AuthenticationHandler<Authe
         if (string.IsNullOrEmpty(expectedKey))
             return Task.FromResult(AuthenticateResult.Success(ticket));
 
-        if (!Request.Query.TryGetValue(keyName, out var providedKey) || StringValues.IsNullOrEmpty(providedKey))
-            return Task.FromResult(AuthenticateResult.Fail("An API key was configured, but none was provided."));
+        if (
+            !Request.Query.TryGetValue(keyName, out var providedKey)
+            || StringValues.IsNullOrEmpty(providedKey)
+        )
+            return Task.FromResult(
+                AuthenticateResult.Fail("An API key was configured, but none was provided.")
+            );
 
         if (!string.Equals(providedKey!, expectedKey, StringComparison.Ordinal))
             return Task.FromResult(AuthenticateResult.Fail("Invalid API key"));
@@ -48,8 +58,11 @@ internal sealed class NewznabAuthenticationHandler : AuthenticationHandler<Authe
         return Task.FromResult(AuthenticateResult.Success(ticket));
     }
 
-    protected override Task HandleChallengeAsync(AuthenticationProperties _) => WriteErrorResponse(Response);
-    protected override Task HandleForbiddenAsync(AuthenticationProperties _) => WriteErrorResponse(Response);
+    protected override Task HandleChallengeAsync(AuthenticationProperties _) =>
+        WriteErrorResponse(Response);
+
+    protected override Task HandleForbiddenAsync(AuthenticationProperties _) =>
+        WriteErrorResponse(Response);
 
     private static Task WriteErrorResponse(HttpResponse response)
     {
@@ -60,7 +73,7 @@ internal sealed class NewznabAuthenticationHandler : AuthenticationHandler<Authe
         var error = new Error
         {
             Code = ErrorCode.IncorrectUserCredentials,
-            Description = "Incorrect user credentials"
+            Description = "Incorrect user credentials",
         };
 
         return response.WriteAsXmlAsync(error, "error", CancellationToken.None);

@@ -22,15 +22,21 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
     private readonly INntpClientPool _nntpClientPool;
     private readonly IOptions<SpotnetOptions> _options;
 
-    public SpotnetSpotService(ILogger<SpotnetSpotService> logger, INntpClientPool nntpClientPool,
-        IOptions<SpotnetOptions> options)
+    public SpotnetSpotService(
+        ILogger<SpotnetSpotService> logger,
+        INntpClientPool nntpClientPool,
+        IOptions<SpotnetOptions> options
+    )
     {
         _logger = logger;
         _nntpClientPool = nntpClientPool;
         _options = options;
     }
 
-    public async Task<IReadOnlyList<Spot>> FetchSpotHeaders(NntpArticleRange batch, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<Spot>> FetchSpotHeaders(
+        NntpArticleRange batch,
+        CancellationToken cancellationToken
+    )
     {
         try
         {
@@ -42,14 +48,23 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
             var groupResponse = lease.Client.Group(options.SpotGroup);
             if (!groupResponse.Success)
             {
-                _logger.CouldNotRetrieveSpotGroup(options.SpotGroup, groupResponse.Code, groupResponse.Message);
+                _logger.CouldNotRetrieveSpotGroup(
+                    options.SpotGroup,
+                    groupResponse.Code,
+                    groupResponse.Message
+                );
                 return [];
             }
 
             var xOverResponse = lease.Client.Xover(batch);
             if (!xOverResponse.Success)
             {
-                _logger.CouldNotRetrieveArticleHeaders(batch.From, batch.To, xOverResponse.Code, xOverResponse.Message);
+                _logger.CouldNotRetrieveArticleHeaders(
+                    batch.From,
+                    batch.To,
+                    xOverResponse.Code,
+                    xOverResponse.Message
+                );
                 return [];
             }
 
@@ -69,15 +84,18 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
         }
     }
 
-    public async Task<IReadOnlyList<Spot>> FetchSpotDetails(IReadOnlyList<Spot> spots, int maxDegreeOfParallelism,
-        CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<Spot>> FetchSpotDetails(
+        IReadOnlyList<Spot> spots,
+        int maxDegreeOfParallelism,
+        CancellationToken cancellationToken
+    )
     {
         // Limit the number of jobs we run in parallel to the maximum number of connections to prevent waiting for
         // a connection to become available in the pool
         var parallelOptions = new ParallelOptions
         {
             MaxDegreeOfParallelism = maxDegreeOfParallelism,
-            CancellationToken = cancellationToken
+            CancellationToken = cancellationToken,
         };
 
         // Fetch the article headers, we will do this in parallel to speed up the process
@@ -96,7 +114,11 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
             var spotArticleResponse = lease.Client.Article(new NntpMessageId(spot.MessageId));
             if (!spotArticleResponse.Success)
             {
-                _logger.CouldNotRetrieveArticle(spot.MessageId, spotArticleResponse.Code, spotArticleResponse.Message);
+                _logger.CouldNotRetrieveArticle(
+                    spot.MessageId,
+                    spotArticleResponse.Code,
+                    spotArticleResponse.Message
+                );
                 return;
             }
 
@@ -105,7 +127,8 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
             if (!spotArticle.Headers.TryGetValue(SpotnetXml.HeaderName, out var spotnetXmlValues))
             {
                 // No spot XML header, fall back to plaintext body
-                spot.Description = string.Concat(spotArticle.Body).Truncate(Spot.DescriptionMaxLength);
+                spot.Description = string.Concat(spotArticle.Body)
+                    .Truncate(Spot.DescriptionMaxLength);
                 _logger.ArticleIsMissingSpotXmlHeader(spot.MessageId);
                 return;
             }
@@ -121,18 +144,28 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
 
             spot.NzbMessageId = spotDetails.Posting.Nzb.Segment.Truncate(Spot.SmallMaxLength);
             spot.ImageMessageId = spotDetails.Posting.Image?.Segment.Truncate(Spot.SmallMaxLength);
-            spot.Description = BbCodeParser.Parse(spotDetails.Posting.Description).Truncate(Spot.DescriptionMaxLength);
+            spot.Description = BbCodeParser
+                .Parse(spotDetails.Posting.Description)
+                .Truncate(Spot.DescriptionMaxLength);
             spot.Tag = spotDetails.Posting.Tag.Truncate(Spot.SmallMaxLength);
-            spot.Url = Uri.TryCreate(spotDetails.Posting.Website.Truncate(Spot.LargeMaxLength), UriKind.Absolute,
-                out var uri)
+            spot.Url = Uri.TryCreate(
+                spotDetails.Posting.Website.Truncate(Spot.LargeMaxLength),
+                UriKind.Absolute,
+                out var uri
+            )
                 ? uri
                 : null;
             spot.Filename = spotDetails.Posting.Filename.Truncate(Spot.SmallMaxLength);
             spot.Newsgroup = spotDetails.Posting.Newsgroup.Truncate(Spot.SmallMaxLength);
 
-            var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(spot.Title, spot.Description);
+            var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(
+                spot.Title,
+                spot.Description
+            );
 
-            spot.ReleaseTitle = ReleaseTitleParser.Parse(spot.Title, spot.Description)?.Truncate(Spot.MediumMaxLength);
+            spot.ReleaseTitle = ReleaseTitleParser
+                .Parse(spot.Title, spot.Description)
+                ?.Truncate(Spot.MediumMaxLength);
             spot.Years.Replace(years);
             spot.Seasons.Replace(seasons);
             spot.Episodes.Replace(episodes);
@@ -178,8 +211,11 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
 
         var options = _options.Value;
 
-        if (spot.SpottedAt < options.RetrieveAfter || (!options.ImportAdultContent && spot.IsAdultContent()) ||
-            spot.IsTest())
+        if (
+            spot.SpottedAt < options.RetrieveAfter
+            || (!options.ImportAdultContent && spot.IsAdultContent())
+            || spot.IsTest()
+        )
             return;
 
         spots.Add(spot);

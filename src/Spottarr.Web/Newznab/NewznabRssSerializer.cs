@@ -14,12 +14,12 @@ internal static class NewznabRssSerializer
         Indent = true,
         Async = true,
     };
-    
+
     public static MemoryStream Serialize(SyndicationFeed feed)
     {
         var ms = new MemoryStream();
         using var writer = XmlWriter.Create(ms, XmlWriterSettings);
-        
+
         var rssFormatter = new Rss20FeedFormatter(feed, false);
         rssFormatter.WriteTo(writer);
         writer.Flush();

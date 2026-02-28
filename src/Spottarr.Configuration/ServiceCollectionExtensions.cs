@@ -7,8 +7,10 @@ namespace Spottarr.Configuration;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddSpottarrConfiguration(this IServiceCollection services,
-        IConfiguration configuration)
+    public static IServiceCollection AddSpottarrConfiguration(
+        this IServiceCollection services,
+        IConfiguration configuration
+    )
     {
         services.AddSettings<UsenetOptions>(configuration);
         services.AddSettings<SpotnetOptions>(configuration);
@@ -17,7 +19,10 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    private static IServiceCollection AddSettings<T>(this IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection AddSettings<T>(
+        this IServiceCollection services,
+        IConfiguration configuration
+    )
         where T : class, IOptionsSection
     {
         ArgumentNullException.ThrowIfNull(configuration);
