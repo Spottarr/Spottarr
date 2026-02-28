@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <ItemGroup>
     <InternalsVisibleTo Include="Spottarr.Tests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
@@ -17,5 +16,4 @@
     <ProjectReference Include="..\Spottarr.Configuration\Spottarr.Configuration.csproj" />
     <ProjectReference Include="..\Spottarr.Data\Spottarr.Data.csproj" />
   </ItemGroup>
-
 </Project>

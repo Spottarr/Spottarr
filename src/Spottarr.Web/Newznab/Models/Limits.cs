@@ -7,8 +7,11 @@ namespace Spottarr.Web.Newznab.Models;
 
 internal sealed class Limits : IXmlWritable
 {
-    [XmlAttribute("max")] public int Max { get; init; }
-    [XmlAttribute("default")] public int Default { get; init; }
+    [XmlAttribute("max")]
+    public int Max { get; init; }
+
+    [XmlAttribute("default")]
+    public int Default { get; init; }
 
     public void WriteXml(XmlWriter writer)
     {

@@ -17,8 +17,11 @@ internal sealed class SpotnetArticleNumberService : ISpotnetArticleNumberService
     private readonly IOptions<SpotnetOptions> _options;
     private readonly ILogger<SpotnetArticleNumberService> _logger;
 
-    public SpotnetArticleNumberService(INntpClientPool nntpClientPool, IOptions<SpotnetOptions> options,
-        ILogger<SpotnetArticleNumberService> logger)
+    public SpotnetArticleNumberService(
+        INntpClientPool nntpClientPool,
+        IOptions<SpotnetOptions> options,
+        ILogger<SpotnetArticleNumberService> logger
+    )
     {
         _nntpClientPool = nntpClientPool;
         _options = options;
@@ -57,7 +60,11 @@ internal sealed class SpotnetArticleNumberService : ISpotnetArticleNumberService
             var groupResponse = lease.Client.Group(options.SpotGroup);
             if (!groupResponse.Success)
             {
-                _logger.CouldNotRetrieveSpotGroup(options.SpotGroup, groupResponse.Code, groupResponse.Message);
+                _logger.CouldNotRetrieveSpotGroup(
+                    options.SpotGroup,
+                    groupResponse.Code,
+                    groupResponse.Message
+                );
                 return articleNumber;
             }
 
@@ -80,21 +87,30 @@ internal sealed class SpotnetArticleNumberService : ISpotnetArticleNumberService
 
                     // Sometimes articles will just be unavailable
                     // In this case retry the next closest article
-                    if (date == null) articleToCheck--;
+                    if (date == null)
+                        articleToCheck--;
 
-                    // If no article is available when hitting the low watermark, give up. 
+                    // If no article is available when hitting the low watermark, give up.
                     if (articleToCheck < group.LowWaterMark)
                         throw new InvalidOperationException("No articles available");
                 }
 
-                if (date < options.RetrieveAfter) low = mid + 1;
-                else high = mid - 1;
+                if (date < options.RetrieveAfter)
+                    low = mid + 1;
+                else
+                    high = mid - 1;
 
                 articleNumber = low;
             }
 
-            _logger.FoundArticleNumberForRetrieveAfter(articleNumber, date, group.LowWaterMark, group.HighWaterMark,
-                options.RetrieveAfter, attempts);
+            _logger.FoundArticleNumberForRetrieveAfter(
+                articleNumber,
+                date,
+                group.LowWaterMark,
+                group.HighWaterMark,
+                options.RetrieveAfter,
+                attempts
+            );
             return articleNumber;
         }
         catch (NntpException exception)
@@ -121,13 +137,14 @@ internal sealed class SpotnetArticleNumberService : ISpotnetArticleNumberService
 
         // Xhdr can return headers for multiple articles, but we only need the first one
         // The header is in the format: <article number> <header value>, strip the article number.
-        var dateHeader = dateResponse.Lines
-            .FirstOrDefault(string.Empty)
+        var dateHeader = dateResponse
+            .Lines.FirstOrDefault(string.Empty)
             .Replace($"{mid} ", string.Empty, StringComparison.Ordinal);
 
         var date = HeaderDateParser.Parse(dateHeader);
 
-        if (!date.HasError) return date.Result;
+        if (!date.HasError)
+            return date.Result;
 
         _logger.CouldNotParseDateHeader(mid, date.Error);
         return null;

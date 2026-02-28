@@ -13,6 +13,11 @@ public class ApplicationVersionService : IApplicationVersionService
     {
         ArgumentNullException.ThrowIfNull(hostEnvironment);
 
-        Version = Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? DefaultVersion;
+        Version =
+            Assembly
+                .GetEntryAssembly()
+                ?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                ?.InformationalVersion
+            ?? DefaultVersion;
     }
 }

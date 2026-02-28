@@ -5,13 +5,15 @@ namespace Spottarr.Configuration.Helpers;
 
 public static class ConfigurationExtensions
 {
-    public static T GetSection<T>(this IConfiguration configuration) where T : class, IOptionsSection
+    public static T GetSection<T>(this IConfiguration configuration)
+        where T : class, IOptionsSection
     {
         ArgumentNullException.ThrowIfNull(configuration);
         return configuration.GetSection(T.Section).Get<T>()!;
     }
 
-    public static T? GetSectionOrDefault<T>(this IConfiguration configuration) where T : class, IOptionsSection
+    public static T? GetSectionOrDefault<T>(this IConfiguration configuration)
+        where T : class, IOptionsSection
     {
         ArgumentNullException.ThrowIfNull(configuration);
         return configuration.GetSection(T.Section).Get<T>();

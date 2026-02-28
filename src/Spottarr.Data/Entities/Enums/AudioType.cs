@@ -10,10 +10,13 @@ public enum AudioType
 {
     [Display(Name = "Album")]
     Album = 0,
+
     [Display(Name = "Live Set")]
     LiveSet = 1,
+
     [Display(Name = "Podcast")]
     Podcast = 2,
+
     [Display(Name = "Audiobook")]
     Audiobook = 3,
 }

@@ -15,7 +15,8 @@ namespace Spottarr.Data.Migrations
                 name: "Spots",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                    Id = table
+                        .Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Title = table.Column<string>(type: "TEXT", maxLength: 256, nullable: false),
                     Description = table.Column<string>(type: "TEXT", nullable: true),
@@ -47,12 +48,13 @@ namespace Spottarr.Data.Migrations
                     SpottedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     IndexedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Spots", x => x.Id);
-                });
+                }
+            );
 
             // See: https://www.bricelam.net/2020/08/08/sqlite-fts-and-efcore.html
             /*
@@ -83,17 +85,16 @@ namespace Spottarr.Data.Migrations
                 name: "IX_Spots_MessageId",
                 table: "Spots",
                 column: "MessageId",
-                unique: true);
+                unique: true
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "FtsSpots");
+            migrationBuilder.DropTable(name: "FtsSpots");
 
-            migrationBuilder.DropTable(
-                name: "Spots");
+            migrationBuilder.DropTable(name: "Spots");
         }
     }
 }

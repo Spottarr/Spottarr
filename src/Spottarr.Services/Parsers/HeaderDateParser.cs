@@ -9,7 +9,9 @@ internal static class HeaderDateParser
             var result = Usenet.Nntp.Parsers.HeaderDateParser.Parse(value);
             return result != null
                 ? new ParserResult<DateTimeOffset>(result.Value)
-                : new ParserResult<DateTimeOffset>($"Header date '{value}' is not in the correct format");
+                : new ParserResult<DateTimeOffset>(
+                    $"Header date '{value}' is not in the correct format"
+                );
         }
         catch (FormatException fex)
         {

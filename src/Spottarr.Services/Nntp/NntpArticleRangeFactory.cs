@@ -10,9 +10,11 @@ internal sealed class NntpArticleRangeFactory
     /// <param name="lowWaterMark">The oldest message sequence number to include in the ranges</param>
     /// <param name="highWaterMark">The newest message sequence number to include in the ranges</param>
     /// <param name="importBatchSize"></param>
-    public static IReadOnlyList<NntpArticleRange>
-        GetBatches(long lowWaterMark, long highWaterMark, int importBatchSize) =>
-        GetBatchesInternal(lowWaterMark, highWaterMark, importBatchSize).ToList();
+    public static IReadOnlyList<NntpArticleRange> GetBatches(
+        long lowWaterMark,
+        long highWaterMark,
+        int importBatchSize
+    ) => GetBatchesInternal(lowWaterMark, highWaterMark, importBatchSize).ToList();
 
     private static IEnumerable<NntpArticleRange> GetBatchesInternal(long min, long max, int size)
     {

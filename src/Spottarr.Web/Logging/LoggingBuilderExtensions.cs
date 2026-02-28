@@ -4,7 +4,10 @@ namespace Spottarr.Web.Logging;
 
 internal static class LoggingBuilderExtensions
 {
-    public static ILoggingBuilder AddConsole(this ILoggingBuilder builder, IHostEnvironment environment) =>
+    public static ILoggingBuilder AddConsole(
+        this ILoggingBuilder builder,
+        IHostEnvironment environment
+    ) =>
         environment.IsContainer()
             ? builder.AddSimpleConsole(options =>
             {

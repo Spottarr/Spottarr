@@ -6,8 +6,11 @@ namespace Spottarr.Web.Newznab.Models;
 
 internal class Error : IXmlWritable
 {
-    [XmlAttribute("code")] public required ErrorCode Code { get; init; }
-    [XmlAttribute("description")] public required string Description { get; init; }
+    [XmlAttribute("code")]
+    public required ErrorCode Code { get; init; }
+
+    [XmlAttribute("description")]
+    public required string Description { get; init; }
 
     public void WriteXml(XmlWriter writer)
     {

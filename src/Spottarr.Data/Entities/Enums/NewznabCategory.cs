@@ -182,5 +182,5 @@ public enum NewznabCategory
     CategoryNotDetermined = 7900,
 
     [Display(Name = "Custom")]
-    Custom = 100000
+    Custom = 100000,
 }

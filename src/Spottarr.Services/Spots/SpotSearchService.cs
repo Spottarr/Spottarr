@@ -15,15 +15,24 @@ public class SpotSearchService : ISpotSearchService
 
     public SpotSearchService(SpottarrDbContext dbContext) => _dbContext = dbContext;
 
-    public async Task<SpotSearchResponse> Search(SpotSearchFilter filter, CancellationToken cancellationToken)
+    public async Task<SpotSearchResponse> Search(
+        SpotSearchFilter filter,
+        CancellationToken cancellationToken
+    )
     {
         ArgumentNullException.ThrowIfNull(filter);
 
         // If year / episode / season is not explicitly set, try to extract it from the query
-        var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(filter.Query ?? string.Empty, string.Empty);
-        if (filter.Years.Count == 0) filter.Years.UnionWith(years);
-        if (filter.Seasons.Count == 0) filter.Seasons.UnionWith(seasons);
-        if (filter.Episodes.Count == 0) filter.Episodes.UnionWith(episodes);
+        var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(
+            filter.Query ?? string.Empty,
+            string.Empty
+        );
+        if (filter.Years.Count == 0)
+            filter.Years.UnionWith(years);
+        if (filter.Seasons.Count == 0)
+            filter.Seasons.UnionWith(seasons);
+        if (filter.Episodes.Count == 0)
+            filter.Episodes.UnionWith(episodes);
 
         var query = _dbContext.Spots.AsQueryable();
 
@@ -43,7 +52,9 @@ public class SpotSearchService : ISpotSearchService
             query = query.Where(s => s.AudioTypes.Any(y => filter.AudioTypes.Contains(y)));
 
         if (filter.ApplicationTypes.Count > 0)
-            query = query.Where(s => s.ApplicationTypes.Any(y => filter.ApplicationTypes.Contains(y)));
+            query = query.Where(s =>
+                s.ApplicationTypes.Any(y => filter.ApplicationTypes.Contains(y))
+            );
 
         if (filter.GameTypes.Count > 0)
             query = query.Where(s => s.GameTypes.Any(y => filter.GameTypes.Contains(y)));
@@ -64,20 +75,21 @@ public class SpotSearchService : ISpotSearchService
             ? await ExecuteFullTextSearch(query, filter, cancellationToken)
             : await ExecuteSearch(query, filter, cancellationToken);
 
-        return new SpotSearchResponse()
-        {
-            Spots = spots,
-            TotalCount = totalCount
-        };
+        return new SpotSearchResponse() { Spots = spots, TotalCount = totalCount };
     }
 
-    public Task<int> Count(CancellationToken cancellationToken) => _dbContext.Spots.CountAsync(cancellationToken);
+    public Task<int> Count(CancellationToken cancellationToken) =>
+        _dbContext.Spots.CountAsync(cancellationToken);
 
-    private static async Task<(IList<Spot>, int)> ExecuteSearch(IQueryable<Spot> query, SpotSearchFilter filter,
-        CancellationToken cancellationToken)
+    private static async Task<(IList<Spot>, int)> ExecuteSearch(
+        IQueryable<Spot> query,
+        SpotSearchFilter filter,
+        CancellationToken cancellationToken
+    )
     {
         var count = await query.CountAsync(cancellationToken);
-        if (count == 0) return ([], count);
+        if (count == 0)
+            return ([], count);
 
         var spots = await query
             .OrderByDescending(s => s.SpottedAt)
@@ -88,36 +100,55 @@ public class SpotSearchService : ISpotSearchService
         return (spots, count);
     }
 
-    private Task<(IList<Spot> Spots, int Count)> ExecuteFullTextSearch(IQueryable<Spot> query, SpotSearchFilter filter,
-        CancellationToken cancellationToken)
+    private Task<(IList<Spot> Spots, int Count)> ExecuteFullTextSearch(
+        IQueryable<Spot> query,
+        SpotSearchFilter filter,
+        CancellationToken cancellationToken
+    )
     {
-        var keywords = QueryExclusionParser.Parse(filter.Query, _dbContext.Provider) ?? string.Empty;
+        var keywords =
+            QueryExclusionParser.Parse(filter.Query, _dbContext.Provider) ?? string.Empty;
 
         return _dbContext.Provider switch
         {
-            DatabaseProvider.Sqlite => ExecuteFullTextSearchSqlite(query, filter, keywords, cancellationToken),
-            DatabaseProvider.Postgres => ExecuteFullTextSearchPostgres(query, filter, keywords, cancellationToken),
+            DatabaseProvider.Sqlite => ExecuteFullTextSearchSqlite(
+                query,
+                filter,
+                keywords,
+                cancellationToken
+            ),
+            DatabaseProvider.Postgres => ExecuteFullTextSearchPostgres(
+                query,
+                filter,
+                keywords,
+                cancellationToken
+            ),
             _ => throw new InvalidOperationException(
-                $"Database provider '{_dbContext.Provider}' is not supported for full-text search.")
+                $"Database provider '{_dbContext.Provider}' is not supported for full-text search."
+            ),
         };
     }
 
-    private async Task<(IList<Spot> Spots, int Count)> ExecuteFullTextSearchSqlite(IQueryable<Spot> query,
-        SpotSearchFilter filter, string keywords, CancellationToken cancellationToken)
+    private async Task<(IList<Spot> Spots, int Count)> ExecuteFullTextSearchSqlite(
+        IQueryable<Spot> query,
+        SpotSearchFilter filter,
+        string keywords,
+        CancellationToken cancellationToken
+    )
     {
         // Force inner join on FTS table
-        var ftsQuery = query.Join(_dbContext.FtsSpots,
+        var ftsQuery = query
+            .Join(
+                _dbContext.FtsSpots,
                 spot => spot.Id,
                 fts => fts.SpotId,
-                (spot, fts) => new SpotWithFts
-                {
-                    Spot = spot,
-                    Fts = fts
-                })
+                (spot, fts) => new SpotWithFts { Spot = spot, Fts = fts }
+            )
             .Where(x => x.Fts.Match == keywords);
 
         var count = await ftsQuery.CountAsync(cancellationToken);
-        if (count == 0) return ([], count);
+        if (count == 0)
+            return ([], count);
 
         var spots = await ftsQuery
             .OrderBy(x => x.Fts.Rank)
@@ -130,18 +161,29 @@ public class SpotSearchService : ISpotSearchService
         return (spots, count);
     }
 
-    private static async Task<(IList<Spot> Spots, int Count)> ExecuteFullTextSearchPostgres(IQueryable<Spot> query,
-        SpotSearchFilter filter, string keywords, CancellationToken cancellationToken)
+    private static async Task<(IList<Spot> Spots, int Count)> ExecuteFullTextSearchPostgres(
+        IQueryable<Spot> query,
+        SpotSearchFilter filter,
+        string keywords,
+        CancellationToken cancellationToken
+    )
     {
         var ftsQuery = query.Where(s =>
-            s.SearchVector.Matches(EF.Functions.ToTsQuery(SpottarrDataConstants.FullTextSearchLanguage, keywords)));
+            s.SearchVector.Matches(
+                EF.Functions.ToTsQuery(SpottarrDataConstants.FullTextSearchLanguage, keywords)
+            )
+        );
 
         var count = await ftsQuery.CountAsync(cancellationToken);
-        if (count == 0) return ([], count);
+        if (count == 0)
+            return ([], count);
 
         var spots = await ftsQuery
             .OrderByDescending(s =>
-                s.SearchVector.Rank(EF.Functions.ToTsQuery(SpottarrDataConstants.FullTextSearchLanguage, keywords)))
+                s.SearchVector.Rank(
+                    EF.Functions.ToTsQuery(SpottarrDataConstants.FullTextSearchLanguage, keywords)
+                )
+            )
             .ThenByDescending(s => s.SpottedAt)
             .Skip(filter.Offset)
             .Take(filter.Limit)

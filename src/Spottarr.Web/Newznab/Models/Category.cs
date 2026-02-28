@@ -7,8 +7,11 @@ namespace Spottarr.Web.Newznab.Models;
 
 internal class Category : IXmlWritable
 {
-    [XmlAttribute("id")] public int Id { get; init; }
-    [XmlAttribute("name")] public required string Name { get; init; }
+    [XmlAttribute("id")]
+    public int Id { get; init; }
+
+    [XmlAttribute("name")]
+    public required string Name { get; init; }
 
     public void WriteXml(XmlWriter writer)
     {

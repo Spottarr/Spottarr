@@ -20,17 +20,24 @@ internal sealed class SpotnetAttachmentService : ISpotnetAttachmentService
     public SpotnetAttachmentService(
         IDbContextFactory<SpottarrDbContext> dbContextFactory,
         INntpClientPool nntpClientPool,
-        ILogger<SpotnetAttachmentService> logger)
+        ILogger<SpotnetAttachmentService> logger
+    )
     {
         _dbContextFactory = dbContextFactory;
         _nntpClientPool = nntpClientPool;
         _logger = logger;
     }
 
-    public async Task<SpotAttachmentResponse?> FetchNzb(int spotId, CancellationToken cancellationToken)
+    public async Task<SpotAttachmentResponse?> FetchNzb(
+        int spotId,
+        CancellationToken cancellationToken
+    )
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-        var spot = await dbContext.Spots.FirstOrDefaultAsync(s => s.Id == spotId, cancellationToken);
+        var spot = await dbContext.Spots.FirstOrDefaultAsync(
+            s => s.Id == spotId,
+            cancellationToken
+        );
         if (spot == null || string.IsNullOrEmpty(spot.NzbMessageId))
             return null;
 
@@ -43,18 +50,18 @@ internal sealed class SpotnetAttachmentService : ISpotnetAttachmentService
             var nzbArticleResponse = lease.Client.Article(new NntpMessageId(nzbMessageId));
             if (!nzbArticleResponse.Success)
             {
-                _logger.CouldNotRetrieveArticle(spot.MessageId, nzbArticleResponse.Code, nzbArticleResponse.Message);
+                _logger.CouldNotRetrieveArticle(
+                    spot.MessageId,
+                    nzbArticleResponse.Code,
+                    nzbArticleResponse.Message
+                );
                 return null;
             }
 
             var nzbData = string.Concat(nzbArticleResponse.Article.Body);
             var stream = await NzbArticleParser.Parse(nzbData, cancellationToken);
 
-            return new SpotAttachmentResponse
-            {
-                FileName = spot.Title,
-                Stream = stream
-            };
+            return new SpotAttachmentResponse { FileName = spot.Title, Stream = stream };
         }
         catch (NntpException ex)
         {

@@ -10,13 +10,12 @@ namespace Spottarr.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("UPDATE Spots SET IndexedAt = NULL WHERE ReleaseTitle LIKE 'www.%'");
+            migrationBuilder.Sql(
+                "UPDATE Spots SET IndexedAt = NULL WHERE ReleaseTitle LIKE 'www.%'"
+            );
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-
-        }
+        protected override void Down(MigrationBuilder migrationBuilder) { }
     }
 }

@@ -4,7 +4,10 @@ namespace Spottarr.Services.Spotnet;
 
 internal static partial class SpotnetXmlCleaner
 {
-    [GeneratedRegex("(ImageWidth)|('Height=)|(\"Height=)|(Image$)|('$)|(\"$)", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(
+        "(ImageWidth)|('Height=)|(\"Height=)|(Image$)|('$)|(\"$)",
+        RegexOptions.IgnoreCase
+    )]
     private static partial Regex SpotnetInvalidXmlRegex();
 
     /// <summary>
@@ -12,17 +15,22 @@ internal static partial class SpotnetXmlCleaner
     /// </summary>
     /// <param name="xml"></param>
     /// <returns></returns>
-    internal static string Clean(string xml) => SpotnetInvalidXmlRegex().Replace(xml, match =>
-    {
-        return match.Value switch
-        {
-            "ImageWidth" => "Image Width",
-            "'Height=" => "' Height=",
-            "\"Height=" => "\" Height=",
-            "Image" => "Image ",
-            "'" => "' ",
-            "\"" => "\" ",
-            _ => match.Value
-        };
-    });
+    internal static string Clean(string xml) =>
+        SpotnetInvalidXmlRegex()
+            .Replace(
+                xml,
+                match =>
+                {
+                    return match.Value switch
+                    {
+                        "ImageWidth" => "Image Width",
+                        "'Height=" => "' Height=",
+                        "\"Height=" => "\" Height=",
+                        "Image" => "Image ",
+                        "'" => "' ",
+                        "\"" => "\" ",
+                        _ => match.Value,
+                    };
+                }
+            );
 }

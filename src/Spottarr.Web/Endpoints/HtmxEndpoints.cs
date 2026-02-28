@@ -8,21 +8,26 @@ internal static class HtmxEndpoints
     public const string PathPrefix = "/htmx";
 
     public static void MapHtmx(this IEndpointRouteBuilder app) =>
-        app.MapGroup(PathPrefix)
-            .ExcludeFromDescription()
-            .MapStats();
+        app.MapGroup(PathPrefix).ExcludeFromDescription().MapStats();
 
     private static void MapStats(this RouteGroupBuilder group) =>
-        group.MapGet("/stats",
-            async (ISpotSearchService spotSearchService, IApplicationVersionService versionService,
-                CancellationToken cancellationToken) =>
+        group.MapGet(
+            "/stats",
+            async (
+                ISpotSearchService spotSearchService,
+                IApplicationVersionService versionService,
+                CancellationToken cancellationToken
+            ) =>
             {
                 var totalCount = await spotSearchService.Count(cancellationToken);
                 var version = versionService.Version.Split('+').FirstOrDefault();
 
-                return new HtmlResult($"""
-                                       <p class="stats">Spots indexed: {totalCount:N0}</p>
-                                       <p class="stats">Version: {version}</p>
-                                       """);
-            });
+                return new HtmlResult(
+                    $"""
+                    <p class="stats">Spots indexed: {totalCount:N0}</p>
+                    <p class="stats">Version: {version}</p>
+                    """
+                );
+            }
+        );
 }

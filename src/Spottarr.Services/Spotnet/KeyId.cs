@@ -6,5 +6,5 @@ namespace Spottarr.Services.Spotnet;
 internal enum KeyId
 {
     Moderator = 2,
-    SelfSigned = 7
+    SelfSigned = 7,
 }

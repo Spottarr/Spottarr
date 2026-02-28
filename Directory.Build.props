@@ -16,10 +16,26 @@
     Automatically add the appsettings file to all entry point projects
   -->
   <ItemGroup Condition="$(OutputType) == 'Exe' And $(MSBuildProjectExtension) == '.csproj'">
-    <Content Include="$(SolutionDir).dockerignore" Link=".dockerignore" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="$(SolutionDir)appsettings.json" Link="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="$(SolutionDir)appsettings.Development.json" Link="appsettings.Development.json" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="$(SolutionDir)appsettings.Production.json" Link="appsettings.Production.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content
+      Include="$(SolutionDir).dockerignore"
+      Link=".dockerignore"
+      CopyToOutputDirectory="PreserveNewest"
+    />
+    <Content
+      Include="$(SolutionDir)appsettings.json"
+      Link="appsettings.json"
+      CopyToOutputDirectory="PreserveNewest"
+    />
+    <Content
+      Include="$(SolutionDir)appsettings.Development.json"
+      Link="appsettings.Development.json"
+      CopyToOutputDirectory="PreserveNewest"
+    />
+    <Content
+      Include="$(SolutionDir)appsettings.Production.json"
+      Link="appsettings.Production.json"
+      CopyToOutputDirectory="PreserveNewest"
+    />
   </ItemGroup>
 
   <!--
@@ -27,7 +43,9 @@
     After a deep clean make sure to restore NuGet packages
   -->
   <Target Name="PostClean" AfterTargets="Clean" Condition="$(Deep)==True">
-    <RemoveDir Directories="$(BaseIntermediateOutputPath)" /><!-- obj -->
-    <RemoveDir Directories="$(BaseOutputPath)" /><!-- bin -->
+    <!-- obj -->
+    <RemoveDir Directories="$(BaseIntermediateOutputPath)" />
+    <!-- bin -->
+    <RemoveDir Directories="$(BaseOutputPath)" />
   </Target>
 </Project>

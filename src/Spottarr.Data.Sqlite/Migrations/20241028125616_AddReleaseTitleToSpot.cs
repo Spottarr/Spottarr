@@ -15,15 +15,14 @@ namespace Spottarr.Data.Migrations
                 table: "Spots",
                 type: "TEXT",
                 maxLength: 256,
-                nullable: true);
+                nullable: true
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "ReleaseTitle",
-                table: "Spots");
+            migrationBuilder.DropColumn(name: "ReleaseTitle", table: "Spots");
         }
     }
 }

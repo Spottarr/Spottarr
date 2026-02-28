@@ -6,8 +6,11 @@ namespace Spottarr.Web.Newznab.Models;
 
 internal sealed class Registration : IXmlWritable
 {
-    [XmlAttribute("available")] public required string Available { get; init; }
-    [XmlAttribute("open")] public required string Open { get; init; }
+    [XmlAttribute("available")]
+    public required string Available { get; init; }
+
+    [XmlAttribute("open")]
+    public required string Open { get; init; }
 
     public void WriteXml(XmlWriter writer)
     {

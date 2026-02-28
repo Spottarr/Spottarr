@@ -8,7 +8,8 @@ public class ReleaseTitleParserTests
     [Fact]
     public void ParsesValidReleaseTitleSingleLine()
     {
-        const string description = "Show Show.Title.S09E40.DUTCH.1080p.WEB.h264-POSTER is a great show.";
+        const string description =
+            "Show Show.Title.S09E40.DUTCH.1080p.WEB.h264-POSTER is a great show.";
         var result = ReleaseTitleParser.Parse(string.Empty, description);
 
         Assert.Equal("Show.Title.S09E40.DUTCH.1080p.WEB.h264-POSTER", result);
@@ -17,8 +18,7 @@ public class ReleaseTitleParserTests
     [Fact]
     public void ParsesValidReleaseTitleMultiLine()
     {
-        const string description =
-            """
+        const string description = """
             Show
             Show.Title.S09E40.DUTCH.1080p.WEB.h264-POSTER
             is a great show.
