@@ -45,7 +45,7 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
             var options = _options.Value;
 
             // Group is set for the lifetime of the connection
-            var groupResponse = lease.Client.Group(options.SpotGroup);
+            var groupResponse = await lease.Client.GroupAsync(options.SpotGroup, cancellationToken);
             if (!groupResponse.Success)
             {
                 _logger.CouldNotRetrieveSpotGroup(
@@ -56,7 +56,7 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
                 return [];
             }
 
-            var xOverResponse = lease.Client.Xover(batch);
+            var xOverResponse = await lease.Client.XoverAsync(batch, cancellationToken);
             if (!xOverResponse.Success)
             {
                 _logger.CouldNotRetrieveArticleHeaders(
@@ -111,7 +111,8 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
             using var lease = await _nntpClientPool.GetLease(cancellationToken);
 
             // Fetch the article headers which contains the full spot detail in XML format
-            var spotArticleResponse = lease.Client.Article(new NntpMessageId(spot.MessageId));
+            var spotArticleResponse =
+                await lease.Client.ArticleAsync(new NntpMessageId(spot.MessageId), cancellationToken);
             if (!spotArticleResponse.Success)
             {
                 _logger.CouldNotRetrieveArticle(
