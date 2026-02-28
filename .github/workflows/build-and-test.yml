@@ -52,8 +52,14 @@ jobs:
         # For more details on CodeQL's query packs, refer to: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
         # queries: security-extended,security-and-quality
     
+    - name: Restore tools
+      run: dotnet tool restore
+    
     - name: Restore packages
       run: dotnet restore
+      
+    - name: Format
+      run: dotnet csharpier check .
     
     - name: Build
       run: dotnet build --no-restore

@@ -3,7 +3,8 @@ using Spottarr.Web.Helpers;
 
 namespace Spottarr.Web.EndpointResults;
 
-internal sealed class XmlResult<T> : IResult where T : IXmlWritable
+internal sealed class XmlResult<T> : IResult
+    where T : IXmlWritable
 {
     private readonly string _rootElement;
     private readonly T _result;

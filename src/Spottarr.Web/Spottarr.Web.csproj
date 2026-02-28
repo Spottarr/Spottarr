@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
-
   <PropertyGroup>
     <!--
     ASP.NET uses server GC by default.
@@ -27,5 +26,4 @@
     <ProjectReference Include="..\Spottarr.Data\Spottarr.Data.csproj" />
     <ProjectReference Include="..\Spottarr.Services\Spottarr.Services.csproj" />
   </ItemGroup>
-
 </Project>

@@ -14,8 +14,11 @@ internal sealed class SpotCleanUpService : ISpotCleanUpService
     private readonly IOptions<SpotnetOptions> _spotnetOptions;
     private readonly SpottarrDbContext _dbContext;
 
-    public SpotCleanUpService(ILogger<SpotCleanUpService> logger, IOptions<SpotnetOptions> spotnetOptions,
-        SpottarrDbContext dbContext)
+    public SpotCleanUpService(
+        ILogger<SpotCleanUpService> logger,
+        IOptions<SpotnetOptions> spotnetOptions,
+        SpottarrDbContext dbContext
+    )
     {
         _logger = logger;
         _spotnetOptions = spotnetOptions;
@@ -25,7 +28,8 @@ internal sealed class SpotCleanUpService : ISpotCleanUpService
     public async Task CleanUp(CancellationToken cancellationToken)
     {
         var spotnetOptions = _spotnetOptions.Value;
-        if (spotnetOptions.RetentionDays <= 0) return;
+        if (spotnetOptions.RetentionDays <= 0)
+            return;
 
         var retentionCutoff = DateTimeOffset.Now.AddDays(-spotnetOptions.RetentionDays);
 
@@ -37,13 +41,15 @@ internal sealed class SpotCleanUpService : ISpotCleanUpService
         // so we need to clean that one up as well
         if (_dbContext.Provider == DatabaseProvider.Sqlite)
         {
-            ftsRowCount = await _dbContext.FtsSpots
-                .Where(s => s.Spot != null && s.Spot.SpottedAt < retentionCutoff.UtcDateTime)
+            ftsRowCount = await _dbContext
+                .FtsSpots.Where(s =>
+                    s.Spot != null && s.Spot.SpottedAt < retentionCutoff.UtcDateTime
+                )
                 .ExecuteDeleteAsync(cancellationToken);
         }
 
-        var rowCount = await _dbContext.Spots
-            .Where(s => s.SpottedAt < retentionCutoff.UtcDateTime)
+        var rowCount = await _dbContext
+            .Spots.Where(s => s.SpottedAt < retentionCutoff.UtcDateTime)
             .ExecuteDeleteAsync(cancellationToken);
 
         _logger.SpotCleanupFinished(DateTimeOffset.Now, rowCount, ftsRowCount);

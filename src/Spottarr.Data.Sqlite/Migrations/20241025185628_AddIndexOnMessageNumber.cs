@@ -13,15 +13,14 @@ namespace Spottarr.Data.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Spots_MessageNumber",
                 table: "Spots",
-                column: "MessageNumber");
+                column: "MessageNumber"
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(
-                name: "IX_Spots_MessageNumber",
-                table: "Spots");
+            migrationBuilder.DropIndex(name: "IX_Spots_MessageNumber", table: "Spots");
         }
     }
 }

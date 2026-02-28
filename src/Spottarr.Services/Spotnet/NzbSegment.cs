@@ -6,7 +6,8 @@ namespace Spottarr.Services.Spotnet;
 
 public class NzbSegment : IXmlReadable<NzbSegment>
 {
-    [XmlElement(ElementName = "Segment")] public string Segment { get; set; } = string.Empty;
+    [XmlElement(ElementName = "Segment")]
+    public string Segment { get; set; } = string.Empty;
 
     public static async Task<NzbSegment> ReadXml(XmlReader reader)
     {

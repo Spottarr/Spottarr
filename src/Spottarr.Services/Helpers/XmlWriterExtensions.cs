@@ -14,7 +14,11 @@ public static class XmlWriterExtensions
         writer.WriteEndElement();
     }
 
-    public static void WriteCollection(this XmlWriter writer, string itemName, IEnumerable<IXmlWritable> collection)
+    public static void WriteCollection(
+        this XmlWriter writer,
+        string itemName,
+        IEnumerable<IXmlWritable> collection
+    )
     {
         ArgumentNullException.ThrowIfNull(writer, nameof(writer));
         ArgumentNullException.ThrowIfNull(collection, nameof(collection));
@@ -25,8 +29,12 @@ public static class XmlWriterExtensions
         }
     }
 
-    public static void WriteCollection(this XmlWriter writer, string name, string itemName,
-        IEnumerable<IXmlWritable> collection)
+    public static void WriteCollection(
+        this XmlWriter writer,
+        string name,
+        string itemName,
+        IEnumerable<IXmlWritable> collection
+    )
     {
         ArgumentNullException.ThrowIfNull(writer, nameof(writer));
         ArgumentNullException.ThrowIfNull(collection, nameof(collection));
@@ -36,7 +44,11 @@ public static class XmlWriterExtensions
         writer.WriteEndElement();
     }
 
-    public static void WriteCollection<T>(this XmlWriter writer, string itemName, IEnumerable<T> collection)
+    public static void WriteCollection<T>(
+        this XmlWriter writer,
+        string itemName,
+        IEnumerable<T> collection
+    )
         where T : unmanaged
     {
         ArgumentNullException.ThrowIfNull(writer, nameof(writer));
@@ -50,8 +62,13 @@ public static class XmlWriterExtensions
         }
     }
 
-    public static void WriteCollection<T>(this XmlWriter writer, string name, string itemName,
-        IEnumerable<T> collection) where T : unmanaged
+    public static void WriteCollection<T>(
+        this XmlWriter writer,
+        string name,
+        string itemName,
+        IEnumerable<T> collection
+    )
+        where T : unmanaged
     {
         ArgumentNullException.ThrowIfNull(writer, nameof(writer));
         ArgumentNullException.ThrowIfNull(collection, nameof(collection));

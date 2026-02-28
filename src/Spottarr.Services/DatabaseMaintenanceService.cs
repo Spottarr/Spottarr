@@ -11,7 +11,10 @@ internal class DatabaseMaintenanceService : IDatabaseMaintenanceService
     private readonly ILogger<DatabaseMaintenanceService> _logger;
     private readonly SpottarrDbContext _dbContext;
 
-    public DatabaseMaintenanceService(ILogger<DatabaseMaintenanceService> logger, SpottarrDbContext dbContext)
+    public DatabaseMaintenanceService(
+        ILogger<DatabaseMaintenanceService> logger,
+        SpottarrDbContext dbContext
+    )
     {
         _logger = logger;
         _dbContext = dbContext;

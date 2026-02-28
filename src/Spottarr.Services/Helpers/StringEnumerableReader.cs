@@ -24,7 +24,8 @@ internal sealed class StringEnumerableReader : TextReader
             _currentLineReader?.Dispose();
             _currentLineReader = null;
 
-            if (!hasNextLine || string.IsNullOrEmpty(_enumerator.Current)) return 0;
+            if (!hasNextLine || string.IsNullOrEmpty(_enumerator.Current))
+                return 0;
 
             // Create a new reader
             _currentLineReader = new StringReader(_enumerator.Current);

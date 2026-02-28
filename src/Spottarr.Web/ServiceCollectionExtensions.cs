@@ -9,12 +9,17 @@ internal static class ServiceCollectionExtensions
     {
         services.ConfigureHttpJsonOptions(options =>
         {
-            options.SerializerOptions.TypeInfoResolverChain.Insert(0, SpottarrJsonSerializerContext.Default);
+            options.SerializerOptions.TypeInfoResolverChain.Insert(
+                0,
+                SpottarrJsonSerializerContext.Default
+            );
         });
 
         // Remove MVC and Razor registrations for Native AOT
         // Only register OpenAPI, CORS, health checks, static files, etc.
-        services.AddOpenApi(options => options.AddDocumentTransformer<NewznabOperationTransformer>());
+        services.AddOpenApi(options =>
+            options.AddDocumentTransformer<NewznabOperationTransformer>()
+        );
 
         services.Configure<RouteOptions>(options =>
         {
@@ -31,18 +36,26 @@ internal static class ServiceCollectionExtensions
             options.ForwardedHeaders = ForwardedHeaders.All;
         });
 
-        services.AddAuthentication()
+        services
+            .AddAuthentication()
             .AddCookie() // Default scheme for browser access
             .AddNewznab();
 
-        services.AddAuthorization(options => options.AddPolicy("newznab", policy =>
-        {
-            policy.AddAuthenticationSchemes("newznab");
-            policy.RequireAuthenticatedUser();
-        }));
+        services.AddAuthorization(options =>
+            options.AddPolicy(
+                "newznab",
+                policy =>
+                {
+                    policy.AddAuthenticationSchemes("newznab");
+                    policy.RequireAuthenticatedUser();
+                }
+            )
+        );
 
         services.AddAntiforgery();
-        services.AddCors(c => c.AddDefaultPolicy(p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
+        services.AddCors(c =>
+            c.AddDefaultPolicy(p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader())
+        );
         services.AddHealthChecks();
 
         return services;

@@ -7,8 +7,7 @@ internal static class NzbArticleParser
 {
     public static async Task<MemoryStream> Parse(string body, CancellationToken cancellationToken)
     {
-        body = body
-            .Replace("=A", "\0", StringComparison.Ordinal)
+        body = body.Replace("=A", "\0", StringComparison.Ordinal)
             .Replace("=B", "\r", StringComparison.Ordinal)
             .Replace("=C", "\n", StringComparison.Ordinal)
             .Replace("=D", "=", StringComparison.Ordinal);

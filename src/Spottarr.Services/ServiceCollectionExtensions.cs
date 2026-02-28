@@ -15,8 +15,11 @@ namespace Spottarr.Services;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddSpottarrServices(this IServiceCollection services, IConfiguration configuration,
-        bool startJobs = true)
+    public static IServiceCollection AddSpottarrServices(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        bool startJobs = true
+    )
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
@@ -35,7 +38,8 @@ public static class ServiceCollectionExtensions
                     nntpOptions.Port,
                     nntpOptions.UseTls,
                     nntpOptions.Username,
-                    nntpOptions.Password);
+                    nntpOptions.Password
+                );
             })
             .AddSingleton<IApplicationVersionService, ApplicationVersionService>()
             .AddScoped<ISpotImportService, SpotImportService>()

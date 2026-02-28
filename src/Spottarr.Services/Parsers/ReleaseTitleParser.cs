@@ -8,7 +8,8 @@ internal static partial class ReleaseTitleParser
     {
         var regex = ReleaseTitleRegex();
         var match = regex.Match(title);
-        if (match.Success) return match.Value;
+        if (match.Success)
+            return match.Value;
 
         match = regex.Match(description);
         return match.Success ? match.Value : null;
