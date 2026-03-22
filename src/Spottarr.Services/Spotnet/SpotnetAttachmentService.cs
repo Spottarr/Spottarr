@@ -47,8 +47,12 @@ internal sealed class SpotnetAttachmentService : ISpotnetAttachmentService
             var nzbMessageId = spot.NzbMessageId;
 
             // Fetch the article headers which contains the NZB payload
-            var nzbArticleResponse = lease.Client.Article(new NntpMessageId(nzbMessageId));
-            if (!nzbArticleResponse.Success)
+            var nzbArticleResponse = await lease.Client.ArticleAsync(
+                new NntpMessageId(nzbMessageId),
+                cancellationToken
+            );
+
+            if (!nzbArticleResponse.Success || nzbArticleResponse.Article is null)
             {
                 _logger.CouldNotRetrieveArticle(
                     spot.MessageId,

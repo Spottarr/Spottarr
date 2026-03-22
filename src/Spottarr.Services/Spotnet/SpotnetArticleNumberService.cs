@@ -57,7 +57,7 @@ internal sealed class SpotnetArticleNumberService : ISpotnetArticleNumberService
             using var lease = await _nntpClientPool.GetLease(cancellationToken);
 
             // Group is set for the lifetime of the connection
-            var groupResponse = lease.Client.Group(options.SpotGroup);
+            var groupResponse = await lease.Client.GroupAsync(options.SpotGroup, cancellationToken);
             if (!groupResponse.Success)
             {
                 _logger.CouldNotRetrieveSpotGroup(
@@ -82,7 +82,7 @@ internal sealed class SpotnetArticleNumberService : ISpotnetArticleNumberService
 
                 while (date == null)
                 {
-                    date = GetArticleDate(lease.Client, articleToCheck);
+                    date = await GetArticleDate(lease.Client, articleToCheck, cancellationToken);
                     attempts++;
 
                     // Sometimes articles will just be unavailable
@@ -125,9 +125,17 @@ internal sealed class SpotnetArticleNumberService : ISpotnetArticleNumberService
         }
     }
 
-    private DateTimeOffset? GetArticleDate(IPooledNntpClient client, long mid)
+    private async Task<DateTimeOffset?> GetArticleDate(
+        IPooledNntpClient client,
+        long mid,
+        CancellationToken cancellationToken
+    )
     {
-        var dateResponse = client.Xhdr(NntpHeaders.Date, new NntpArticleRange(mid, mid));
+        var dateResponse = await client.XhdrAsync(
+            NntpHeaders.Date,
+            new NntpArticleRange(mid, mid),
+            cancellationToken
+        );
 
         if (!dateResponse.Success)
         {
