@@ -111,9 +111,12 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
             using var lease = await _nntpClientPool.GetLease(cancellationToken);
 
             // Fetch the article headers which contains the full spot detail in XML format
-            var spotArticleResponse =
-                await lease.Client.ArticleAsync(new NntpMessageId(spot.MessageId), cancellationToken);
-            if (!spotArticleResponse.Success)
+            var spotArticleResponse = await lease.Client.ArticleAsync(
+                new NntpMessageId(spot.MessageId),
+                cancellationToken
+            );
+
+            if (!spotArticleResponse.Success || spotArticleResponse.Article is null)
             {
                 _logger.CouldNotRetrieveArticle(
                     spot.MessageId,
@@ -124,7 +127,6 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
             }
 
             var spotArticle = spotArticleResponse.Article;
-
             if (!spotArticle.Headers.TryGetValue(SpotnetXml.HeaderName, out var spotnetXmlValues))
             {
                 // No spot XML header, fall back to plaintext body
