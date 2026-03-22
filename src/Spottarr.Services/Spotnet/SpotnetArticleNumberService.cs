@@ -125,10 +125,17 @@ internal sealed class SpotnetArticleNumberService : ISpotnetArticleNumberService
         }
     }
 
-    private async Task<DateTimeOffset?> GetArticleDate(IPooledNntpClient client, long mid,
-        CancellationToken cancellationToken)
+    private async Task<DateTimeOffset?> GetArticleDate(
+        IPooledNntpClient client,
+        long mid,
+        CancellationToken cancellationToken
+    )
     {
-        var dateResponse = await client.XhdrAsync(NntpHeaders.Date, new NntpArticleRange(mid, mid), cancellationToken);
+        var dateResponse = await client.XhdrAsync(
+            NntpHeaders.Date,
+            new NntpArticleRange(mid, mid),
+            cancellationToken
+        );
 
         if (!dateResponse.Success)
         {
