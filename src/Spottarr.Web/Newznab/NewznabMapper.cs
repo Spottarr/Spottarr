@@ -159,7 +159,7 @@ internal static class NewznabMapper
     /// <summary>
     /// Adds newznab attributes for books category
     /// </summary>
-    private static SyndicationItem MapBookSpot(this Spot spot, SyndicationItem item) =>
+    private static SyndicationItem MapBookSpot(this Spot _, SyndicationItem item) =>
         item.AddNewznabAttribute("publisher", null)
             .AddNewznabAttribute("coverurl", null)
             .AddNewznabAttribute("review", null)
@@ -190,12 +190,12 @@ internal static class NewznabMapper
     /// <summary>
     /// Adds newznab attributes for game (unofficial) category
     /// </summary>
-    private static SyndicationItem MapGameSpot(this Spot spot, SyndicationItem item) => item;
+    private static SyndicationItem MapGameSpot(this Spot _, SyndicationItem item) => item;
 
     /// <summary>
     /// Adds newznab attributes for pc (unofficial) category
     /// </summary>
-    private static SyndicationItem MapApplicationSpot(this Spot spot, SyndicationItem item) => item;
+    private static SyndicationItem MapApplicationSpot(this Spot _, SyndicationItem item) => item;
 
     private static string MapImageAudioLanguage(ICollection<ImageLanguage> languages) =>
         string.Join(
