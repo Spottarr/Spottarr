@@ -10,14 +10,12 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddSpottarrConfiguration(
         this IServiceCollection services,
         IConfiguration configuration
-    )
-    {
-        services.AddSettings<UsenetOptions>(configuration);
-        services.AddSettings<SpotnetOptions>(configuration);
-        services.AddSettings<DatabaseOptions>(configuration);
-        services.AddSettings<NewznabOptions>(configuration);
-        return services;
-    }
+    ) =>
+        services
+            .AddSettings<UsenetOptions>(configuration)
+            .AddSettings<SpotnetOptions>(configuration)
+            .AddSettings<DatabaseOptions>(configuration)
+            .AddSettings<NewznabOptions>(configuration);
 
     private static IServiceCollection AddSettings<T>(
         this IServiceCollection services,
