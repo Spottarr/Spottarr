@@ -280,10 +280,8 @@ internal static class NewznabCategoryMapper
         }
     }
 
-    private static void MapPicture(Spot spot, HashSet<NewznabCategory> categories)
-    {
-        // Unmapped
-    }
+    private static void MapPicture(Spot _, HashSet<NewznabCategory> categories) =>
+        categories.Add(NewznabCategory.Other);
 
     private static void MapAudio(Spot spot, HashSet<NewznabCategory> categories)
     {
