@@ -4,7 +4,7 @@ using Spottarr.Services.Helpers;
 
 namespace Spottarr.Services.Spotnet;
 
-public sealed class ImageSegment : IXmlReadable<ImageSegment>
+internal sealed class ImageSegment : IXmlReadable<ImageSegment>
 {
     [XmlElement(ElementName = "Segment")]
     public string Segment { get; set; } = string.Empty;
