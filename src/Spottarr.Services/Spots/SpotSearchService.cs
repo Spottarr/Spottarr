@@ -9,7 +9,7 @@ using Spottarr.Services.Parsers;
 
 namespace Spottarr.Services.Spots;
 
-public class SpotSearchService : ISpotSearchService
+internal sealed class SpotSearchService : ISpotSearchService
 {
     private readonly SpottarrDbContext _dbContext;
 

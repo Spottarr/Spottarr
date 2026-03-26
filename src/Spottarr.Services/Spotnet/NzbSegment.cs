@@ -4,7 +4,7 @@ using Spottarr.Services.Helpers;
 
 namespace Spottarr.Services.Spotnet;
 
-public class NzbSegment : IXmlReadable<NzbSegment>
+internal sealed class NzbSegment : IXmlReadable<NzbSegment>
 {
     [XmlElement(ElementName = "Segment")]
     public string Segment { get; set; } = string.Empty;

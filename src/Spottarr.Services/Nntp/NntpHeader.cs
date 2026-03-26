@@ -1,6 +1,6 @@
 namespace Spottarr.Services.Nntp;
 
-public class NntpHeader
+internal sealed class NntpHeader
 {
     public required long ArticleNumber { get; init; }
     public required string Subject { get; init; }

@@ -4,7 +4,7 @@ using Spottarr.Services.Contracts;
 
 namespace Spottarr.Services;
 
-public class ApplicationVersionService : IApplicationVersionService
+internal sealed class ApplicationVersionService : IApplicationVersionService
 {
     private const string DefaultVersion = "0.0.0";
     public string Version { get; }
