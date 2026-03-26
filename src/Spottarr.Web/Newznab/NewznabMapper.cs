@@ -153,12 +153,8 @@ internal static class NewznabMapper
     /// <summary>
     /// Adds newznab attributes for audio category
     /// </summary>
-    private static SyndicationItem MapAudioSpot(this Spot spot, SyndicationItem item)
-    {
-        return item.AddNewznabAttribute(
-                "audio",
-                string.Join(',', spot.AudioFormats.Select(Enum.GetName))
-            )
+    private static SyndicationItem MapAudioSpot(this Spot spot, SyndicationItem item) =>
+        item.AddNewznabAttribute("audio", string.Join(',', spot.AudioFormats.Select(Enum.GetName)))
             .AddNewznabAttribute("language", null)
             .AddNewznabAttribute("artist", null)
             .AddNewznabAttribute("album", null)
@@ -167,7 +163,6 @@ internal static class NewznabMapper
             .AddNewznabAttribute("coverurl", null)
             .AddNewznabAttribute("backdropcoverurl", null)
             .AddNewznabAttribute("review", null);
-    }
 
     /// <summary>
     /// Adds newznab attributes for game (unofficial) category
