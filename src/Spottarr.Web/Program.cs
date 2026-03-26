@@ -32,9 +32,9 @@ app.UseForwardedHeaders();
 app.UseDefaultFiles();
 app.UseMiddleware<NewznabQueryActionMiddleware>();
 app.UseRouting();
+app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseCors();
 app.UseAntiforgery();
 
 await app.RunAsync(lifetime.ApplicationStopping);
