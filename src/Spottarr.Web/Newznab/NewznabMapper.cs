@@ -85,12 +85,27 @@ internal static class NewznabMapper
     ) =>
         type switch
         {
-            ImageType.Series => spot.MapTvSpot(item),
-            ImageType.Movie => spot.MapMovieSpot(item),
-            ImageType.Erotic => spot.MapEroticSpot(item),
+            ImageType.Series => spot.MapTvSpot(spot.MapVideoSpot(item)),
+            ImageType.Movie => spot.MapMovieSpot(spot.MapVideoSpot(item)),
+            ImageType.Erotic => spot.MapVideoSpot(item),
             ImageType.Book => spot.MapBookSpot(item),
             _ => item,
         };
+
+    /// <summary>
+    /// Adds common newznab attributes for video formats
+    /// </summary>
+    /// <returns></returns>
+    private static SyndicationItem MapVideoSpot(this Spot spot, SyndicationItem item) =>
+        item.AddNewznabAttribute("video", string.Join(',', spot.ImageFormats.Select(Enum.GetName)))
+            .AddNewznabAttribute("audio", null)
+            .AddNewznabAttribute("resolution", null)
+            .AddNewznabAttribute("framerate", null)
+            .AddNewznabAttribute("language", MapImageAudioLanguage(spot.ImageLanguages))
+            .AddNewznabAttribute("subs", MapImageSubtitleLanguage(spot.ImageLanguages))
+            .AddNewznabAttribute("genre", string.Join(',', spot.ImageGenres.Select(Enum.GetName)))
+            .AddNewznabAttribute("coverurl", null)
+            .AddNewznabAttribute("backdropcoverurl", null);
 
     /// <summary>
     /// Adds newznab attributes for tv category
@@ -104,28 +119,13 @@ internal static class NewznabMapper
             .AddNewznabAttribute(
                 "imdb",
                 spot.ImdbId?.Replace("tt", string.Empty, StringComparison.OrdinalIgnoreCase) ?? null
-            )
-            .AddNewznabAttribute("video", string.Join(',', spot.ImageFormats.Select(Enum.GetName)))
-            .AddNewznabAttribute("audio", null)
-            .AddNewznabAttribute("resolution", null)
-            .AddNewznabAttribute("framerate", null)
-            .AddNewznabAttribute("language", MapImageAudioLanguage(spot.ImageLanguages))
-            .AddNewznabAttribute("subs", MapImageSubtitleLanguage(spot.ImageLanguages))
-            .AddNewznabAttribute("genre", string.Join(',', spot.ImageGenres.Select(Enum.GetName)))
-            .AddNewznabAttribute("coverurl", null)
-            .AddNewznabAttribute("backdropcoverurl", null);
+            );
 
     /// <summary>
     /// Adds newznab attributes for movies category
     /// </summary>
     private static SyndicationItem MapMovieSpot(this Spot spot, SyndicationItem item) =>
-        item.AddNewznabAttribute("video", string.Join(',', spot.ImageFormats.Select(Enum.GetName)))
-            .AddNewznabAttribute("audio", null)
-            .AddNewznabAttribute("resolution", null)
-            .AddNewznabAttribute("framerate", null)
-            .AddNewznabAttribute("language", MapImageAudioLanguage(spot.ImageLanguages))
-            .AddNewznabAttribute("subs", MapImageSubtitleLanguage(spot.ImageLanguages))
-            .AddNewznabAttribute(
+        item.AddNewznabAttribute(
                 "imdb",
                 spot.ImdbId?.Replace("tt", string.Empty, StringComparison.OrdinalIgnoreCase) ?? null
             )
@@ -136,25 +136,7 @@ internal static class NewznabMapper
             .AddNewznabAttribute("imdbyear", null)
             .AddNewznabAttribute("imdbdirector", null)
             .AddNewznabAttribute("imdbactors", null)
-            .AddNewznabAttribute("genre", string.Join(',', spot.ImageGenres.Select(Enum.GetName)))
-            .AddNewznabAttribute("coverurl", null)
-            .AddNewznabAttribute("backdropcoverurl", null)
             .AddNewznabAttribute("review", null);
-
-    /// <summary>
-    /// Adds newznab attributes for erotic (unofficial) category
-    /// </summary>
-    /// <returns></returns>
-    private static SyndicationItem MapEroticSpot(this Spot spot, SyndicationItem item) =>
-        item.AddNewznabAttribute("video", string.Join(',', spot.ImageFormats.Select(Enum.GetName)))
-            .AddNewznabAttribute("audio", null)
-            .AddNewznabAttribute("resolution", null)
-            .AddNewznabAttribute("framerate", null)
-            .AddNewznabAttribute("language", MapImageAudioLanguage(spot.ImageLanguages))
-            .AddNewznabAttribute("subs", MapImageSubtitleLanguage(spot.ImageLanguages))
-            .AddNewznabAttribute("genre", string.Join(',', spot.ImageGenres.Select(Enum.GetName)))
-            .AddNewznabAttribute("coverurl", null)
-            .AddNewznabAttribute("backdropcoverurl", null);
 
     /// <summary>
     /// Adds newznab attributes for books category
