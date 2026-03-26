@@ -4,7 +4,7 @@ using Spottarr.Data.Entities.Fts;
 
 namespace Spottarr.Data.Entities;
 
-public class Spot : BaseEntity, IPostgreSqlFtsEntity
+public sealed class Spot : BaseEntity, IPostgreSqlFtsEntity
 {
     public const int TinyMaxLength = 16;
     public const int SmallMaxLength = 128;

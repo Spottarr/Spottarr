@@ -2,7 +2,7 @@ using Spottarr.Data.Entities.Fts;
 
 namespace Spottarr.Data.Entities;
 
-public class FtsSpot : ISqliteFtsEntity
+public sealed class FtsSpot : ISqliteFtsEntity
 {
     public required string Title { get; init; }
     public required string Description { get; init; }
