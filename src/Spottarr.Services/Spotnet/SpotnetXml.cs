@@ -5,7 +5,7 @@ using Spottarr.Services.Helpers;
 namespace Spottarr.Services.Spotnet;
 
 [XmlRoot(ElementName = "Spotnet")]
-public sealed class SpotnetXml : IXmlReadable<SpotnetXml>
+internal sealed class SpotnetXml : IXmlReadable<SpotnetXml>
 {
     public const string HeaderName = "X-XML";
 

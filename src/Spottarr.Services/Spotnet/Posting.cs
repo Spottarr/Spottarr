@@ -4,7 +4,7 @@ using Spottarr.Services.Helpers;
 
 namespace Spottarr.Services.Spotnet;
 
-public sealed class Posting : IXmlReadable<Posting>
+internal sealed class Posting : IXmlReadable<Posting>
 {
     [XmlElement(ElementName = "Key")]
     public int Key { get; set; }

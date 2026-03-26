@@ -208,17 +208,17 @@ internal static class NewznabCategoryMapper
                     ImageFormat.Mpg => NewznabCategory.None,
                     ImageFormat.Dvd5 => NewznabCategory.None,
                     ImageFormat.HdOther => NewznabCategory.None,
-                    ImageFormat.EPub => NewznabCategory.BooksEBook,
                     ImageFormat.Bluray => NewznabCategory.None,
                     ImageFormat.HdDvd => NewznabCategory.None,
                     ImageFormat.WmvHd => NewznabCategory.None,
                     ImageFormat.X264 => NewznabCategory.None,
                     ImageFormat.Dvd9 => NewznabCategory.None,
-                    ImageFormat.Pdf => NewznabCategory.BooksEBook,
                     ImageFormat.Bitmap => NewznabCategory.None,
                     ImageFormat.Vector => NewznabCategory.None,
                     ImageFormat.X3D => NewznabCategory.None,
                     ImageFormat.Uhd => NewznabCategory.None,
+                    ImageFormat.Pdf => NewznabCategory.BooksEBook,
+                    ImageFormat.EPub => NewznabCategory.BooksEBook,
                     _ => NewznabCategory.None,
                 }
             );
@@ -280,10 +280,8 @@ internal static class NewznabCategoryMapper
         }
     }
 
-    private static void MapPicture(Spot spot, HashSet<NewznabCategory> categories)
-    {
-        // Unmapped
-    }
+    private static void MapPicture(Spot _, HashSet<NewznabCategory> categories) =>
+        categories.Add(NewznabCategory.Other);
 
     private static void MapAudio(Spot spot, HashSet<NewznabCategory> categories)
     {
@@ -346,12 +344,12 @@ internal static class NewznabCategoryMapper
                     GamePlatform.NintendoDs => NewznabCategory.None,
                     GamePlatform.NintendoWii => NewznabCategory.None,
                     GamePlatform.Playstation3 => NewznabCategory.None,
-                    GamePlatform.WindowsPhone => NewznabCategory.PcMobileOther,
-                    GamePlatform.IOs => NewznabCategory.PcMobileiOs,
-                    GamePlatform.Android => NewznabCategory.PcMobileAndroid,
                     GamePlatform.Nintendo3Ds => NewznabCategory.None,
                     GamePlatform.Playstation4 => NewznabCategory.None,
                     GamePlatform.XBoxOne => NewznabCategory.None,
+                    GamePlatform.WindowsPhone => NewznabCategory.PcMobileOther,
+                    GamePlatform.IOs => NewznabCategory.PcMobileiOs,
+                    GamePlatform.Android => NewznabCategory.PcMobileAndroid,
                     _ => NewznabCategory.None,
                 }
             );

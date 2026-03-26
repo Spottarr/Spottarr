@@ -6,8 +6,8 @@ public static class XmlWriterExtensions
 {
     public static void WriteElement(this XmlWriter writer, string name, IXmlWritable serializable)
     {
-        ArgumentNullException.ThrowIfNull(writer, nameof(writer));
-        ArgumentNullException.ThrowIfNull(serializable, nameof(serializable));
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(serializable);
 
         writer.WriteStartElement(name);
         serializable.WriteXml(writer);
@@ -20,8 +20,8 @@ public static class XmlWriterExtensions
         IEnumerable<IXmlWritable> collection
     )
     {
-        ArgumentNullException.ThrowIfNull(writer, nameof(writer));
-        ArgumentNullException.ThrowIfNull(collection, nameof(collection));
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(collection);
 
         foreach (var value in collection)
         {
@@ -36,8 +36,8 @@ public static class XmlWriterExtensions
         IEnumerable<IXmlWritable> collection
     )
     {
-        ArgumentNullException.ThrowIfNull(writer, nameof(writer));
-        ArgumentNullException.ThrowIfNull(collection, nameof(collection));
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(collection);
 
         writer.WriteStartElement(name);
         writer.WriteCollection(itemName, collection);
@@ -51,8 +51,8 @@ public static class XmlWriterExtensions
     )
         where T : unmanaged
     {
-        ArgumentNullException.ThrowIfNull(writer, nameof(writer));
-        ArgumentNullException.ThrowIfNull(collection, nameof(collection));
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(collection);
 
         foreach (var value in collection)
         {
@@ -70,8 +70,8 @@ public static class XmlWriterExtensions
     )
         where T : unmanaged
     {
-        ArgumentNullException.ThrowIfNull(writer, nameof(writer));
-        ArgumentNullException.ThrowIfNull(collection, nameof(collection));
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(collection);
 
         writer.WriteStartElement(name);
         writer.WriteCollection(itemName, collection);

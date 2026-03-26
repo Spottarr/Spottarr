@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Xml;
 using System.Xml.Serialization;
 using Spottarr.Services.Helpers;
@@ -21,7 +20,7 @@ internal sealed class Capabilities : IXmlWritable
     public required Searching Searching { get; init; }
 
     [XmlArray("categories"), XmlArrayItem("category")]
-    public required Collection<MainCategory> Categories { get; init; }
+    public required ICollection<MainCategory> Categories { get; init; }
 
     public void WriteXml(XmlWriter writer)
     {

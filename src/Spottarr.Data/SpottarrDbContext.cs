@@ -9,7 +9,7 @@ using Spottarr.Data.Helpers;
 
 namespace Spottarr.Data;
 
-public class SpottarrDbContext : DbContext, IDataProtectionKeyContext
+public sealed class SpottarrDbContext : DbContext, IDataProtectionKeyContext
 {
     private readonly IHostEnvironment _environment;
     private readonly ILoggerFactory _loggerFactory;

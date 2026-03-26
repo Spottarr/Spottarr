@@ -146,7 +146,7 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
             var spotDetails = result.Result;
 
             spot.NzbMessageId = spotDetails.Posting.Nzb.Segment.Truncate(Spot.SmallMaxLength);
-            spot.ImageMessageId = spotDetails.Posting.Image?.Segment.Truncate(Spot.SmallMaxLength);
+            spot.ImageMessageId = spotDetails.Posting.Image.Segment.Truncate(Spot.SmallMaxLength);
             spot.Description = BbCodeParser
                 .Parse(spotDetails.Posting.Description)
                 .Truncate(Spot.DescriptionMaxLength);

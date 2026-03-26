@@ -120,6 +120,7 @@ internal sealed class SpotReIndexingService : ISpotReIndexingService
                 var ftsSpots = spots
                     .Select(s => new FtsSpot
                     {
+                        SpotId = s.Id,
                         Title = s.Title,
                         Description = s.Description ?? string.Empty,
                     })

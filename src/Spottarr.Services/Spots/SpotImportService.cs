@@ -112,7 +112,7 @@ internal sealed class SpotImportService : ISpotImportService
 
             // Switch to the configured usenet group to verify that it exists.
             var groupResponse = await lease.Client.GroupAsync(group, cancellationToken);
-            if (groupResponse.Success && groupResponse.Group != null)
+            if (groupResponse.Success)
                 return groupResponse.Group;
 
             _logger.CouldNotRetrieveSpotGroup(group, groupResponse.Code, groupResponse.Message);

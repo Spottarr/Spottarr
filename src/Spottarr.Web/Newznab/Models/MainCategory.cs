@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Xml;
 using System.Xml.Serialization;
@@ -15,7 +14,7 @@ internal sealed class MainCategory : IXmlWritable
     public required string Name { get; init; }
 
     [XmlElement("subcat")]
-    public required Collection<Category> SubCategories { get; init; }
+    public required ICollection<Category> SubCategories { get; init; }
 
     public void WriteXml(XmlWriter writer)
     {

@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using Spottarr.Data.Entities.Enums;
 using Spottarr.Web.Helpers;
 using Spottarr.Web.Newznab.Models;
@@ -44,14 +43,14 @@ internal static class CapabilitiesHelper
                     SupportedParams = "q,season,ep,year,imdbid",
                 },
                 AudioSearch = new Search { Available = "yes", SupportedParams = "q,year" },
-                PcSearch = new Search() { Available = "no", SupportedParams = string.Empty },
+                PcSearch = new Search { Available = "no", SupportedParams = string.Empty },
                 BookSearch = new Search { Available = "yes", SupportedParams = "q,title" },
             },
             Categories = GetCategories(),
         };
     }
 
-    private static Collection<MainCategory> GetCategories()
+    private static List<MainCategory> GetCategories()
     {
         var mainCats = new Dictionary<NewznabCategory, HashSet<NewznabCategory>>();
 
@@ -68,22 +67,25 @@ internal static class CapabilitiesHelper
             mainCats[key].Add(cat);
         }
 
-        return new Collection<MainCategory>(
-            mainCats
+        return
+        [
+            .. mainCats
                 .Select(kvp => new MainCategory
                 {
                     Id = (int)kvp.Key,
                     Name = kvp.Key.GetDisplayName(),
-                    SubCategories = new Collection<Category>(
-                        kvp.Value.Select(v => new Category
+                    SubCategories =
+                    [
+                        .. kvp
+                            .Value.Select(v => new Category
                             {
                                 Id = (int)v,
                                 Name = v.GetDisplayName(),
                             })
-                            .ToList()
-                    ),
+                            .ToList(),
+                    ],
                 })
-                .ToList()
-        );
+                .ToList(),
+        ];
     }
 }

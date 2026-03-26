@@ -2,7 +2,7 @@ using Spottarr.Data.Entities.Enums;
 
 namespace Spottarr.Services.Models;
 
-public class SpotSearchFilter
+public sealed class SpotSearchFilter
 {
     public int Id { get; init; }
     public int Offset { get; init; }

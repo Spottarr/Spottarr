@@ -2,7 +2,7 @@ using Usenet.Nntp.Models;
 
 namespace Spottarr.Services.Nntp;
 
-internal sealed class NntpArticleRangeFactory
+internal static class NntpArticleRangeFactory
 {
     /// <summary>
     /// Returns a sequence of article ranges ordered from the batch with the newest messages to the oldest messages
