@@ -37,5 +37,7 @@ Thumbs.db
 Desktop.ini
 .DS_Store
 
+.claude
+
 # Code coverage results
 tests/coverage/
