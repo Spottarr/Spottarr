@@ -76,38 +76,38 @@ internal static class SpotHeaderExtensions
         ICollection<ImageType> Types
     ) MapImageSubCategories(SpotType spotType, IReadOnlyList<(char Type, int Code)> subCategories)
     {
+        if (spotType != SpotType.Image)
+            return ([], [], [], [], []);
+
         var formats = new List<ImageFormat>();
         var sources = new List<ImageSource>();
         var languages = new List<ImageLanguage>();
         var genres = new List<ImageGenre>();
         var types = new List<ImageType>();
 
-        if (spotType == SpotType.Image)
+        foreach (var (t, c) in subCategories)
         {
-            foreach (var (t, c) in subCategories)
+            switch (t)
             {
-                switch (t)
-                {
-                    case 'A':
-                        formats.Add((ImageFormat)c);
-                        break;
-                    case 'B':
-                        sources.Add((ImageSource)c);
-                        break;
-                    case 'C':
-                        languages.Add((ImageLanguage)c);
-                        break;
-                    case 'D':
-                        genres.Add((ImageGenre)c);
-                        break;
-                    case 'Z':
-                        types.Add((ImageType)c);
-                        break;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Unsupported category type '{t}{c}' for image spot."
-                        );
-                }
+                case 'A':
+                    formats.Add((ImageFormat)c);
+                    break;
+                case 'B':
+                    sources.Add((ImageSource)c);
+                    break;
+                case 'C':
+                    languages.Add((ImageLanguage)c);
+                    break;
+                case 'D':
+                    genres.Add((ImageGenre)c);
+                    break;
+                case 'Z':
+                    types.Add((ImageType)c);
+                    break;
+                default:
+                    throw new InvalidOperationException(
+                        $"Unsupported category type '{t}{c}' for image spot."
+                    );
             }
         }
 
@@ -122,38 +122,38 @@ internal static class SpotHeaderExtensions
         ICollection<AudioType> Types
     ) MapAudioSubCategories(SpotType spotType, IReadOnlyList<(char Type, int Code)> subCategories)
     {
+        if (spotType != SpotType.Audio)
+            return ([], [], [], [], []);
+
         var formats = new List<AudioFormat>();
         var sources = new List<AudioSource>();
         var bitrates = new List<AudioBitrate>();
         var genres = new List<AudioGenre>();
         var types = new List<AudioType>();
 
-        if (spotType == SpotType.Audio)
+        foreach (var (t, c) in subCategories)
         {
-            foreach (var (t, c) in subCategories)
+            switch (t)
             {
-                switch (t)
-                {
-                    case 'A':
-                        formats.Add((AudioFormat)c);
-                        break;
-                    case 'B':
-                        sources.Add((AudioSource)c);
-                        break;
-                    case 'C':
-                        bitrates.Add((AudioBitrate)c);
-                        break;
-                    case 'D':
-                        genres.Add((AudioGenre)c);
-                        break;
-                    case 'Z':
-                        types.Add((AudioType)c);
-                        break;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Unsupported category type '{t}{c}' for audio spot."
-                        );
-                }
+                case 'A':
+                    formats.Add((AudioFormat)c);
+                    break;
+                case 'B':
+                    sources.Add((AudioSource)c);
+                    break;
+                case 'C':
+                    bitrates.Add((AudioBitrate)c);
+                    break;
+                case 'D':
+                    genres.Add((AudioGenre)c);
+                    break;
+                case 'Z':
+                    types.Add((AudioType)c);
+                    break;
+                default:
+                    throw new InvalidOperationException(
+                        $"Unsupported category type '{t}{c}' for audio spot."
+                    );
             }
         }
 
@@ -167,34 +167,34 @@ internal static class SpotHeaderExtensions
         ICollection<GameType> Types
     ) MapGameSubCategories(SpotType spotType, IReadOnlyList<(char Type, int Code)> subCategories)
     {
+        if (spotType != SpotType.Game)
+            return ([], [], [], []);
+
         var platforms = new List<GamePlatform>();
         var formats = new List<GameFormat>();
         var genres = new List<GameGenre>();
         var types = new List<GameType>();
 
-        if (spotType == SpotType.Game)
+        foreach (var (t, c) in subCategories)
         {
-            foreach (var (t, c) in subCategories)
+            switch (t)
             {
-                switch (t)
-                {
-                    case 'A':
-                        platforms.Add((GamePlatform)c);
-                        break;
-                    case 'B':
-                        formats.Add((GameFormat)c);
-                        break;
-                    case 'C':
-                        genres.Add((GameGenre)c);
-                        break;
-                    case 'Z':
-                        types.Add((GameType)c);
-                        break;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Unsupported category type '{t}{c}' for game spot."
-                        );
-                }
+                case 'A':
+                    platforms.Add((GamePlatform)c);
+                    break;
+                case 'B':
+                    formats.Add((GameFormat)c);
+                    break;
+                case 'C':
+                    genres.Add((GameGenre)c);
+                    break;
+                case 'Z':
+                    types.Add((GameType)c);
+                    break;
+                default:
+                    throw new InvalidOperationException(
+                        $"Unsupported category type '{t}{c}' for game spot."
+                    );
             }
         }
 
@@ -210,30 +210,30 @@ internal static class SpotHeaderExtensions
         IReadOnlyList<(char Type, int Code)> subCategories
     )
     {
+        if (spotType != SpotType.Application)
+            return ([], [], []);
+
         var platforms = new List<ApplicationPlatform>();
         var genres = new List<ApplicationGenre>();
         var types = new List<ApplicationType>();
 
-        if (spotType == SpotType.Application)
+        foreach (var (t, c) in subCategories)
         {
-            foreach (var (t, c) in subCategories)
+            switch (t)
             {
-                switch (t)
-                {
-                    case 'A':
-                        platforms.Add((ApplicationPlatform)c);
-                        break;
-                    case 'B':
-                        genres.Add((ApplicationGenre)c);
-                        break;
-                    case 'Z':
-                        types.Add((ApplicationType)c);
-                        break;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Unsupported category type '{t}{c}' for application spot."
-                        );
-                }
+                case 'A':
+                    platforms.Add((ApplicationPlatform)c);
+                    break;
+                case 'B':
+                    genres.Add((ApplicationGenre)c);
+                    break;
+                case 'Z':
+                    types.Add((ApplicationType)c);
+                    break;
+                default:
+                    throw new InvalidOperationException(
+                        $"Unsupported category type '{t}{c}' for application spot."
+                    );
             }
         }
 
