@@ -4,7 +4,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="GitHubActionsTestLogger" Version="3.0.1" />
+    <PackageVersion Include="GitHubActionsTestLogger" Version="3.0.2" />
     <PackageVersion
       Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore"
       Version="10.0.5"
@@ -35,7 +35,7 @@
     <PackageVersion Include="PhenX.EntityFrameworkCore.BulkInsert.PostgreSql" Version="0.5.0" />
     <PackageVersion Include="PhenX.EntityFrameworkCore.BulkInsert.Sqlite" Version="0.5.0" />
     <PackageVersion Include="Quartz.Extensions.Hosting" Version="3.16.1" />
-    <PackageVersion Include="Scalar.AspNetCore" Version="2.13.13" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.13.15" />
     <PackageVersion Include="Spottarr.Usenet" Version="5.0.0-beta.1" />
     <PackageVersion Include="System.ServiceModel.Syndication" Version="10.0.5" />
     <PackageVersion Include="xunit.v3.mtp-v2" Version="3.2.2" />
