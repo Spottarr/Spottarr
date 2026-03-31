@@ -9,10 +9,3 @@ dotnet_diagnostic.CA2007.severity = none
 dotnet_diagnostic.CA1062.severity = none
 dotnet_diagnostic.CA1861.severity = none
 dotnet_diagnostic.CA1825.severity = none
-
-[tests/Spottarr.Tests/*.cs]
-# xUnit requires public test classes, disable warning about making them internal
-dotnet_diagnostic.CA1515.severity = none
-# Disable resharper warning about parameters only used for precondition checks, asserts can trigger this
-resharper_parameter_only_used_for_precondition_check_local_highlighting = none
-
