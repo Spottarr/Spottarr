@@ -14,7 +14,7 @@ internal sealed class SpotnetXmlParserTests
                     <Created>1728935794</Created>
                     <Poster>SomePoster</Poster>
                     <Title>Echoes of Tomorrow - S04E01: A New Dawn</Title>
-                    <Description>In a world where people can glimpse fleeting moments of their future, a secretive government agency uses this ability to prevent catastrophic events. As Season 4 begins, former agent Maya Quinn is forced out of hiding to confront a mysterious new threat. With the timelines growing unstable, Maya and her old team must race against time to stop a rogue faction determined to rewrite history. S04E01, "A New Dawn," kicks off the season with shocking revelations and a dangerous new mission that will challenge everything they know about their powers.</Description>
+                    <Description>In a world where people can glimpse fleeting moments of their future, a secretive government agency uses this ability to prevent catastrophic events. As Season 4 begins, former agent Maya Quinn is forced out of hiding to confront a mysterious new threat. With the timelines growing unstable, Maya and her old team must race against time to stop a rogue faction determined to rewrite history. S04E01, “A New Dawn,” kicks off the season with shocking revelations and a dangerous new mission that will challenge everything they know about their powers.</Description>
                     <Image Height="1000" Width="680">
                         <Segment>someid1@spot.net</Segment>
                     </Image>
@@ -52,7 +52,7 @@ internal sealed class SpotnetXmlParserTests
             		<Created>1729278723</Created>
             		<Poster>SomePoster</Poster>
             		<Title>Midnight Requiem - S01E09: The Final Note</Title>
-            		<Description>// OWN RIP //[br]In the dark and haunting city of Vesper, an ancient curse ties the fate of its residents to a series of mysterious, nocturnal deaths.[br][br]Rookie detective Elara Kane, gifted with the ability to hear echoes of the past through music, teams up with a reclusive composer to uncover the truth behind the deaths. In S01E09, "The Final Note," Elara finally closes in on the elusive killer, but a startling discovery about her own past forces her to question everything she thought she knew. Tensions rise as the melody of doom plays its last, chilling refrain.</Description>
+            		<Description>// OWN RIP //[br]In the dark and haunting city of Vesper, an ancient curse ties the fate of its residents to a series of mysterious, nocturnal deaths.[br][br]Rookie detective Elara Kane, gifted with the ability to hear echoes of the past through music, teams up with a reclusive composer to uncover the truth behind the deaths. In S01E09, “The Final Note,” Elara finally closes in on the elusive killer, but a startling discovery about her own past forces her to question everything she thought she knew. Tensions rise as the melody of doom plays its last, chilling refrain.</Description>
             		<Image Width='568' Height='319'>
             			<Segment>someid3@spot.net</Segment>
             		</Image>
@@ -94,7 +94,7 @@ internal sealed class SpotnetXmlParserTests
                 <Posting SomeUnknownAttribute="SomeValue">
                     <Created>1728935794</Created>
                     <Poster>SomePoster</Poster>
-                    <Description>In a world where people can glimpse fleeting moments of their future, a secretive government agency uses this ability to prevent catastrophic events. As Season 4 begins, former agent Maya Quinn is forced out of hiding to confront a mysterious new threat. With the timelines growing unstable, Maya and her old team must race against time to stop a rogue faction determined to rewrite history. S04E01, "A New Dawn," kicks off the season with shocking revelations and a dangerous new mission that will challenge everything they know about their powers.</Description>
+                    <Description>In a world where people can glimpse fleeting moments of their future, a secretive government agency uses this ability to prevent catastrophic events. As Season 4 begins, former agent Maya Quinn is forced out of hiding to confront a mysterious new threat. With the timelines growing unstable, Maya and her old team must race against time to stop a rogue faction determined to rewrite history. S04E01, “A New Dawn,” kicks off the season with shocking revelations and a dangerous new mission that will challenge everything they know about their powers.</Description>
                     <Title SomeUnknownAttribute="SomeValue">Echoes of Tomorrow - S04E01: A New Dawn</Title>
                     <SomeUnknownField>SomeValue</SomeUnknownField>
                     <NZB>
@@ -179,7 +179,7 @@ internal sealed class SpotnetXmlParserTests
                     <Created>1728935794</Created>
                     <Poster>SomePoster</Poster>
                     <Title>Echoes of Tomorrow - S04E01: A New Dawn</Title>
-                    <Description>In a world where people can glimpse fleeting moments of their future, a secretive government agency uses this ability to prevent catastrophic events. As Season 4 begins, former agent Maya Quinn is forced out of hiding to confront a mysterious new threat. With the timelines growing unstable, Maya and her old team must race against time to stop a rogue faction determined to rewrite history. S04E01, "A New Dawn," kicks off the season with shocking revelations and a dangerous new mission that will challenge everything they know about their powers.</Description>
+                    <Description>In a world where people can glimpse fleeting moments of their future, a secretive government agency uses this ability to prevent catastrophic events. As Season 4 begins, former agent Maya Quinn is forced out of hiding to confront a mysterious new threat. With the timelines growing unstable, Maya and her old team must race against time to stop a rogue faction determined to rewrite history. S04E01, “A New Dawn,” kicks off the season with shocking revelations and a dangerous new mission that will challenge everything they know about their powers.</Description>
                     <Image Width="680"Height="1000">
                         <Segment>someid1@spot.net</Segment>
                     </Image>
@@ -219,7 +219,7 @@ internal sealed class SpotnetXmlParserTests
                     <Created>1728935794</Created>
                     <Poster>SomePoster</Poster>
                     <Title>Echoes of Tomorrow - S04E01: A New Dawn</Title>
-                    <Description>In a world where people can glimpse fleeting moments of their future, a secretive government agency uses this ability to prevent catastrophic events. As Season 4 begins, former agent Maya Quinn is forced out of hiding to confront a mysterious new threat. With the timelines growing unstable, Maya and her old team must race against time to stop a rogue faction determined to rewrite history. S04E01, "A New Dawn," kicks off the season with shocking revelations and a dangerous new mission that will challenge everything they know about their powers.</Description>
+                    <Description>In a world where people can glimpse fleeting moments of their future, a secretive government agency uses this ability to prevent catastrophic events. As Season 4 begins, former agent Maya Quinn is forced out of hiding to confront a mysterious new threat. With the timelines growing unstable, Maya and her old team must race against time to stop a rogue faction determined to rewrite history. S04E01, “A New Dawn,” kicks off the season with shocking revelations and a dangerous new mission that will challenge everything they know about their powers.</Description>
                     <ImageWidth="680" Height="1000">
                         <Segment>someid1@spot.net</Segment>
                     </Image>
@@ -257,7 +257,7 @@ internal sealed class SpotnetXmlParserTests
                     <Created>1728935794</Created>
                     <Poster>SomePoster</Poster>
                     <Title>Echoes of Tomorrow - S04E01: A New Dawn</Title>
-                    <Description>In a world where people can glimpse fleeting moments of their future, a secretive government agency uses this ability to prevent catastrophic events. As Season 4 begins, former agent Maya Quinn is forced out of hiding to confront a mysterious new threat. With the timelines growing unstable, Maya and her old team must race against time to stop a rogue faction determined to rewrite history. S04E01, "A New Dawn," kicks off the season with shocking revelations and a dangerous new mission that will challenge everything they know about their powers.</Description>
+                    <Description>In a world where people can glimpse fleeting moments of their future, a secretive government agency uses this ability to prevent catastrophic events. As Season 4 begins, former agent Maya Quinn is forced out of hiding to confront a mysterious new threat. With the timelines growing unstable, Maya and her old team must race against time to stop a rogue faction determined to rewrite history. S04E01, “A New Dawn,” kicks off the season with shocking revelations and a dangerous new mission that will challenge everything they know about their powers.</Description>
                     <Image Height="1000" Width="680">
                         <Segment>someid1@spot.net</Segment>
                     </Image>
