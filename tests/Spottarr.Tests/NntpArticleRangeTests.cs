@@ -1,55 +1,38 @@
 using Spottarr.Services.Nntp;
-using Xunit;
 
 namespace Spottarr.Tests;
 
-public class NntpArticleRangeTests
+internal sealed class NntpArticleRangeTests
 {
-    [Fact]
-    public void RangeIsAlwaysInclusive()
+    [Test]
+    public async Task RangeIsAlwaysInclusive()
     {
-        var result = NntpArticleRangeFactory.GetBatches(10, 3010, 1000);
-        Assert.Collection(
-            result,
-            r1 =>
-            {
-                Assert.Equal(10, r1.From);
-                Assert.Equal(1009, r1.To);
-            },
-            r2 =>
-            {
-                Assert.Equal(1010, r2.From);
-                Assert.Equal(2009, r2.To);
-            },
-            r3 =>
-            {
-                Assert.Equal(2010, r3.From);
-                Assert.Equal(3010, r3.To);
-            }
-        );
+        var result = NntpArticleRangeFactory.GetBatches(10, 3010, 1000).ToList();
+        await Assert.That(result).Count().IsEqualTo(3);
+
+        await Assert.That(result[0].From).IsEqualTo(10);
+        await Assert.That(result[0].To).IsEqualTo(1009);
+
+        await Assert.That(result[1].From).IsEqualTo(1010);
+        await Assert.That(result[1].To).IsEqualTo(2009);
+
+        await Assert.That(result[2].From).IsEqualTo(2010);
+        await Assert.That(result[2].To).IsEqualTo(3010);
     }
 
-    [Fact]
-    public void RangeIsClampedToEnd()
+    [Test]
+    public async Task RangeIsClampedToEnd()
     {
-        var result = NntpArticleRangeFactory.GetBatches(10, 2015, 1000);
-        Assert.Collection(
-            result,
-            r1 =>
-            {
-                Assert.Equal(10, r1.From);
-                Assert.Equal(1009, r1.To);
-            },
-            r2 =>
-            {
-                Assert.Equal(1010, r2.From);
-                Assert.Equal(2009, r2.To);
-            },
-            r3 =>
-            {
-                Assert.Equal(2010, r3.From);
-                Assert.Equal(2015, r3.To);
-            }
-        );
+        var result = NntpArticleRangeFactory.GetBatches(10, 2015, 1000).ToList();
+        await Assert.That(result).Count().IsEqualTo(3);
+
+        await Assert.That(result[0].From).IsEqualTo(10);
+        await Assert.That(result[0].To).IsEqualTo(1009);
+
+        await Assert.That(result[1].From).IsEqualTo(1010);
+        await Assert.That(result[1].To).IsEqualTo(2009);
+
+        await Assert.That(result[2].From).IsEqualTo(2010);
+        await Assert.That(result[2].To).IsEqualTo(2015);
     }
 }

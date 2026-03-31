@@ -2,14 +2,13 @@ using System.ServiceModel.Syndication;
 using Spottarr.Data.Entities;
 using Spottarr.Data.Entities.Enums;
 using Spottarr.Web.Newznab;
-using Xunit;
 
 namespace Spottarr.Tests;
 
-public class NewznabRssSerializerTests
+internal sealed class NewznabRssSerializerTests
 {
-    [Fact]
-    public async Task XmlValid()
+    [Test]
+    public async Task XmlValid(CancellationToken cancellationToken)
     {
         List<Spot> spots =
         [
@@ -77,13 +76,13 @@ public class NewznabRssSerializerTests
             </rss>
             """;
 
-        var actual = await sr.ReadToEndAsync(TestContext.Current.CancellationToken);
+        var actual = await sr.ReadToEndAsync(cancellationToken);
 
-        Assert.Equal(expected, actual);
+        await Assert.That(actual).IsEqualTo(expected);
     }
 
-    [Fact]
-    public async Task XmlInvalidChar()
+    [Test]
+    public async Task XmlInvalidChar(CancellationToken cancellationToken)
     {
         List<Spot> spots =
         [
@@ -151,8 +150,8 @@ public class NewznabRssSerializerTests
             </rss>
             """;
 
-        var actual = await sr.ReadToEndAsync(TestContext.Current.CancellationToken);
+        var actual = await sr.ReadToEndAsync(cancellationToken);
 
-        Assert.Equal(expected, actual);
+        await Assert.That(actual).IsEqualTo(expected);
     }
 }

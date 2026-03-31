@@ -1,12 +1,11 @@
 using Spottarr.Services.Parsers;
-using Xunit;
 
 namespace Spottarr.Tests;
 
-public class SpotnetXmlParserTests
+internal sealed class SpotnetXmlParserTests
 {
-    [Fact]
-    public async Task ParsesXmlValidVariant1()
+    [Test]
+    public async Task ParsesXmlValidVariant1(CancellationToken cancellationToken)
     {
         const string xml = """
             <Spotnet>
@@ -30,29 +29,21 @@ public class SpotnetXmlParserTests
             </Spotnet>
             """;
 
-        var parsed = await SpotnetXmlParser.Parse(xml, TestContext.Current.CancellationToken);
-        Assert.False(parsed.HasError);
+        var parsed = await SpotnetXmlParser.Parse(xml, cancellationToken);
+        await Assert.That(parsed.HasError).IsFalse();
         var result = parsed.Result;
 
-        Assert.Equal("SomePoster", result.Posting.Poster);
-        Assert.Equal("Echoes of Tomorrow - S04E01: A New Dawn", result.Posting.Title);
-        Assert.Equal("01", result.Posting.Category.Text);
-        Assert.Collection(
-            result.Posting.Category.Sub,
-            sub1 =>
-            {
-                Assert.Equal("01a09", sub1);
-            },
-            sub2 =>
-            {
-                Assert.Equal("01b04", sub2);
-            }
-        );
-        Assert.Equal("someid2@spot.net", result.Posting.Nzb.Segment);
+        await Assert.That(result.Posting.Poster).IsEqualTo("SomePoster");
+        await Assert
+            .That(result.Posting.Title)
+            .IsEqualTo("Echoes of Tomorrow - S04E01: A New Dawn");
+        await Assert.That(result.Posting.Category.Text).IsEqualTo("01");
+        await Assert.That(result.Posting.Category.Sub).IsEquivalentTo(["01a09", "01b04"]);
+        await Assert.That(result.Posting.Nzb.Segment).IsEqualTo("someid2@spot.net");
     }
 
-    [Fact]
-    public async Task ParsesXmlValidVariant2()
+    [Test]
+    public async Task ParsesXmlValidVariant2(CancellationToken cancellationToken)
     {
         const string xml = """
             <Spotnet>
@@ -79,31 +70,23 @@ public class SpotnetXmlParserTests
             </Spotnet>
             """;
 
-        var parsed = await SpotnetXmlParser.Parse(xml, TestContext.Current.CancellationToken);
-        Assert.False(parsed.HasError);
+        var parsed = await SpotnetXmlParser.Parse(xml, cancellationToken);
+        await Assert.That(parsed.HasError).IsFalse();
         var result = parsed.Result;
 
-        Assert.Equal("SomePoster", result.Posting.Poster);
-        Assert.Equal("Midnight Requiem - S01E09: The Final Note", result.Posting.Title);
-        Assert.Equal("01", result.Posting.Category.Text);
-        Assert.Equal("filename.mp4", result.Posting.Filename);
-        Assert.Equal("some.group", result.Posting.Newsgroup);
-        Assert.Collection(
-            result.Posting.Category.Sub,
-            sub1 =>
-            {
-                Assert.Equal("01a09", sub1);
-            },
-            sub2 =>
-            {
-                Assert.Equal("01b04", sub2);
-            }
-        );
-        Assert.Equal("someid4@spot.net", result.Posting.Nzb.Segment);
+        await Assert.That(result.Posting.Poster).IsEqualTo("SomePoster");
+        await Assert
+            .That(result.Posting.Title)
+            .IsEqualTo("Midnight Requiem - S01E09: The Final Note");
+        await Assert.That(result.Posting.Category.Text).IsEqualTo("01");
+        await Assert.That(result.Posting.Filename).IsEqualTo("filename.mp4");
+        await Assert.That(result.Posting.Newsgroup).IsEqualTo("some.group");
+        await Assert.That(result.Posting.Category.Sub).IsEquivalentTo(["01a09", "01b04"]);
+        await Assert.That(result.Posting.Nzb.Segment).IsEqualTo("someid4@spot.net");
     }
 
-    [Fact]
-    public async Task ParsesXmlValidOutOfOrderWithUnknownFields()
+    [Test]
+    public async Task ParsesXmlValidOutOfOrderWithUnknownFields(CancellationToken cancellationToken)
     {
         const string xml = """
             <?xml version="1.0" encoding="UTF-8"?>
@@ -132,29 +115,21 @@ public class SpotnetXmlParserTests
             </Spotnet>
             """;
 
-        var parsed = await SpotnetXmlParser.Parse(xml, TestContext.Current.CancellationToken);
-        Assert.False(parsed.HasError);
+        var parsed = await SpotnetXmlParser.Parse(xml, cancellationToken);
+        await Assert.That(parsed.HasError).IsFalse();
         var result = parsed.Result;
 
-        Assert.Equal("SomePoster", result.Posting.Poster);
-        Assert.Equal("Echoes of Tomorrow - S04E01: A New Dawn", result.Posting.Title);
-        Assert.Equal("01", result.Posting.Category.Text);
-        Assert.Collection(
-            result.Posting.Category.Sub,
-            sub1 =>
-            {
-                Assert.Equal("01a09", sub1);
-            },
-            sub2 =>
-            {
-                Assert.Equal("01b04", sub2);
-            }
-        );
-        Assert.Equal("someid2@spot.net", result.Posting.Nzb.Segment);
+        await Assert.That(result.Posting.Poster).IsEqualTo("SomePoster");
+        await Assert
+            .That(result.Posting.Title)
+            .IsEqualTo("Echoes of Tomorrow - S04E01: A New Dawn");
+        await Assert.That(result.Posting.Category.Text).IsEqualTo("01");
+        await Assert.That(result.Posting.Category.Sub).IsEquivalentTo(["01a09", "01b04"]);
+        await Assert.That(result.Posting.Nzb.Segment).IsEqualTo("someid2@spot.net");
     }
 
-    [Fact]
-    public async Task ParsesXmlInvalidCharacters()
+    [Test]
+    public async Task ParsesXmlInvalidCharacters(CancellationToken cancellationToken)
     {
         const string xml = """
             <Spotnet>
@@ -178,30 +153,24 @@ public class SpotnetXmlParserTests
             </Spotnet>
             """;
 
-        var parsed = await SpotnetXmlParser.Parse(xml, TestContext.Current.CancellationToken);
-        Assert.False(parsed.HasError);
+        var parsed = await SpotnetXmlParser.Parse(xml, cancellationToken);
+        await Assert.That(parsed.HasError).IsFalse();
         var result = parsed.Result;
 
-        Assert.Equal("SomePoster", result.Posting.Poster);
-        Assert.Equal("Midnight Requiem - S01E09: The Final Note", result.Posting.Title);
-        Assert.Equal("Test \ud83d\ude0d", result.Posting.Description);
-        Assert.Equal("01", result.Posting.Category.Text);
-        Assert.Collection(
-            result.Posting.Category.Sub,
-            sub1 =>
-            {
-                Assert.Equal("01a09", sub1);
-            },
-            sub2 =>
-            {
-                Assert.Equal("01b04", sub2);
-            }
-        );
-        Assert.Equal("someid4@spot.net", result.Posting.Nzb.Segment);
+        await Assert.That(result.Posting.Poster).IsEqualTo("SomePoster");
+        await Assert
+            .That(result.Posting.Title)
+            .IsEqualTo("Midnight Requiem - S01E09: The Final Note");
+        await Assert.That(result.Posting.Description).IsEqualTo("Test \ud83d\ude0d");
+        await Assert.That(result.Posting.Category.Text).IsEqualTo("01");
+        await Assert.That(result.Posting.Category.Sub).IsEquivalentTo(["01a09", "01b04"]);
+        await Assert.That(result.Posting.Nzb.Segment).IsEqualTo("someid4@spot.net");
     }
 
-    [Fact]
-    public async Task ParsesXmlNoWhitespaceBetweenImageAttributes1()
+    [Test]
+    public async Task ParsesXmlNoWhitespaceBetweenImageAttributes1(
+        CancellationToken cancellationToken
+    )
     {
         const string xml = """
             <Spotnet>
@@ -225,29 +194,23 @@ public class SpotnetXmlParserTests
             </Spotnet>
             """;
 
-        var parsed = await SpotnetXmlParser.Parse(xml, TestContext.Current.CancellationToken);
-        Assert.False(parsed.HasError);
+        var parsed = await SpotnetXmlParser.Parse(xml, cancellationToken);
+        await Assert.That(parsed.HasError).IsFalse();
         var result = parsed.Result;
 
-        Assert.Equal("SomePoster", result.Posting.Poster);
-        Assert.Equal("Echoes of Tomorrow - S04E01: A New Dawn", result.Posting.Title);
-        Assert.Equal("01", result.Posting.Category.Text);
-        Assert.Collection(
-            result.Posting.Category.Sub,
-            sub1 =>
-            {
-                Assert.Equal("01a09", sub1);
-            },
-            sub2 =>
-            {
-                Assert.Equal("01b04", sub2);
-            }
-        );
-        Assert.Equal("someid2@spot.net", result.Posting.Nzb.Segment);
+        await Assert.That(result.Posting.Poster).IsEqualTo("SomePoster");
+        await Assert
+            .That(result.Posting.Title)
+            .IsEqualTo("Echoes of Tomorrow - S04E01: A New Dawn");
+        await Assert.That(result.Posting.Category.Text).IsEqualTo("01");
+        await Assert.That(result.Posting.Category.Sub).IsEquivalentTo(["01a09", "01b04"]);
+        await Assert.That(result.Posting.Nzb.Segment).IsEqualTo("someid2@spot.net");
     }
 
-    [Fact]
-    public async Task ParsesXmlNoWhitespaceBetweenImageAttributes2()
+    [Test]
+    public async Task ParsesXmlNoWhitespaceBetweenImageAttributes2(
+        CancellationToken cancellationToken
+    )
     {
         const string xml = """
             <Spotnet>
@@ -271,29 +234,21 @@ public class SpotnetXmlParserTests
             </Spotnet>
             """;
 
-        var parsed = await SpotnetXmlParser.Parse(xml, TestContext.Current.CancellationToken);
-        Assert.False(parsed.HasError);
+        var parsed = await SpotnetXmlParser.Parse(xml, cancellationToken);
+        await Assert.That(parsed.HasError).IsFalse();
         var result = parsed.Result;
 
-        Assert.Equal("SomePoster", result.Posting.Poster);
-        Assert.Equal("Echoes of Tomorrow - S04E01: A New Dawn", result.Posting.Title);
-        Assert.Equal("01", result.Posting.Category.Text);
-        Assert.Collection(
-            result.Posting.Category.Sub,
-            sub1 =>
-            {
-                Assert.Equal("01a09", sub1);
-            },
-            sub2 =>
-            {
-                Assert.Equal("01b04", sub2);
-            }
-        );
-        Assert.Equal("someid2@spot.net", result.Posting.Nzb.Segment);
+        await Assert.That(result.Posting.Poster).IsEqualTo("SomePoster");
+        await Assert
+            .That(result.Posting.Title)
+            .IsEqualTo("Echoes of Tomorrow - S04E01: A New Dawn");
+        await Assert.That(result.Posting.Category.Text).IsEqualTo("01");
+        await Assert.That(result.Posting.Category.Sub).IsEquivalentTo(["01a09", "01b04"]);
+        await Assert.That(result.Posting.Nzb.Segment).IsEqualTo("someid2@spot.net");
     }
 
-    [Fact]
-    public async Task ParsesXmlValidLines()
+    [Test]
+    public async Task ParsesXmlValidLines(CancellationToken cancellationToken)
     {
         const string xml = """
             <Spotnet>
@@ -318,24 +273,16 @@ public class SpotnetXmlParserTests
             """;
 
         var lines = xml.Split("\n", StringSplitOptions.RemoveEmptyEntries).ToList();
-        var parsed = await SpotnetXmlParser.Parse(lines, TestContext.Current.CancellationToken);
-        Assert.False(parsed.HasError);
+        var parsed = await SpotnetXmlParser.Parse(lines, cancellationToken);
+        await Assert.That(parsed.HasError).IsFalse();
         var result = parsed.Result;
 
-        Assert.Equal("SomePoster", result.Posting.Poster);
-        Assert.Equal("Echoes of Tomorrow - S04E01: A New Dawn", result.Posting.Title);
-        Assert.Equal("01", result.Posting.Category.Text);
-        Assert.Collection(
-            result.Posting.Category.Sub,
-            sub1 =>
-            {
-                Assert.Equal("01a09", sub1);
-            },
-            sub2 =>
-            {
-                Assert.Equal("01b04", sub2);
-            }
-        );
-        Assert.Equal("someid2@spot.net", result.Posting.Nzb.Segment);
+        await Assert.That(result.Posting.Poster).IsEqualTo("SomePoster");
+        await Assert
+            .That(result.Posting.Title)
+            .IsEqualTo("Echoes of Tomorrow - S04E01: A New Dawn");
+        await Assert.That(result.Posting.Category.Text).IsEqualTo("01");
+        await Assert.That(result.Posting.Category.Sub).IsEquivalentTo(["01a09", "01b04"]);
+        await Assert.That(result.Posting.Nzb.Segment).IsEqualTo("someid2@spot.net");
     }
 }
