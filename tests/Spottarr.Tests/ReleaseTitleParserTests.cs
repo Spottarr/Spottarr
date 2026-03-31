@@ -1,22 +1,21 @@
 using Spottarr.Services.Parsers;
-using Xunit;
 
 namespace Spottarr.Tests;
 
-public class ReleaseTitleParserTests
+internal sealed class ReleaseTitleParserTests
 {
-    [Fact]
-    public void ParsesValidReleaseTitleSingleLine()
+    [Test]
+    public async Task ParsesValidReleaseTitleSingleLine()
     {
         const string description =
             "Show Show.Title.S09E40.DUTCH.1080p.WEB.h264-POSTER is a great show.";
         var result = ReleaseTitleParser.Parse(string.Empty, description);
 
-        Assert.Equal("Show.Title.S09E40.DUTCH.1080p.WEB.h264-POSTER", result);
+        await Assert.That(result).IsEqualTo("Show.Title.S09E40.DUTCH.1080p.WEB.h264-POSTER");
     }
 
-    [Fact]
-    public void ParsesValidReleaseTitleMultiLine()
+    [Test]
+    public async Task ParsesValidReleaseTitleMultiLine()
     {
         const string description = """
             Show
@@ -25,26 +24,26 @@ public class ReleaseTitleParserTests
             """;
         var result = ReleaseTitleParser.Parse(string.Empty, description);
 
-        Assert.Equal("Show.Title.S09E40.DUTCH.1080p.WEB.h264-POSTER", result);
+        await Assert.That(result).IsEqualTo("Show.Title.S09E40.DUTCH.1080p.WEB.h264-POSTER");
     }
 
-    [Fact]
-    public void IgnoresUrlsInReleaseTitle()
+    [Test]
+    public async Task IgnoresUrlsInReleaseTitle()
     {
         const string description =
             "Visit www.spot-net.nl for more information about Show.Title.S09E40.DUTCH.1080p.WEB.h264-POSTER";
         var result = ReleaseTitleParser.Parse(string.Empty, description);
 
-        Assert.Equal("Show.Title.S09E40.DUTCH.1080p.WEB.h264-POSTER", result);
+        await Assert.That(result).IsEqualTo("Show.Title.S09E40.DUTCH.1080p.WEB.h264-POSTER");
     }
 
-    [Fact]
-    public void PrefersTitleOverDescription()
+    [Test]
+    public async Task PrefersTitleOverDescription()
     {
         const string title = "Show.Title.S09E40.DUTCH.1080p.WEB.h264-POSTER";
         const string description = "Show.Title.S10E40.DUTCH.1080p.WEB.h264-POSTER";
         var result = ReleaseTitleParser.Parse(title, description);
 
-        Assert.Equal("Show.Title.S09E40.DUTCH.1080p.WEB.h264-POSTER", result);
+        await Assert.That(result).IsEqualTo("Show.Title.S09E40.DUTCH.1080p.WEB.h264-POSTER");
     }
 }

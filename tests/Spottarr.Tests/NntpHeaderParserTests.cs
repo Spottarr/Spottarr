@@ -1,34 +1,33 @@
 using Spottarr.Services.Parsers;
-using Xunit;
 
 namespace Spottarr.Tests;
 
-public class NntpHeaderParserTests
+internal sealed class NntpHeaderParserTests
 {
-    [Fact]
-    public void ParsesValidHeader()
+    [Test]
+    public async Task ParsesValidHeader()
     {
         const string header =
             "123\tTest Subject\tTest Author\tWed, 01 Nov 2023 12:34:56 +0000\t<msgid@host>\t<ref>\t456\t7";
 
         var result = NntpHeaderParser.Parse(header);
-        Assert.False(result.HasError);
-        Assert.Equal(123, result.Result.ArticleNumber);
-        Assert.Equal("Test Subject", result.Result.Subject);
-        Assert.Equal("Test Author", result.Result.Author);
-        Assert.Equal("msgid@host", result.Result.MessageId);
-        Assert.Equal("<ref>", result.Result.References);
-        Assert.Equal(456, result.Result.Bytes);
-        Assert.Equal(7, result.Result.Lines);
+        await Assert.That(result.HasError).IsFalse();
+        await Assert.That(result.Result.ArticleNumber).IsEqualTo(123);
+        await Assert.That(result.Result.Subject).IsEqualTo("Test Subject");
+        await Assert.That(result.Result.Author).IsEqualTo("Test Author");
+        await Assert.That(result.Result.MessageId).IsEqualTo("msgid@host");
+        await Assert.That(result.Result.References).IsEqualTo("<ref>");
+        await Assert.That(result.Result.Bytes).IsEqualTo(456);
+        await Assert.That(result.Result.Lines).IsEqualTo(7);
     }
 
-    [Fact]
-    public void ReturnsErrorOnTooFewFields()
+    [Test]
+    public async Task ReturnsErrorOnTooFewFields()
     {
         const string header = "123\tTest Subject\tTest Author";
 
         var result = NntpHeaderParser.Parse(header);
-        Assert.True(result.HasError);
-        Assert.Equal("Expected 8 header fields, got 3", result.Error);
+        await Assert.That(result.HasError).IsTrue();
+        await Assert.That(result.Error).IsEqualTo("Expected 8 header fields, got 3");
     }
 }
