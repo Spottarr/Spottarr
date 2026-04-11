@@ -1,17 +1,13 @@
-# Default ignored files
-/shelf/
-/workspace.xml
-# Rider ignored files
-/projectSettingsUpdater.xml
-/contentModel.xml
-/modules.xml
-/.idea.Spottarr.iml
-/AndroidProjectSystem.xml
-# Editor-based HTTP Client requests
-/httpRequests/
-# Datasource local storage ignored files
-/dataSources/
-/dataSources.local.xml
-/data_source_mapping.xml
-# Copilot plugin files
-copilot.data.migration.*.xml
+# This folder contains a lot of user-specific files
+# Rider plugins can also add their own files here
+# Ignore everything except the files listed below
+*
+
+# Shared config that should be checked into git
+!.name
+!CSharpierPlugin.xml
+!encodings.xml
+!externalDependencies.xml
+!indexLayout.xml
+!prettier.xml
+!vcs.xml
