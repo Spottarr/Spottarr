@@ -174,6 +174,17 @@ internal static class NewznabCategoryMapper
     {
         categories.Add(NewznabCategory.Books);
 
+        foreach (var genre in spot.ImageGenres)
+        {
+            categories.Add(
+                genre switch
+                {
+                    ImageGenre.Magazine => NewznabCategory.BooksMags,
+                    _ => NewznabCategory.Books,
+                }
+            );
+        }
+
         foreach (var imageSource in spot.ImageSources)
         {
             categories.Add(
