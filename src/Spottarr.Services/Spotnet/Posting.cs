@@ -28,7 +28,7 @@ internal sealed class Posting : IXmlReadable<Posting>
     public string Website { get; set; } = string.Empty;
 
     [XmlElement(ElementName = "Image")]
-    public ImageSegment Image { get; set; } = null!;
+    public ImageSegment? Image { get; set; } = null!;
 
     [XmlElement(ElementName = "Size")]
     public long Size { get; set; }
