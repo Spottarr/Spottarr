@@ -6,7 +6,7 @@ using TypeGen.Core.TypeAnnotations;
 namespace Spottarr.Web.Models;
 
 [ExportTsInterface]
-public class SpotResponseDto
+internal sealed class SpotResponseDto
 {
     [SetsRequiredMembers]
     public SpotResponseDto(Spot spot)

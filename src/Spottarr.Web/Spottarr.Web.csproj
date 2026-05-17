@@ -14,20 +14,19 @@
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 
-  
   <PropertyGroup>
     <SpaRoot>..\Spottarr.Web.Client</SpaRoot>
     <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
     <SpaProxyServerUrl>https://localhost:5173</SpaProxyServerUrl>
     <UserSecretsId>d2ebd800-92a0-4e5b-973b-1a0c5556306c</UserSecretsId>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
-    <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="9.0.5"/>
+    <PackageReference Include="Microsoft.AspNetCore.SpaProxy" />
     <PackageReference Include="Scalar.AspNetCore" />
     <PackageReference Include="System.ServiceModel.Syndication" />
-    <PackageReference Include="TypeGen" Version="6.0.2" GeneratePathProperty="true" />
+    <PackageReference Include="TypeGen" GeneratePathProperty="true" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,11 +34,13 @@
     <ProjectReference Include="..\Spottarr.Data.Sqlite\Spottarr.Data.Sqlite.csproj" />
     <ProjectReference Include="..\Spottarr.Data\Spottarr.Data.csproj" />
     <ProjectReference Include="..\Spottarr.Services\Spottarr.Services.csproj" />
-    <ProjectReference Include="..\Spottarr.Web.Client\Spottarr.Web.Client.esproj" ReferenceOutputAssembly="false" />
+    <ProjectReference
+      Include="..\Spottarr.Web.Client\Spottarr.Web.Client.esproj"
+      ReferenceOutputAssembly="false"
+    />
   </ItemGroup>
 
   <Target Name="TypeGen" AfterTargets="Build">
-    <Exec Command="dotnet $(PkgTypeGen)/tools/TypeGen.Cli.dll generate -p $(MSBuildProjectDirectory) --output-folder $(SpaRoot)/src/types/generated"/>
+    <Exec Command="dotnet $(PkgTypeGen)/tools/TypeGen.Cli.dll generate -p $(MSBuildProjectDirectory) --output-folder $(SpaRoot)/src/types/generated" />
   </Target>
-
 </Project>

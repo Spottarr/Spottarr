@@ -10,6 +10,7 @@
       Version="10.0.8"
     />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />
+    <PackageVersion Include="Microsoft.AspNetCore.SpaProxy" Version="10.0.8" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Abstractions" Version="10.0.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.8" />
@@ -38,5 +39,6 @@
     <PackageVersion Include="Spottarr.Usenet" Version="5.0.0" />
     <PackageVersion Include="System.ServiceModel.Syndication" Version="10.0.8" />
     <PackageVersion Include="TUnit" Version="1.44.39" />
+    <PackageVersion Include="TypeGen" Version="7.0.0" />
   </ItemGroup>
 </Project>
