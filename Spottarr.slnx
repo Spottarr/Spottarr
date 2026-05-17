@@ -19,7 +19,7 @@
     <Project Path="src/Spottarr.Data/Spottarr.Data.csproj" />
     <Project Path="src/Spottarr.Services/Spottarr.Services.csproj" />
     <Project Path="src/Spottarr.Web/Spottarr.Web.csproj" />
-    <Project Path="src/Spottarr.Web/Spottarr.Web.Client.esproj" />
+    <Project Path="src/Spottarr.Web.Client/Spottarr.Web.Client.esproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Spottarr.Tests/Spottarr.Tests.csproj" />
