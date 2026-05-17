@@ -1,23 +1,31 @@
+using NpgsqlTypes;
 using Spottarr.Data.Entities.Enums;
+using Spottarr.Data.Entities.Fts;
 
 namespace Spottarr.Data.Entities;
 
-public class Spot : BaseEntity
+public sealed class Spot : BaseEntity, IPostgreSqlFtsEntity
 {
-    public required string Title { get; set; }
+    public const int TinyMaxLength = 16;
+    public const int SmallMaxLength = 128;
+    public const int MediumMaxLength = 256;
+    public const int LargeMaxLength = 512;
+    public const int DescriptionMaxLength = 32768;
+
+    public string Title { get; set; } = string.Empty;
     public string? ReleaseTitle { get; set; }
     public string? Description { get; set; }
     public string? Tag { get; set; }
     public Uri? Url { get; set; }
     public string? Filename { get; set; }
     public string? Newsgroup { get; set; }
-    public required string Spotter { get; set; }
-    public required long Bytes { get; set; }
-    public required string MessageId { get; set; }
-    public required string? NzbMessageId { get; set; }
-    public required string? ImageMessageId { get; set; }
-    public required long MessageNumber { get; set; }
-    public required SpotType Type { get; set; }
+    public string Spotter { get; set; } = string.Empty;
+    public long Bytes { get; set; }
+    public string MessageId { get; set; } = string.Empty;
+    public string? NzbMessageId { get; set; }
+    public string? ImageMessageId { get; set; }
+    public long MessageNumber { get; set; }
+    public SpotType Type { get; set; }
     public ICollection<ImageType> ImageTypes { get; init; } = [];
     public ICollection<ImageFormat> ImageFormats { get; init; } = [];
     public ICollection<ImageSource> ImageSources { get; init; } = [];
@@ -42,6 +50,7 @@ public class Spot : BaseEntity
     public string? ImdbId { get; set; }
     public string? TvdbId { get; set; }
     public FtsSpot? FtsSpot { get; set; }
-    public required DateTime SpottedAt { get; set; }
+    public DateTime SpottedAt { get; set; }
     public DateTime? IndexedAt { get; set; }
+    public NpgsqlTsVector SearchVector { get; set; } = null!;
 }

@@ -2,10 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Spottarr.Web.Newznab.Models;
 
-public enum ErrorCode
+internal enum ErrorCode
 {
     None = 0,
-    
+
     [Display(Name = "Incorrect user credentials")]
     IncorrectUserCredentials = 100,
 
@@ -64,5 +64,5 @@ public enum ErrorCode
     UnknownError = 900,
 
     [Display(Name = "API Disabled")]
-    ApiDisabled = 910
+    ApiDisabled = 910,
 }

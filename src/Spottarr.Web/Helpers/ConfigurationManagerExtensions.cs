@@ -6,9 +6,13 @@ namespace Spottarr.Web.Helpers;
 
 internal static class ConfigurationManagerExtensions
 {
-    public static void MapConfigurationSources(this ConfigurationManager configuration, IHostEnvironment environment)
+    public static void MapConfigurationSources(
+        this ConfigurationManager configuration,
+        IHostEnvironment environment
+    )
     {
-        if (!environment.IsDevelopment() && !environment.IsContainerFastMode()) return;
+        if (!environment.IsDevelopment() && !environment.IsContainerFastMode())
+            return;
 
         // ASP.NET expects the configuration files to be in the root of the project when running an app from source.
         // Because we share the config file for the entire solution we need to read it from the bin directory like

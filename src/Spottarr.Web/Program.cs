@@ -1,34 +1,41 @@
 using Scalar.AspNetCore;
 using Spottarr.Data.Helpers;
 using Spottarr.Services;
+using Spottarr.Web;
+using Spottarr.Web.Endpoints;
 using Spottarr.Web.Helpers;
 using Spottarr.Web.Logging;
 using Spottarr.Web.Middlewares;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateSlimBuilder(args);
 
 builder.Logging.AddConsole(builder.Environment);
 builder.Configuration.MapConfigurationSources(builder.Environment);
 builder.Services.AddSpottarrServices(builder.Configuration);
-builder.Services.AddSpottarrWeb(builder.Environment);
+builder.Services.AddSpottarrWeb();
+builder.WebHost.UseStaticWebAssets();
 
 var app = builder.Build();
+var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
 
-await app.MigrateDatabase();
+await app.MigrateDatabase(lifetime.ApplicationStopping);
 
+app.MapHealthChecks("/healthz");
 app.MapStaticAssets();
-app.MapControllers();
+app.MapNewznab();
+app.MapHtmx();
 app.MapOpenApi();
 app.MapScalarApiReference();
 app.MapFallbackToFile("/index.html");
 
 // Middleware pipeline, order matters here
 app.UseForwardedHeaders();
-app.UseHttpsRedirection();
-app.UseMiddleware<NewsznabQueryActionMiddleware>();
+app.UseDefaultFiles();
+app.UseMiddleware<NewznabQueryActionMiddleware>();
 app.UseRouting();
 app.UseCors();
-app.UseAntiforgery();
+app.UseAuthentication();
 app.UseAuthorization();
+app.UseAntiforgery();
 
-await app.RunAsync();
+await app.RunAsync(lifetime.ApplicationStopping);

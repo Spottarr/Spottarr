@@ -4,7 +4,7 @@ using Spottarr.Services.Contracts;
 
 namespace Spottarr.Services;
 
-public class ApplicationVersionService : IApplicationVersionService
+internal sealed class ApplicationVersionService : IApplicationVersionService
 {
     private const string DefaultVersion = "0.0.0";
     public string Version { get; }
@@ -13,6 +13,11 @@ public class ApplicationVersionService : IApplicationVersionService
     {
         ArgumentNullException.ThrowIfNull(hostEnvironment);
 
-        Version = Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? DefaultVersion;
+        Version =
+            Assembly
+                .GetEntryAssembly()
+                ?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                ?.InformationalVersion
+            ?? DefaultVersion;
     }
 }

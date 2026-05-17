@@ -8,8 +8,10 @@ internal class CleanUpSpotsJob : IJob
     private readonly ISpotCleanUpService _spotCleanUpService;
     private readonly IDatabaseMaintenanceService _databaseMaintenanceService;
 
-    public CleanUpSpotsJob(ISpotCleanUpService spotCleanUpService,
-        IDatabaseMaintenanceService databaseMaintenanceService)
+    public CleanUpSpotsJob(
+        ISpotCleanUpService spotCleanUpService,
+        IDatabaseMaintenanceService databaseMaintenanceService
+    )
     {
         _spotCleanUpService = spotCleanUpService;
         _databaseMaintenanceService = databaseMaintenanceService;

@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using Spottarr.Data.Entities.Enums;
 using Spottarr.Web.Helpers;
 using Spottarr.Web.Newznab.Models;
@@ -8,7 +7,13 @@ namespace Spottarr.Web.Newznab;
 internal static class CapabilitiesHelper
 {
     // https://github.com/Prowlarr/Prowlarr/blob/develop/src/NzbDrone.Core/Indexers/IndexerCapabilities.cs
-    public static Capabilities GetCapabilities(Uri uri, Uri imageUri, string name, string version, int limit)
+    public static Capabilities GetCapabilities(
+        Uri uri,
+        Uri imageUri,
+        string name,
+        string version,
+        int limit
+    )
     {
         return new Capabilities
         {
@@ -22,23 +27,11 @@ internal static class CapabilitiesHelper
                 Image = imageUri.ToString(),
                 Type = name,
             },
-            Limits = new Limits
-            {
-                Max = limit,
-                Default = limit,
-            },
-            Registration = new Registration
-            {
-                Available = "no",
-                Open = "no"
-            },
+            Limits = new Limits { Max = limit, Default = limit },
+            Registration = new Registration { Available = "no", Open = "no" },
             Searching = new Searching
             {
-                Search = new Search
-                {
-                    Available = "yes",
-                    SupportedParams = "q",
-                },
+                Search = new Search { Available = "yes", SupportedParams = "q" },
                 TvSearch = new Search
                 {
                     Available = "yes",
@@ -49,27 +42,15 @@ internal static class CapabilitiesHelper
                     Available = "yes",
                     SupportedParams = "q,season,ep,year,imdbid",
                 },
-                AudioSearch = new Search
-                {
-                    Available = "yes",
-                    SupportedParams = "q,year",
-                },
-                PcSearch = new Search()
-                {
-                    Available = "no",
-                    SupportedParams = "",
-                },
-                BookSearch = new Search
-                {
-                    Available = "yes",
-                    SupportedParams = "q,title",
-                }
+                AudioSearch = new Search { Available = "yes", SupportedParams = "q,year" },
+                PcSearch = new Search { Available = "no", SupportedParams = string.Empty },
+                BookSearch = new Search { Available = "yes", SupportedParams = "q,title" },
             },
-            Categories = GetCategories()
+            Categories = GetCategories(),
         };
     }
 
-    private static Collection<MainCategory> GetCategories()
+    private static List<MainCategory> GetCategories()
     {
         var mainCats = new Dictionary<NewznabCategory, HashSet<NewznabCategory>>();
 
@@ -86,15 +67,25 @@ internal static class CapabilitiesHelper
             mainCats[key].Add(cat);
         }
 
-        return new Collection<MainCategory>(mainCats.Select(kvp => new MainCategory
-        {
-            Id = (int)kvp.Key,
-            Name = kvp.Key.GetDisplayName(),
-            SubCategories = new Collection<Category>(kvp.Value.Select(v => new Category
-            {
-                Id = (int)v,
-                Name = v.GetDisplayName()
-            }).ToList())
-        }).ToList());
+        return
+        [
+            .. mainCats
+                .Select(kvp => new MainCategory
+                {
+                    Id = (int)kvp.Key,
+                    Name = kvp.Key.GetDisplayName(),
+                    SubCategories =
+                    [
+                        .. kvp
+                            .Value.Select(v => new Category
+                            {
+                                Id = (int)v,
+                                Name = v.GetDisplayName(),
+                            })
+                            .ToList(),
+                    ],
+                })
+                .ToList(),
+        ];
     }
 }

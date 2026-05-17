@@ -11,7 +11,10 @@ internal class DatabaseMaintenanceService : IDatabaseMaintenanceService
     private readonly ILogger<DatabaseMaintenanceService> _logger;
     private readonly SpottarrDbContext _dbContext;
 
-    public DatabaseMaintenanceService(ILogger<DatabaseMaintenanceService> logger, SpottarrDbContext dbContext)
+    public DatabaseMaintenanceService(
+        ILogger<DatabaseMaintenanceService> logger,
+        SpottarrDbContext dbContext
+    )
     {
         _logger = logger;
         _dbContext = dbContext;
@@ -21,11 +24,13 @@ internal class DatabaseMaintenanceService : IDatabaseMaintenanceService
     {
         _logger.DatabaseOptimizationStarted(DateTimeOffset.Now);
 
-        // Run SQLite vacuum command to shrink the database file size
-        await _dbContext.Database.Vacuum();
+        // The commands below work for both SQLite and PostgreSQL
 
-        // Run SQLite analyze command to update the statistics for the database
-        await _dbContext.Database.Analyze();
+        // Run VACUUM command to shrink the database file size
+        await _dbContext.Database.Vacuum(cancellationToken);
+
+        // Run ANALYZE command to update the statistics for the database
+        await _dbContext.Database.Analyze(cancellationToken);
 
         _logger.DatabaseOptimizationFinished(DateTimeOffset.Now);
     }

@@ -9,14 +9,6 @@ Spottarr is a small application that can index the spotnet messages (spots) and 
 
 Using Spottarr it becomes very easy to search spots directly from Radarr, Sonarr, Readarr, Lidarr, Prowlarr and many other newznab compatible tools. 
 
-
-## Motivation
-Spotnet provides a great decentralized source for Usenet indexing, but most existing clients are no longer maintained desktop applications, or building on top of a relatively outdated codebase.
-
-While some alternatives like [Spotweb](https://github.com/spotweb/spotweb) are still very much alive, I've personally had some issues matching the search results when searching from *Arrs.
-
-The aim of Spottarr is to provide a more modern application that aims for efficiency and more precise search results, while leaving the media management and browsing to the existing *Arrs.
-
 ## Installing and running
 Spottarr can easily be integrated in your existing *Arrs using docker compose:
 ```yaml
@@ -24,23 +16,29 @@ services:
   spottarr:
     image: ghcr.io/spottarr/spottarr:latest
     container_name: spottarr
-    user: "1654:1654" # Make sure to set the correct UID and GID for your system
     environment:
       - "USENET__HOSTNAME=my.news.server.com"
       - "USENET__USERNAME=username"
       - "USENET__PASSWORD=somep@ssw0rd"
       - "USENET__PORT=563"
       - "USENET__USETLS=true"
-      - "USENET__MAXCONNECTIONS=10"
+      - "USENET__MAXCONNECTIONS=10" # Adjust based on your usenet provider and other download clients
       - "SPOTNET__RETRIEVEAFTER=2024-10-01T00:00:00Z"
-      - "SPOTNET__IMPORTBATCHSIZE=10000"
+      - "SPOTNET__IMPORTBATCHSIZE=10000" # Adjust based on available memory
       - "SPOTNET__RETENTIONDAYS=365" # Use 0 for unlimited
       - "SPOTNET__IMPORTADULTCONTENT=false"
+      - "TZ=Etc/GMT" # Set your timezone, e.g. Europe/Amsterdam
     volumes:
-      - /path/to/spottarr/data:/data
+      - spottarr-data:/data
     ports:
       - "8383:8383"
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 200M # Adjust based on available memory
+volumes:
+  spottarr-data:
 ```
 
 > [!NOTE]
@@ -49,7 +47,7 @@ services:
 > [!NOTE]
 > By default, Spottarr runs as the non-privileged user `app` with the UID `1654`.
 >
-> Make sure to either give this UID access to the mounted directory, or change the UID using the docker-compose `user`
+> When using bind mounts instead of a docker volume, make sure to either give this UID access to the mounted directory, or change the UID to a user that does have access to the bind mount using the docker-compose `user`
 > directive.
 
 Once the Spottarr is up and running, it will automatically start indexing the spotnet messages starting from the provided `SPOTNET_RETRIEVEAFTER` date.
@@ -64,7 +62,30 @@ After starting Spottarr, it can easily be connected to the *Arr of your choice:
 3. Spottarr will now be used for searches
 ![Step 3](docs/arr-3.png)
 
-**Note** Spottarr does not require an API key, anyone with access to your Spottarr instance can perform searches on it.
+## Newznab API security
+
+> [!NOTE]
+> By default, the Spottarr newznab API does not require an API key.
+> Anyone with access to your Spottarr instance can perform searches on it.
+> To enable API key authorization, set the `NEWZNAB__APIKEY` environment variable to a secure value and update your *Arr
+> indexer configuration accordingly.
+
+## Postgres support
+
+> [!WARNING]
+> Postgres support is considered experimental at this time.
+> No migration path is provided from SQLite to Postgres, you will have to start with a fresh database.
+
+It's possible to bring your own Postgres database instead of using the built-in SQLite database.
+To do so, add the following environment variables:
+
+```yaml
+environment:
+  ...
+  - "DATABASE__PROVIDER=Postgres"
+  - "DATABASE__CONNECTIONSTRING=Host=yourhost;Database=spottarr;Username=postgres;Password=xxxxxxxxxxx"
+  ...
+```
 
 ## Issues, requests and improvements
 Issues can be used to submit application errors as long as the issue template is properly filled out.
@@ -72,3 +93,14 @@ Issues can be used to submit application errors as long as the issue template is
 Requests for new functionality will only be considered if you can at the least provide a technical proposal and preferably a PR. 
 
 The aim is to keep Spottarr as simple as possible, but any suggestions to improve indexing are of course welcome. 
+
+## Motivation
+
+Spotnet provides a great decentralized source for Usenet indexing, but most existing clients are no longer maintained
+desktop applications, or building on top of a relatively outdated codebase.
+
+While some alternatives like [Spotweb](https://github.com/spotweb/spotweb) are still very much alive, I've personally
+had some issues matching the search results when searching from *Arrs.
+
+The aim of Spottarr is to provide a more modern application that aims for efficiency and more precise search results,
+while leaving the media management and browsing to the existing *Arrs.
