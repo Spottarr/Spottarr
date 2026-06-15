@@ -1,4 +1,4 @@
-using Spottarr.Services.Nntp;
+using Usenet.Nntp.Models;
 
 namespace Spottarr.Services.Spotnet;
 
@@ -18,5 +18,5 @@ internal sealed class SpotHeader
     public required string CustomId { get; init; }
     public required string CustomValue { get; init; }
     public required string ServerSignature { get; init; }
-    public required NntpHeader NntpHeader { get; init; }
+    public required NntpArticleOverview NntpHeader { get; init; }
 }

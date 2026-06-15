@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using Spottarr.Services.Nntp;
 using Spottarr.Services.Spotnet;
+using Usenet.Nntp.Models;
 
 namespace Spottarr.Services.Parsers;
 
@@ -9,7 +10,7 @@ internal static partial class SpotnetHeaderParser
 {
     private static readonly string[] DeleteModerationCommands = ["delete", "dispose", "remove"];
 
-    public static ParserResult<SpotHeader> Parse(NntpHeader header)
+    public static ParserResult<SpotHeader> Parse(NntpArticleOverview header)
     {
         var subjectAndTags = header.Subject.Split(
             '|',
@@ -26,10 +27,10 @@ internal static partial class SpotnetHeaderParser
             : ModerationCommand.None;
 
         var regex = SpotnetHeaderRegex();
-        var match = regex.Match(header.Author);
+        var match = regex.Match(header.From);
 
         if (!match.Success)
-            return new ParserResult<SpotHeader>($"Invalid Spotnet Author header '{header.Author}'");
+            return new ParserResult<SpotHeader>($"Invalid Spotnet Author header '{header.From}'");
 
         var g = match.Groups;
 
