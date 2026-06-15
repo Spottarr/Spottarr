@@ -131,7 +131,7 @@ internal sealed class SpotnetArticleNumberService : ISpotnetArticleNumberService
         CancellationToken cancellationToken
     )
     {
-        var dateResponse = await client.XhdrAsync(
+        await using var dateResponse = await client.XhdrAsync(
             NntpHeaders.Date,
             NntpArticleRange.Range(mid, mid),
             cancellationToken
@@ -143,11 +143,14 @@ internal sealed class SpotnetArticleNumberService : ISpotnetArticleNumberService
             return null;
         }
 
-        // Xhdr can return headers for multiple articles, but we only need the first one
-        // The header is in the format: <article number> <header value>, strip the article number.
-        var dateHeader = dateResponse
-            .Lines.FirstOrDefault(string.Empty)
-            .Replace($"{mid} ", string.Empty, StringComparison.Ordinal);
+        // XHDR can return a header per article in the range, but we only requested one.
+        // Each streamed row already separates the article number from the header value.
+        var dateHeader = string.Empty;
+        await foreach (var field in dateResponse.WithCancellation(cancellationToken))
+        {
+            dateHeader = field.Value;
+            break;
+        }
 
         var date = HeaderDateParser.Parse(dateHeader);
 
