@@ -22,7 +22,7 @@ internal static class NntpArticleRangeFactory
         {
             var inclusiveOffset = start + size < max ? -1 : 0;
             var end = Math.Min(start + size + inclusiveOffset, max);
-            yield return new NntpArticleRange(start, end);
+            yield return NntpArticleRange.Range(start, end);
         }
     }
 }

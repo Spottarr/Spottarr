@@ -133,7 +133,7 @@ internal sealed class SpotnetArticleNumberService : ISpotnetArticleNumberService
     {
         var dateResponse = await client.XhdrAsync(
             NntpHeaders.Date,
-            new NntpArticleRange(mid, mid),
+            NntpArticleRange.Range(mid, mid),
             cancellationToken
         );
 
