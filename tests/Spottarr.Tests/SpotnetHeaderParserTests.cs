@@ -1,6 +1,6 @@
-﻿using Spottarr.Services.Nntp;
-using Spottarr.Services.Parsers;
+﻿using Spottarr.Services.Parsers;
 using Spottarr.Services.Spotnet;
+using Usenet.Nntp.Models;
 
 namespace Spottarr.Tests;
 
@@ -117,17 +117,17 @@ internal sealed class SpotnetHeaderParserTests
         await Assert.That(parsingResult.HasError).IsTrue();
     }
 
-    private static NntpHeader PrepareNntpHeader(
+    private static NntpArticleOverview PrepareNntpHeader(
         string spotnetHeader,
         string subjectAndTags = "Test subject"
     ) =>
         new()
         {
-            ArticleNumber = 1,
+            Number = 1,
             Subject = subjectAndTags,
-            Author = spotnetHeader,
+            From = spotnetHeader,
             Date = default,
-            MessageId = "message123@spot.net",
+            MessageId = new NntpMessageId("message123@spot.net"),
             References = string.Empty,
             Bytes = 0,
             Lines = 0,
