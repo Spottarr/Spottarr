@@ -46,24 +46,24 @@ internal sealed class SpotnetAttachmentService : ISpotnetAttachmentService
             using var lease = await _nntpClientPool.GetLease(cancellationToken);
             var nzbMessageId = spot.NzbMessageId;
 
-            // Fetch the article headers which contains the NZB payload
-            var nzbArticleResponse = await lease.Client.ArticleAsync(
+            // Only the body carries the NZB payload, so a BODY request avoids transferring and
+            // parsing the article headers.
+            await using var nzbBodyResponse = await lease.Client.BodyAsync(
                 new NntpMessageId(nzbMessageId),
                 cancellationToken
             );
 
-            if (!nzbArticleResponse.Success || nzbArticleResponse.Article is null)
+            if (!nzbBodyResponse.Success)
             {
                 _logger.CouldNotRetrieveArticle(
                     spot.MessageId,
-                    nzbArticleResponse.Code,
-                    nzbArticleResponse.Message
+                    nzbBodyResponse.Code,
+                    nzbBodyResponse.Message
                 );
                 return null;
             }
 
-            var nzbData = string.Concat(nzbArticleResponse.Article.Body);
-            var stream = await NzbArticleParser.Parse(nzbData, cancellationToken);
+            var stream = await NzbArticleParser.Parse(nzbBodyResponse.Body, cancellationToken);
 
             return new SpotAttachmentResponse { FileName = spot.Title, Stream = stream };
         }
