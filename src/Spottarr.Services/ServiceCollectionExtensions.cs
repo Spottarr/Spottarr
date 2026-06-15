@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spottarr.Configuration;
 using Spottarr.Configuration.Options;
@@ -29,8 +30,8 @@ public static class ServiceCollectionExtensions
             .AddSpottarrJobs(configuration, startJobs)
             .AddSingleton<INntpClientPool, NntpClientPool>(s =>
             {
-                var options = s.GetRequiredService<IOptions<UsenetOptions>>();
-                var nntpOptions = options.Value;
+                var nntpOptions = s.GetRequiredService<IOptions<UsenetOptions>>().Value;
+                var loggerFactory = s.GetRequiredService<ILoggerFactory>();
 
                 return new NntpClientPool(
                     nntpOptions.MaxConnections,
@@ -38,7 +39,8 @@ public static class ServiceCollectionExtensions
                     nntpOptions.Port,
                     nntpOptions.UseTls,
                     nntpOptions.Username,
-                    nntpOptions.Password
+                    nntpOptions.Password,
+                    loggerFactory
                 );
             })
             .AddSingleton<IApplicationVersionService, ApplicationVersionService>()
