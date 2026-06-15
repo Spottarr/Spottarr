@@ -56,7 +56,7 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
                 return [];
             }
 
-            var xOverResponse = await lease.Client.XoverAsync(batch, cancellationToken);
+            await using var xOverResponse = await lease.Client.XoverAsync(batch, cancellationToken);
             if (!xOverResponse.Success)
             {
                 _logger.CouldNotRetrieveArticleHeaders(
@@ -109,30 +109,28 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
         try
         {
             using var lease = await _nntpClientPool.GetLease(cancellationToken);
+            var messageId = new NntpMessageId(spot.MessageId);
 
-            // Fetch the article headers which contains the full spot detail in XML format
-            var spotArticleResponse = await lease.Client.ArticleAsync(
-                new NntpMessageId(spot.MessageId),
+            // The full spot detail lives in the X-XML header, so a HEAD request retrieves it without
+            // transferring the article body for every well-formed spot.
+            await using var headResponse = await lease.Client.HeadAsync(
+                messageId,
                 cancellationToken
             );
-
-            if (!spotArticleResponse.Success)
+            if (!headResponse.Success)
             {
                 _logger.CouldNotRetrieveArticle(
                     spot.MessageId,
-                    spotArticleResponse.Code,
-                    spotArticleResponse.Message
+                    headResponse.Code,
+                    headResponse.Message
                 );
                 return;
             }
 
-            var spotArticle = spotArticleResponse.Article;
-            if (!spotArticle.Headers.TryGetValue(SpotnetXml.HeaderName, out var spotnetXmlValues))
+            if (!headResponse.Headers.TryGetValue(SpotnetXml.HeaderName, out var spotnetXmlValues))
             {
-                // No spot XML header, fall back to plaintext body
-                spot.Description = string.Concat(spotArticle.Body)
-                    .Truncate(Spot.DescriptionMaxLength);
-                _logger.ArticleIsMissingSpotXmlHeader(spot.MessageId);
+                // No spot XML header, fall back to the plaintext body.
+                await SetDescriptionFromBody(lease.Client, spot, messageId, cancellationToken);
                 return;
             }
 
@@ -184,6 +182,29 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
         {
             _logger.CouldNotRetrieveArticle(ex, spot.MessageId);
         }
+    }
+
+    private async Task SetDescriptionFromBody(
+        IPooledNntpClient client,
+        Spot spot,
+        NntpMessageId messageId,
+        CancellationToken cancellationToken
+    )
+    {
+        await using var bodyResponse = await client.BodyAsync(messageId, cancellationToken);
+        if (!bodyResponse.Success)
+        {
+            _logger.CouldNotRetrieveArticle(
+                spot.MessageId,
+                bodyResponse.Code,
+                bodyResponse.Message
+            );
+            return;
+        }
+
+        spot.Description = string.Concat(bodyResponse.ReadBodyLines())
+            .Truncate(Spot.DescriptionMaxLength);
+        _logger.ArticleIsMissingSpotXmlHeader(spot.MessageId);
     }
 
     private void ParseSpotHeader(NntpArticleOverview overview, List<Spot> spots)
