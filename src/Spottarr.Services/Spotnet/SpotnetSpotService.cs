@@ -70,9 +70,9 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
 
             var spots = new List<Spot>();
 
-            foreach (var header in xOverResponse.Lines)
+            await foreach (var overview in xOverResponse)
             {
-                ParseSpotHeader(header, spots);
+                ParseSpotHeader(overview, spots);
             }
 
             return spots;
@@ -116,7 +116,7 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
                 cancellationToken
             );
 
-            if (!spotArticleResponse.Success || spotArticleResponse.Article is null)
+            if (!spotArticleResponse.Success)
             {
                 _logger.CouldNotRetrieveArticle(
                     spot.MessageId,
@@ -186,21 +186,12 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
         }
     }
 
-    private void ParseSpotHeader(string header, List<Spot> spots)
+    private void ParseSpotHeader(NntpArticleOverview overview, List<Spot> spots)
     {
-        var nntpHeaderResult = NntpHeaderParser.Parse(header);
-        if (nntpHeaderResult.HasError)
-        {
-            _logger.FailedToParseSpotHeader("-", header);
-            return;
-        }
-
-        var nntpHeader = nntpHeaderResult.Result;
-
-        var spotnetHeaderResult = SpotnetHeaderParser.Parse(nntpHeader);
+        var spotnetHeaderResult = SpotnetHeaderParser.Parse(overview);
         if (spotnetHeaderResult.HasError)
         {
-            _logger.FailedToParseSpotHeader(nntpHeader.MessageId, header);
+            _logger.FailedToParseSpotHeader(overview.MessageId, overview.Subject);
             return;
         }
 
