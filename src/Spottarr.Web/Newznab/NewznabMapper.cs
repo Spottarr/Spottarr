@@ -42,7 +42,9 @@ internal static class NewznabMapper
     }
 
     /// <summary>
-    /// Adds attributes valid for all categories
+    /// Adds attributes valid for all categories.
+    /// Newznab also defines these optional attributes which we do not currently populate:
+    /// files, group, grabs, password, comments, nfo, info.
     /// </summary>
     private static SyndicationItem MapSpot(Spot spot, Uri detailsUri, Uri nzbUri) =>
         new SyndicationItem(
@@ -59,16 +61,9 @@ internal static class NewznabMapper
                 spot.NewznabCategories.Select(c => ((int)c).ToString(CultureInfo.InvariantCulture))
             )
             .AddNewznabAttribute("guid", spot.Id.ToString(CultureInfo.InvariantCulture))
-            .AddNewznabAttribute("files", null)
             .AddNewznabAttribute("poster", spot.Spotter)
-            .AddNewznabAttribute("group", null)
             .AddNewznabAttribute("team", spot.Spotter)
-            .AddNewznabAttribute("grabs", null)
-            .AddNewznabAttribute("password", null)
-            .AddNewznabAttribute("comments", null)
             .AddNewznabAttribute("usenetdate", spot.SpottedAt.ToString("r"))
-            .AddNewznabAttribute("nfo", null)
-            .AddNewznabAttribute("info", null)
             .AddNewznabAttribute("year", string.Join(',', spot.Years));
 
     /// <summary>
@@ -93,76 +88,52 @@ internal static class NewznabMapper
         };
 
     /// <summary>
-    /// Adds common newznab attributes for video formats
+    /// Adds common newznab attributes for video formats.
+    /// Newznab also defines audio, resolution, framerate, coverurl and backdropcoverurl which we do not populate.
     /// </summary>
-    /// <returns></returns>
     private static SyndicationItem MapVideoSpot(this Spot spot, SyndicationItem item) =>
         item.AddNewznabAttribute("video", string.Join(',', spot.ImageFormats.Select(Enum.GetName)))
-            .AddNewznabAttribute("audio", null)
-            .AddNewznabAttribute("resolution", null)
-            .AddNewznabAttribute("framerate", null)
             .AddNewznabAttribute("language", MapImageAudioLanguage(spot.ImageLanguages))
             .AddNewznabAttribute("subs", MapImageSubtitleLanguage(spot.ImageLanguages))
-            .AddNewznabAttribute("genre", string.Join(',', spot.ImageGenres.Select(Enum.GetName)))
-            .AddNewznabAttribute("coverurl", null)
-            .AddNewznabAttribute("backdropcoverurl", null);
+            .AddNewznabAttribute("genre", string.Join(',', spot.ImageGenres.Select(Enum.GetName)));
 
     /// <summary>
-    /// Adds newznab attributes for tv category
+    /// Adds newznab attributes for tv category.
+    /// Newznab also defines rageid, tvtitle and tvairdate which we do not populate.
     /// </summary>
     private static SyndicationItem MapTvSpot(this Spot spot, SyndicationItem item) =>
         item.AddNewznabAttribute("season", string.Join(',', spot.Seasons))
             .AddNewznabAttribute("episode", string.Join(',', spot.Episodes))
-            .AddNewznabAttribute("rageid", null)
-            .AddNewznabAttribute("tvtitle", null)
-            .AddNewznabAttribute("tvairdate", null)
             .AddNewznabAttribute(
                 "imdb",
-                spot.ImdbId?.Replace("tt", string.Empty, StringComparison.OrdinalIgnoreCase) ?? null
+                spot.ImdbId?.Replace("tt", string.Empty, StringComparison.OrdinalIgnoreCase)
             );
 
     /// <summary>
-    /// Adds newznab attributes for movies category
+    /// Adds newznab attributes for movies category.
+    /// Newznab also defines imdbscore, imdbtitle, imdbtagline, imdbplot, imdbyear, imdbdirector,
+    /// imdbactors and review which we do not populate.
     /// </summary>
     private static SyndicationItem MapMovieSpot(this Spot spot, SyndicationItem item) =>
         item.AddNewznabAttribute(
-                "imdb",
-                spot.ImdbId?.Replace("tt", string.Empty, StringComparison.OrdinalIgnoreCase) ?? null
-            )
-            .AddNewznabAttribute("imdbscore", null)
-            .AddNewznabAttribute("imdbtitle", null)
-            .AddNewznabAttribute("imdbtagline", null)
-            .AddNewznabAttribute("imdbplot", null)
-            .AddNewznabAttribute("imdbyear", null)
-            .AddNewznabAttribute("imdbdirector", null)
-            .AddNewznabAttribute("imdbactors", null)
-            .AddNewznabAttribute("review", null);
+            "imdb",
+            spot.ImdbId?.Replace("tt", string.Empty, StringComparison.OrdinalIgnoreCase)
+        );
 
     /// <summary>
-    /// Adds newznab attributes for books category
+    /// Adds newznab attributes for books category.
+    /// Newznab defines publisher, coverurl, review, booktitle, publishdate, author and pages here,
+    /// none of which we currently populate.
     /// </summary>
-    private static SyndicationItem MapBookSpot(this Spot _, SyndicationItem item) =>
-        item.AddNewznabAttribute("publisher", null)
-            .AddNewznabAttribute("coverurl", null)
-            .AddNewznabAttribute("review", null)
-            .AddNewznabAttribute("booktitle", null)
-            .AddNewznabAttribute("publishdate", null)
-            .AddNewznabAttribute("author", null)
-            .AddNewznabAttribute("pages", null);
+    private static SyndicationItem MapBookSpot(this Spot _, SyndicationItem item) => item;
 
     /// <summary>
-    /// Adds newznab attributes for audio category
+    /// Adds newznab attributes for audio category.
+    /// Newznab also defines language, artist, album, publisher, tracks, coverurl, backdropcoverurl
+    /// and review which we do not populate.
     /// </summary>
     private static SyndicationItem MapAudioSpot(this Spot spot, SyndicationItem item) =>
-        item.AddNewznabAttribute("audio", string.Join(',', spot.AudioFormats.Select(Enum.GetName)))
-            .AddNewznabAttribute("language", null)
-            .AddNewznabAttribute("artist", null)
-            .AddNewznabAttribute("album", null)
-            .AddNewznabAttribute("publisher", null)
-            .AddNewznabAttribute("tracks", null)
-            .AddNewznabAttribute("coverurl", null)
-            .AddNewznabAttribute("backdropcoverurl", null)
-            .AddNewznabAttribute("review", null);
+        item.AddNewznabAttribute("audio", string.Join(',', spot.AudioFormats.Select(Enum.GetName)));
 
     /// <summary>
     /// Adds newznab attributes for game (unofficial) category
