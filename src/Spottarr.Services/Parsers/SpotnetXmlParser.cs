@@ -19,15 +19,15 @@ internal class SpotnetXmlParser
     ) => Parse([xml], cancellationToken);
 
     public static async Task<ParserResult<SpotnetXml>> Parse(
-        IList<string> xml,
+        IEnumerable<string> xml,
         CancellationToken cancellationToken
     )
     {
-        xml = xml.Select(SpotnetXmlCleaner.Clean).ToList();
-
         try
         {
-            using var reader = new StringEnumerableReader(xml);
+            // Clean and stream the segments one at a time so we never hold a concatenated copy of the
+            // (possibly large, multi-valued) X-XML header in memory.
+            using var reader = new SegmentTextReader(xml.Select(SpotnetXmlCleaner.Clean));
             var result = await Parse(reader);
             return new ParserResult<SpotnetXml>(result);
         }
