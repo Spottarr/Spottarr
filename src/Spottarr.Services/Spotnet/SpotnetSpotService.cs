@@ -125,11 +125,9 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
                 return;
             }
 
-            var spotnetXmlValues = string.Concat(
-                headResponse.Headers.GetValues(SpotnetXml.HeaderName)
-            );
+            var spotnetXmlValues = headResponse.Headers.GetValues(SpotnetXml.HeaderName).ToList();
 
-            if (string.IsNullOrEmpty(spotnetXmlValues))
+            if (spotnetXmlValues.Count == 0)
             {
                 // No spot XML header, fall back to the plaintext body.
                 await SetDescriptionFromBody(lease.Client, spot, messageId, cancellationToken);
