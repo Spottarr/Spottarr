@@ -79,10 +79,8 @@ internal sealed class SpotReIndexingService : ISpotReIndexingService
 
         var now = DateTimeOffset.Now.UtcDateTime;
 
-        var spotIds = new HashSet<int>();
         foreach (var spot in spots)
         {
-            spotIds.Add(spot.Id);
             SpotEnricher.Enrich(spot, now);
             spot.UpdatedAt = now;
         }
@@ -93,27 +91,7 @@ internal sealed class SpotReIndexingService : ISpotReIndexingService
                 cancellationToken
             );
 
-            if (dbContext.Provider == DatabaseProvider.Sqlite)
-            {
-                // EF does not natively support FTS tables, so we have to delete and re-insert the records in case any already exist
-                await dbContext
-                    .FtsSpots.Where(f => spotIds.Contains(f.SpotId))
-                    .ExecuteDeleteAsync(cancellationToken);
-
-                var ftsSpots = spots
-                    .Select(s => new FtsSpot
-                    {
-                        SpotId = s.Id,
-                        Title = s.Title,
-                        Description = s.Description ?? string.Empty,
-                    })
-                    .ToList();
-
-                await dbContext.ExecuteBulkInsertAsync(
-                    ftsSpots,
-                    cancellationToken: cancellationToken
-                );
-            }
+            await dbContext.UpsertFtsSpotsAsync(spots, replaceExisting: true, cancellationToken);
 
             await dbContext.ExecuteBulkInsertAsync(
                 spots,
