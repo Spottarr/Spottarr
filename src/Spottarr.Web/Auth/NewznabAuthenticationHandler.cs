@@ -1,4 +1,6 @@
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
@@ -52,7 +54,10 @@ internal sealed class NewznabAuthenticationHandler
                 AuthenticateResult.Fail("An API key was configured, but none was provided.")
             );
 
-        if (!string.Equals(providedKey!, expectedKey, StringComparison.Ordinal))
+        // Compare in constant time so the response timing does not leak how much of the key matched.
+        var providedKeyBytes = Encoding.UTF8.GetBytes(providedKey.ToString());
+        var expectedKeyBytes = Encoding.UTF8.GetBytes(expectedKey);
+        if (!CryptographicOperations.FixedTimeEquals(providedKeyBytes, expectedKeyBytes))
             return Task.FromResult(AuthenticateResult.Fail("Invalid API key"));
 
         return Task.FromResult(AuthenticateResult.Success(ticket));
