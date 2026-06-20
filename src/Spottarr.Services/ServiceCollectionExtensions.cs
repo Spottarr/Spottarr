@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spottarr.Configuration;
 using Spottarr.Configuration.Options;
@@ -9,7 +8,8 @@ using Spottarr.Services.Contracts;
 using Spottarr.Services.Jobs;
 using Spottarr.Services.Spotnet;
 using Spottarr.Services.Spots;
-using Usenet.Nntp;
+using Usenet.Nntp.Client;
+using Usenet.Nntp.Client.Pooling;
 using Usenet.Nntp.Contracts;
 
 namespace Spottarr.Services;
@@ -31,16 +31,21 @@ public static class ServiceCollectionExtensions
             .AddSingleton<INntpClientPool, NntpClientPool>(s =>
             {
                 var nntpOptions = s.GetRequiredService<IOptions<UsenetOptions>>().Value;
-                var loggerFactory = s.GetRequiredService<ILoggerFactory>();
 
                 return new NntpClientPool(
-                    nntpOptions.MaxConnections,
-                    nntpOptions.Hostname,
-                    nntpOptions.Port,
-                    nntpOptions.UseTls,
-                    nntpOptions.Username,
-                    nntpOptions.Password,
-                    loggerFactory
+                    new NntpPoolOptions
+                    {
+                        Connection = new NntpConnectionOptions
+                        {
+                            Host = nntpOptions.Hostname,
+                            Port = nntpOptions.Port,
+                            UseSsl = nntpOptions.UseTls,
+                            Compression = NntpCompression.None,
+                        },
+                        MaxPoolSize = nntpOptions.MaxConnections,
+                        Username = nntpOptions.Username,
+                        Password = nntpOptions.Password,
+                    }
                 );
             })
             .AddSingleton<IApplicationVersionService, ApplicationVersionService>()
