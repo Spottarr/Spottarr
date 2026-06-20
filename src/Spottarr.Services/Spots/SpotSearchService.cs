@@ -22,17 +22,15 @@ internal sealed class SpotSearchService : ISpotSearchService
     {
         ArgumentNullException.ThrowIfNull(filter);
 
-        // If year / episode / season is not explicitly set, try to extract it from the query
-        var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(
+        // If year / episode / season is not explicitly set, try to extract it from the query.
+        // Derive effective sets locally instead of mutating the caller's filter.
+        var (parsedYears, parsedSeasons, parsedEpisodes) = YearEpisodeSeasonParser.Parse(
             filter.Query ?? string.Empty,
             string.Empty
         );
-        if (filter.Years.Count == 0)
-            filter.Years.UnionWith(years);
-        if (filter.Seasons.Count == 0)
-            filter.Seasons.UnionWith(seasons);
-        if (filter.Episodes.Count == 0)
-            filter.Episodes.UnionWith(episodes);
+        var years = filter.Years.Count > 0 ? filter.Years : parsedYears;
+        var seasons = filter.Seasons.Count > 0 ? filter.Seasons : parsedSeasons;
+        var episodes = filter.Episodes.Count > 0 ? filter.Episodes : parsedEpisodes;
 
         var query = _dbContext.Spots.AsQueryable();
 
@@ -59,14 +57,14 @@ internal sealed class SpotSearchService : ISpotSearchService
         if (filter.GameTypes.Count > 0)
             query = query.Where(s => s.GameTypes.Any(y => filter.GameTypes.Contains(y)));
 
-        if (filter.Years.Count > 0)
-            query = query.Where(s => s.Years.Any(y => filter.Years.Contains(y)));
+        if (years.Count > 0)
+            query = query.Where(s => s.Years.Any(y => years.Contains(y)));
 
-        if (filter.Seasons.Count > 0)
-            query = query.Where(s => s.Seasons.Any(y => filter.Seasons.Contains(y)));
+        if (seasons.Count > 0)
+            query = query.Where(s => s.Seasons.Any(y => seasons.Contains(y)));
 
-        if (filter.Episodes.Count > 0)
-            query = query.Where(s => s.Episodes.Any(y => filter.Episodes.Contains(y)));
+        if (episodes.Count > 0)
+            query = query.Where(s => s.Episodes.Any(y => episodes.Contains(y)));
 
         if (!string.IsNullOrEmpty(filter.ImdbId))
             query = query.Where(s => s.ImdbId == filter.ImdbId);
@@ -75,7 +73,7 @@ internal sealed class SpotSearchService : ISpotSearchService
             ? await ExecuteFullTextSearch(query, filter, cancellationToken)
             : await ExecuteSearch(query, filter, cancellationToken);
 
-        return new SpotSearchResponse() { Spots = spots, TotalCount = totalCount };
+        return new SpotSearchResponse { Spots = spots, TotalCount = totalCount };
     }
 
     public Task<int> Count(CancellationToken cancellationToken) =>
@@ -192,7 +190,7 @@ internal sealed class SpotSearchService : ISpotSearchService
         return (spots, count);
     }
 
-    private class SpotWithFts
+    private sealed record SpotWithFts
     {
         public required Spot Spot { get; init; }
         public required FtsSpot Fts { get; init; }

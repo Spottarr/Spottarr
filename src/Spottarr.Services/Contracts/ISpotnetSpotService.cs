@@ -10,7 +10,7 @@ public interface ISpotnetSpotService
         CancellationToken cancellationToken
     );
 
-    Task<IReadOnlyList<Spot>> FetchSpotDetails(
+    Task FetchSpotDetails(
         IReadOnlyList<Spot> spots,
         int maxDegreeOfParallelism,
         CancellationToken cancellationToken
