@@ -46,32 +46,32 @@ internal static partial class YearEpisodeSeasonParser
             years.UnionWith(
                 match
                     .Groups["year"]
-                    .Captures.Select(c => int.Parse(c.Value, CultureInfo.InvariantCulture))
+                    .Captures.Select(c => int.Parse(c.ValueSpan, CultureInfo.InvariantCulture))
                     .Where(y => y > 1900 && y < 2100)
             );
 
             seasons.UnionWith(
                 match
                     .Groups["sshort"]
-                    .Captures.Select(c => int.Parse(c.Value, CultureInfo.InvariantCulture))
+                    .Captures.Select(c => int.Parse(c.ValueSpan, CultureInfo.InvariantCulture))
             );
 
             seasons.UnionWith(
                 match
                     .Groups["slong"]
-                    .Captures.Select(c => int.Parse(c.Value, CultureInfo.InvariantCulture))
+                    .Captures.Select(c => int.Parse(c.ValueSpan, CultureInfo.InvariantCulture))
             );
 
             episodes.UnionWith(
                 match
                     .Groups["elong"]
-                    .Captures.Select(c => int.Parse(c.Value, CultureInfo.InvariantCulture))
+                    .Captures.Select(c => int.Parse(c.ValueSpan, CultureInfo.InvariantCulture))
             );
 
             episodes.UnionWith(
                 match
                     .Groups["eshort"]
-                    .Captures.Select(c => int.Parse(c.Value, CultureInfo.InvariantCulture))
+                    .Captures.Select(c => int.Parse(c.ValueSpan, CultureInfo.InvariantCulture))
             );
         }
     }
