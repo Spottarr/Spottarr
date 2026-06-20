@@ -86,7 +86,7 @@ internal sealed class SpotImportService : ISpotImportService
                 articleRanges[i],
                 cancellationToken
             );
-            spots = await _spotnetSpotService.FetchSpotDetails(
+            await _spotnetSpotService.FetchSpotDetails(
                 spots,
                 options.MaxConnections,
                 cancellationToken
