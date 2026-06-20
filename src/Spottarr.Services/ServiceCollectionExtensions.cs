@@ -40,7 +40,10 @@ public static class ServiceCollectionExtensions
                             Host = nntpOptions.Hostname,
                             Port = nntpOptions.Port,
                             UseSsl = nntpOptions.UseTls,
-                            Compression = NntpCompression.None,
+                            Compression =
+                                nntpOptions.Compression == UsenetCompression.Deflate
+                                    ? NntpCompression.Deflate
+                                    : NntpCompression.None,
                         },
                         MaxPoolSize = nntpOptions.MaxConnections,
                         Username = nntpOptions.Username,
