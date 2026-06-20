@@ -8,10 +8,7 @@ using Spottarr.Configuration.Options;
 using Spottarr.Data;
 using Spottarr.Data.Entities;
 using Spottarr.Services.Contracts;
-using Spottarr.Services.Helpers;
 using Spottarr.Services.Logging;
-using Spottarr.Services.Newznab;
-using Spottarr.Services.Parsers;
 
 namespace Spottarr.Services.Spots;
 
@@ -86,21 +83,7 @@ internal sealed class SpotReIndexingService : ISpotReIndexingService
         foreach (var spot in spots)
         {
             spotIds.Add(spot.Id);
-
-            spot.Description = BbCodeParser.Parse(spot.Description);
-
-            var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(
-                spot.Title,
-                spot.Description
-            );
-
-            spot.Years.Replace(years);
-            spot.Seasons.Replace(seasons);
-            spot.Episodes.Replace(episodes);
-            spot.NewznabCategories.Replace(NewznabCategoryMapper.Map(spot));
-            spot.ImdbId = ImdbIdParser.Parse(spot.Url);
-            spot.ReleaseTitle = ReleaseTitleParser.Parse(spot.Title, spot.Description);
-            spot.IndexedAt = now;
+            SpotEnricher.Enrich(spot, now);
             spot.UpdatedAt = now;
         }
 

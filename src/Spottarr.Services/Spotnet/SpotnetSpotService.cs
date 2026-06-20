@@ -5,8 +5,8 @@ using Spottarr.Data.Entities;
 using Spottarr.Services.Contracts;
 using Spottarr.Services.Helpers;
 using Spottarr.Services.Logging;
-using Spottarr.Services.Newznab;
 using Spottarr.Services.Parsers;
+using Spottarr.Services.Spots;
 using Usenet.Exceptions;
 using Usenet.Nntp.Contracts;
 using Usenet.Nntp.Models;
@@ -149,9 +149,7 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
 
             spot.NzbMessageId = spotDetails.Posting.Nzb.Segment.Truncate(Spot.SmallMaxLength);
             spot.ImageMessageId = spotDetails.Posting.Image?.Segment.Truncate(Spot.SmallMaxLength);
-            spot.Description = BbCodeParser
-                .Parse(spotDetails.Posting.Description)
-                .Truncate(Spot.DescriptionMaxLength);
+            spot.Description = spotDetails.Posting.Description;
             spot.Tag = spotDetails.Posting.Tag.Truncate(Spot.SmallMaxLength);
             spot.Url = Uri.TryCreate(
                 spotDetails.Posting.Website.Truncate(Spot.LargeMaxLength),
@@ -163,20 +161,7 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
             spot.Filename = spotDetails.Posting.Filename.Truncate(Spot.SmallMaxLength);
             spot.Newsgroup = spotDetails.Posting.Newsgroup.Truncate(Spot.SmallMaxLength);
 
-            var (years, seasons, episodes) = YearEpisodeSeasonParser.Parse(
-                spot.Title,
-                spot.Description
-            );
-
-            spot.ReleaseTitle = ReleaseTitleParser
-                .Parse(spot.Title, spot.Description)
-                ?.Truncate(Spot.MediumMaxLength);
-            spot.Years.Replace(years);
-            spot.Seasons.Replace(seasons);
-            spot.Episodes.Replace(episodes);
-            spot.NewznabCategories.Replace(NewznabCategoryMapper.Map(spot));
-            spot.ImdbId = ImdbIdParser.Parse(spot.Url)?.Truncate(Spot.TinyMaxLength);
-            spot.IndexedAt = DateTimeOffset.Now.UtcDateTime;
+            SpotEnricher.Enrich(spot, DateTimeOffset.Now.UtcDateTime);
         }
         catch (InvalidOperationException ex)
         {
