@@ -12,4 +12,12 @@ public sealed class UsenetOptions : IOptionsSection
     public required int Port { get; init; }
     public required bool UseTls { get; init; }
     public required int MaxConnections { get; init; }
+    public required UsenetCompression Compression { get; init; }
+}
+
+public enum UsenetCompression
+{
+    None,
+    Deflate,
+    OperationExtensions,
 }

@@ -2,10 +2,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spottarr.Configuration.Options;
 using Spottarr.Services.Contracts;
+using Spottarr.Services.Helpers;
 using Spottarr.Services.Logging;
 using Spottarr.Services.Parsers;
 using Usenet.Exceptions;
-using Usenet.Nntp;
 using Usenet.Nntp.Contracts;
 using Usenet.Nntp.Models;
 
@@ -15,16 +15,19 @@ internal sealed class SpotnetArticleNumberService : ISpotnetArticleNumberService
 {
     private readonly INntpClientPool _nntpClientPool;
     private readonly IOptions<SpotnetOptions> _options;
+    private readonly IOptions<UsenetOptions> _usenetOptions;
     private readonly ILogger<SpotnetArticleNumberService> _logger;
 
     public SpotnetArticleNumberService(
         INntpClientPool nntpClientPool,
         IOptions<SpotnetOptions> options,
+        IOptions<UsenetOptions> usenetOptions,
         ILogger<SpotnetArticleNumberService> logger
     )
     {
         _nntpClientPool = nntpClientPool;
         _options = options;
+        _usenetOptions = usenetOptions;
         _logger = logger;
     }
 
@@ -53,6 +56,7 @@ internal sealed class SpotnetArticleNumberService : ISpotnetArticleNumberService
         try
         {
             var options = _options.Value;
+            var usenetOptions = _usenetOptions.Value;
 
             using var lease = await _nntpClientPool.GetLease(cancellationToken);
 
@@ -82,7 +86,12 @@ internal sealed class SpotnetArticleNumberService : ISpotnetArticleNumberService
 
                 while (date == null)
                 {
-                    date = await GetArticleDate(lease.Client, articleToCheck, cancellationToken);
+                    date = await GetArticleDate(
+                        usenetOptions,
+                        lease.Client,
+                        articleToCheck,
+                        cancellationToken
+                    );
                     attempts++;
 
                     // Sometimes articles will just be unavailable
@@ -126,12 +135,14 @@ internal sealed class SpotnetArticleNumberService : ISpotnetArticleNumberService
     }
 
     private async Task<DateTimeOffset?> GetArticleDate(
+        UsenetOptions options,
         IPooledNntpClient client,
         long mid,
         CancellationToken cancellationToken
     )
     {
-        await using var dateResponse = await client.XhdrAsync(
+        await using var dateResponse = await client.GetHeadersAsync(
+            options,
             NntpHeaders.Date,
             NntpArticleRange.Range(mid, mid),
             cancellationToken

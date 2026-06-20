@@ -20,16 +20,19 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
 {
     private readonly ILogger<SpotnetSpotService> _logger;
     private readonly INntpClientPool _nntpClientPool;
+    private readonly IOptions<UsenetOptions> _usenetOptions;
     private readonly IOptions<SpotnetOptions> _options;
 
     public SpotnetSpotService(
         ILogger<SpotnetSpotService> logger,
         INntpClientPool nntpClientPool,
+        IOptions<UsenetOptions> usenetOptions,
         IOptions<SpotnetOptions> options
     )
     {
         _logger = logger;
         _nntpClientPool = nntpClientPool;
+        _usenetOptions = usenetOptions;
         _options = options;
     }
 
@@ -43,6 +46,7 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
             using var lease = await _nntpClientPool.GetLease(cancellationToken);
 
             var options = _options.Value;
+            var usenetOptions = _usenetOptions.Value;
 
             // Group is set for the lifetime of the connection
             var groupResponse = await lease.Client.GroupAsync(options.SpotGroup, cancellationToken);
@@ -56,7 +60,12 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
                 return [];
             }
 
-            await using var xOverResponse = await lease.Client.XoverAsync(batch, cancellationToken);
+            await using var xOverResponse = await lease.Client.GetOverviewAsync(
+                usenetOptions,
+                batch,
+                cancellationToken
+            );
+
             if (!xOverResponse.Success)
             {
                 _logger.CouldNotRetrieveArticleHeaders(
