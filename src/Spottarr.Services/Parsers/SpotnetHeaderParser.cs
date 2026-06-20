@@ -34,9 +34,9 @@ internal static partial class SpotnetHeaderParser
 
         var g = match.Groups;
 
-        var category = int.Parse(g["cat"].Value, CultureInfo.InvariantCulture);
-        var size = long.Parse(g["size"].Value, CultureInfo.InvariantCulture);
-        var unixTime = long.Parse(g["date"].Value, CultureInfo.InvariantCulture);
+        var category = int.Parse(g["cat"].ValueSpan, CultureInfo.InvariantCulture);
+        var size = long.Parse(g["size"].ValueSpan, CultureInfo.InvariantCulture);
+        var unixTime = long.Parse(g["date"].ValueSpan, CultureInfo.InvariantCulture);
         var keyId = Enum.Parse<KeyId>(g["kid"].Value);
         var date = DateTimeOffset.FromUnixTimeSeconds(unixTime);
 
@@ -46,8 +46,8 @@ internal static partial class SpotnetHeaderParser
         var subCategories = g["scats"]
             .Captures.Select(c =>
                 (
-                    char.ToUpperInvariant(c.Value[0]),
-                    int.Parse(c.Value[1..3], CultureInfo.InvariantCulture)
+                    char.ToUpperInvariant(c.ValueSpan[0]),
+                    int.Parse(c.ValueSpan[1..3], CultureInfo.InvariantCulture)
                 )
             )
             .ToList();
