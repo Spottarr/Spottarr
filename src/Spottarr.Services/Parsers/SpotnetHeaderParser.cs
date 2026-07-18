@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Spottarr.Services.Nntp;
 using Spottarr.Services.Spotnet;
 using Usenet.Nntp.Models;
 

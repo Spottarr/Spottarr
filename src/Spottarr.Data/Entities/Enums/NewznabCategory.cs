@@ -89,7 +89,7 @@ public enum NewznabCategory
     Pc = 4000,
 
     [Display(Name = "0day")]
-    Pc0day = 4010,
+    Pc0Day = 4010,
 
     [Display(Name = "ISO")]
     PcIso = 4020,
