@@ -23,6 +23,7 @@ await app.MigrateDatabase(lifetime.ApplicationStopping);
 app.MapHealthChecks("/healthz");
 app.MapStaticAssets();
 app.MapNewznab();
+app.MapApi();
 app.MapHtmx();
 app.MapOpenApi();
 app.MapScalarApiReference();
