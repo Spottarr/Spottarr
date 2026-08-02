@@ -169,33 +169,18 @@ public static partial class LoggerExtensions
     [LoggerMessage(Level = LogLevel.Information, Message = "Spot import finished at {DateTime}.")]
     public static partial void SpotImportFinished(this ILogger logger, DateTimeOffset dateTime);
 
-    [LoggerMessage(
-        Level = LogLevel.Information,
-        Message = "Spot {Operation} started at {DateTime}."
-    )]
-    public static partial void SpotDrainStarted(
-        this ILogger logger,
-        string operation,
-        DateTimeOffset dateTime
-    );
+    [LoggerMessage(Level = LogLevel.Information, Message = "Spot reimport started at {DateTime}.")]
+    public static partial void SpotReimportStarted(this ILogger logger, DateTimeOffset dateTime);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Spot reimport finished at {DateTime}.")]
+    public static partial void SpotReimportFinished(this ILogger logger, DateTimeOffset dateTime);
 
     [LoggerMessage(
         Level = LogLevel.Information,
-        Message = "Spot {Operation} finished at {DateTime}."
+        Message = "Spot reimport batch ({Current}/{Total}) started at {DateTime}."
     )]
-    public static partial void SpotDrainFinished(
+    public static partial void SpotReimportBatchStarted(
         this ILogger logger,
-        string operation,
-        DateTimeOffset dateTime
-    );
-
-    [LoggerMessage(
-        Level = LogLevel.Information,
-        Message = "Spot {Operation} batch ({Current}/{Total}) started at {DateTime}."
-    )]
-    public static partial void SpotDrainBatchStarted(
-        this ILogger logger,
-        string operation,
         int current,
         int total,
         DateTimeOffset dateTime
@@ -203,11 +188,39 @@ public static partial class LoggerExtensions
 
     [LoggerMessage(
         Level = LogLevel.Information,
-        Message = "Spot {Operation} batch ({Current}/{Total}) finished at {DateTime}. Processed {SpotCount} spots."
+        Message = "Spot reimport batch ({Current}/{Total}) finished at {DateTime}. Reimported {SpotCount} spots."
     )]
-    public static partial void SpotDrainBatchFinished(
+    public static partial void SpotReimportBatchFinished(
         this ILogger logger,
-        string operation,
+        int current,
+        int total,
+        DateTimeOffset dateTime,
+        int spotCount
+    );
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Spot reindex started at {DateTime}.")]
+    public static partial void SpotReindexStarted(this ILogger logger, DateTimeOffset dateTime);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Spot reindex finished at {DateTime}.")]
+    public static partial void SpotReindexFinished(this ILogger logger, DateTimeOffset dateTime);
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Spot reindex batch ({Current}/{Total}) started at {DateTime}."
+    )]
+    public static partial void SpotReindexBatchStarted(
+        this ILogger logger,
+        int current,
+        int total,
+        DateTimeOffset dateTime
+    );
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Spot reindex batch ({Current}/{Total}) finished at {DateTime}. Reindexed {SpotCount} spots."
+    )]
+    public static partial void SpotReindexBatchFinished(
+        this ILogger logger,
         int current,
         int total,
         DateTimeOffset dateTime,

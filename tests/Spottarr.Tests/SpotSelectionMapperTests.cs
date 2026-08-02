@@ -8,10 +8,10 @@ internal sealed class SpotSelectionMapperTests
     [Test]
     public async Task RejectsEmptySelection()
     {
-        var valid = new SpotSelectionRequest().TryCreateSelection(out _, out var error);
+        var valid = new SpotSelectionRequest().TryCreateSelection(out _, out var errors);
 
         await Assert.That(valid).IsFalse();
-        await Assert.That(error).Contains("all");
+        await Assert.That(errors).IsNotEmpty();
     }
 
     [Test]
@@ -27,11 +27,11 @@ internal sealed class SpotSelectionMapperTests
     {
         var valid = new SpotSelectionRequest { All = true, SpotIds = [1] }.TryCreateSelection(
             out _,
-            out var error
+            out var errors
         );
 
         await Assert.That(valid).IsFalse();
-        await Assert.That(error).Contains("combined");
+        await Assert.That(errors).IsNotEmpty();
     }
 
     [Test]

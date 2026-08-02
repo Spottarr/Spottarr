@@ -95,10 +95,9 @@ entities, stores them in a database, and serves them through a **Newznab**-compa
 - **Reimport** — re-fetching a spot's article from Usenet by message ID, re-parsing it, and
   overwriting the stored spot in place. A reimport always implies a reindex of that spot; a reindex
   never implies a reimport.
-- **Reimport flag** — marks a spot as needing a reimport. Not a separate store: a spot is flagged
-  exactly while its `ImportedAt` is unset. Set over a selection of spots, cleared when the spot has
-  been reread.
-- **Reindex flag** — the same mechanism for reindexing, carried by `IndexedAt`.
+- **Marked for reimport / reindex** — a spot waiting to be reprocessed. There is no separate store:
+  a spot is marked exactly while the timestamp of the operation is unset (`ImportedAt` for a
+  reimport, `IndexedAt` for a reindex), and stamping it marks it as done.
 - **Full-text search (FTS)** — the search index over spot titles/descriptions. SQLite uses an
   `FtsSpot` virtual table; PostgreSQL uses a `SearchVector` (`tsvector`). `SpotSearchService` queries
   it.

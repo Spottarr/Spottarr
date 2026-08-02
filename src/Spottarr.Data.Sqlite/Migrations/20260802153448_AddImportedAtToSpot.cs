@@ -18,7 +18,7 @@ namespace Spottarr.Data.Migrations
                 nullable: true
             );
 
-            // An unset ImportedAt flags a spot for a reimport, so existing spots are stamped as read.
+            // An unset ImportedAt marks a spot for a reimport, so existing spots are stamped as read.
             migrationBuilder.Sql("UPDATE Spots SET ImportedAt = CreatedAt;");
 
             migrationBuilder.CreateIndex(

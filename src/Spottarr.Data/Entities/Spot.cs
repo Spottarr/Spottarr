@@ -54,8 +54,6 @@ public sealed class Spot : BaseEntity, IPostgreSqlFtsEntity
     public FtsSpot? FtsSpot { get; set; }
     public DateTime SpottedAt { get; set; }
     public DateTime? IndexedAt { get; set; }
-
-    // Unset flags the spot for a reimport.
     public DateTime? ImportedAt { get; set; }
     public NpgsqlTsVector SearchVector { get; set; } = null!;
 }
