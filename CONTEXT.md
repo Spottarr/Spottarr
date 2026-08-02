@@ -88,7 +88,17 @@ entities, stores them in a database, and serves them through a **Newznab**-compa
   `Spotnet.ImportSpotsSchedule`) starting from `RetrieveAfter`, in batches of
   `ImportBatchSize`.
 - **Indexing** — making an imported spot searchable. `Spot.IndexedAt` records when a spot entered
-  the search index; `SpotReIndexingService` rebuilds it.
+  the search index; `SpotReindexService` rebuilds it.
+- **Reindex** — re-deriving a spot's searchable and parsed attributes from data already stored on
+  its row (release title, years/seasons/episodes, categories, imdb id, FTS entry). Purely local, no
+  Usenet traffic.
+- **Reimport** — re-fetching a spot's article from Usenet by message ID, re-parsing it, and
+  overwriting the stored spot in place. A reimport always implies a reindex of that spot; a reindex
+  never implies a reimport.
+- **Reimport flag** — marks a spot as needing a reimport. Not a separate store: a spot is flagged
+  exactly while its `ImportedAt` is unset. Set over a selection of spots, cleared when the spot has
+  been reread.
+- **Reindex flag** — the same mechanism for reindexing, carried by `IndexedAt`.
 - **Full-text search (FTS)** — the search index over spot titles/descriptions. SQLite uses an
   `FtsSpot` virtual table; PostgreSQL uses a `SearchVector` (`tsvector`). `SpotSearchService` queries
   it.

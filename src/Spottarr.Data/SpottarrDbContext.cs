@@ -70,6 +70,7 @@ public sealed class SpottarrDbContext : DbContext, IDataProtectionKeyContext
             x.Property(s => s.UpdatedAt).HasConversion(DateConverters.UtcConverter);
             x.Property(s => s.SpottedAt).HasConversion(DateConverters.UtcConverter);
             x.Property(s => s.IndexedAt).HasConversion(DateConverters.UtcNullableConverter);
+            x.Property(s => s.ImportedAt).HasConversion(DateConverters.UtcNullableConverter);
 
             x.HasIndex(s => s.MessageId).IsUnique();
             x.HasIndex(s => s.MessageNumber).IsUnique();
@@ -79,6 +80,10 @@ public sealed class SpottarrDbContext : DbContext, IDataProtectionKeyContext
             x.HasIndex(s => s.SpottedAt).IsDescending(true);
             x.HasIndex(s => new { s.ImdbId, s.SpottedAt }).IsDescending(false, true);
             x.HasIndex(s => new { s.TvdbId, s.SpottedAt }).IsDescending(false, true);
+
+            // Spots flagged for a reimport or reindex are the exception, so only index those.
+            x.HasIndex(s => s.IndexedAt).HasFilter("\"IndexedAt\" IS NULL");
+            x.HasIndex(s => s.ImportedAt).HasFilter("\"ImportedAt\" IS NULL");
 
             // Postgres FTS just needs an index on the spots table
             switch (Provider)
