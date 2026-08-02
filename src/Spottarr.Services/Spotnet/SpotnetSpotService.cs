@@ -138,6 +138,9 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
             }
 
             await ApplySpotDetails(lease.Client, spot, messageId, headResponse, cancellationToken);
+
+            // Spots whose article could not be read stay flagged so they are reimported later.
+            spot.ImportedAt = DateTimeOffset.Now.UtcDateTime;
         }
         catch (InvalidOperationException ex)
         {
