@@ -55,6 +55,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<ISpotImportService, SpotImportService>()
             .AddScoped<ISpotReindexService, SpotReindexService>()
             .AddScoped<ISpotReimportService, SpotReimportService>()
+            .AddScoped<ISpotFlagService, SpotFlagService>()
             .AddScoped<ISpotSearchService, SpotSearchService>()
             .AddScoped<ISpotCleanUpService, SpotCleanUpService>()
             .AddScoped<ISpotnetAttachmentService, SpotnetAttachmentService>()
