@@ -10,6 +10,7 @@ using Spottarr.Services.Spots;
 using Usenet.Exceptions;
 using Usenet.Nntp.Contracts;
 using Usenet.Nntp.Models;
+using Usenet.Nntp.Responses;
 
 namespace Spottarr.Services.Spotnet;
 
@@ -22,6 +23,8 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
     private readonly INntpClientPool _nntpClientPool;
     private readonly IOptions<UsenetOptions> _usenetOptions;
     private readonly IOptions<SpotnetOptions> _options;
+
+    private const int NoSuchArticleCode = 430;
 
     public SpotnetSpotService(
         ILogger<SpotnetSpotService> logger,
@@ -134,45 +137,7 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
                 return;
             }
 
-            var spotnetXmlValues = headResponse.Headers.GetValues(SpotnetXml.HeaderName).ToList();
-
-            if (spotnetXmlValues.Count == 0)
-            {
-                // No spot XML header, fall back to the plaintext body.
-                await SetDescriptionFromBody(lease.Client, spot, messageId, cancellationToken);
-                return;
-            }
-
-            var result = await SpotnetXmlParser.Parse(spotnetXmlValues, cancellationToken);
-            if (result.HasError)
-            {
-                _logger.ArticleContainsInvalidSpotXmlHeader(spot.MessageId, result.Error);
-                return;
-            }
-
-            var spotDetails = result.Result;
-
-            spot.NzbMessageIds.Replace(
-                spotDetails.Posting.Nzb.Segments.Select(s => s.Truncate(Spot.SmallMaxLength))
-            );
-            spot.ImageMessageIds.Replace(
-                (spotDetails.Posting.Image?.Segments ?? []).Select(s =>
-                    s.Truncate(Spot.SmallMaxLength)
-                )
-            );
-            spot.Description = spotDetails.Posting.Description;
-            spot.Tag = spotDetails.Posting.Tag.Truncate(Spot.SmallMaxLength);
-            spot.Url = Uri.TryCreate(
-                spotDetails.Posting.Website.Truncate(Spot.LargeMaxLength),
-                UriKind.Absolute,
-                out var uri
-            )
-                ? uri
-                : null;
-            spot.Filename = spotDetails.Posting.Filename.Truncate(Spot.SmallMaxLength);
-            spot.Newsgroup = spotDetails.Posting.Newsgroup.Truncate(Spot.SmallMaxLength);
-
-            SpotEnricher.Enrich(spot, DateTimeOffset.Now.UtcDateTime);
+            await ApplySpotDetails(lease.Client, spot, messageId, headResponse, cancellationToken);
         }
         catch (InvalidOperationException ex)
         {
@@ -182,6 +147,119 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
         {
             _logger.CouldNotRetrieveArticle(ex, spot.MessageId);
         }
+    }
+
+    public async Task<SpotReadOutcome> RereadSpot(Spot spot, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(spot);
+
+        try
+        {
+            using var lease = await _nntpClientPool.GetLease(cancellationToken);
+            var messageId = new NntpMessageId(spot.MessageId);
+
+            await using var headResponse = await lease.Client.HeadAsync(
+                messageId,
+                cancellationToken
+            );
+            if (!headResponse.Success)
+            {
+                _logger.CouldNotRetrieveArticle(
+                    spot.MessageId,
+                    headResponse.Code,
+                    headResponse.Message
+                );
+
+                // Anything but a missing article may succeed on a later run.
+                return headResponse.Code == NoSuchArticleCode
+                    ? SpotReadOutcome.Unavailable
+                    : SpotReadOutcome.Failed;
+            }
+
+            var subject = headResponse.Headers.GetValues(NntpHeaders.Subject).FirstOrDefault();
+            var from = headResponse.Headers.GetValues(NntpHeaders.From).FirstOrDefault();
+            if (subject == null || from == null)
+            {
+                _logger.FailedToParseSpotHeader(spot.MessageId, from ?? string.Empty);
+                return SpotReadOutcome.Unavailable;
+            }
+
+            var headerResult = SpotnetHeaderParser.Parse(subject, from);
+            if (headerResult.HasError)
+            {
+                _logger.FailedToParseSpotHeader(spot.MessageId, from);
+                return SpotReadOutcome.Unavailable;
+            }
+
+            var header = headerResult.Result;
+
+            // For now, we ignore delete requests
+            if (header is { KeyId: KeyId.Moderator, Command: ModerationCommand.Delete })
+                return SpotReadOutcome.Unavailable;
+
+            header.ApplyTo(spot);
+
+            await ApplySpotDetails(lease.Client, spot, messageId, headResponse, cancellationToken);
+
+            return SpotReadOutcome.Read;
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.ArticleContainsInvalidSpotXmlHeader(spot.MessageId, ex.Message);
+            return SpotReadOutcome.Unavailable;
+        }
+        catch (NntpException ex)
+        {
+            _logger.CouldNotRetrieveArticle(ex, spot.MessageId);
+            return SpotReadOutcome.Failed;
+        }
+    }
+
+    private async Task ApplySpotDetails(
+        IPooledNntpClient client,
+        Spot spot,
+        NntpMessageId messageId,
+        NntpArticleResponse headResponse,
+        CancellationToken cancellationToken
+    )
+    {
+        var spotnetXmlValues = headResponse.Headers.GetValues(SpotnetXml.HeaderName).ToList();
+
+        if (spotnetXmlValues.Count == 0)
+        {
+            // No spot XML header, fall back to the plaintext body.
+            await SetDescriptionFromBody(client, spot, messageId, cancellationToken);
+            return;
+        }
+
+        var result = await SpotnetXmlParser.Parse(spotnetXmlValues, cancellationToken);
+        if (result.HasError)
+        {
+            _logger.ArticleContainsInvalidSpotXmlHeader(spot.MessageId, result.Error);
+            return;
+        }
+
+        var spotDetails = result.Result;
+
+        spot.NzbMessageIds.Replace(
+            spotDetails.Posting.Nzb.Segments.Select(s => s.Truncate(Spot.SmallMaxLength))
+        );
+        spot.ImageMessageIds.Replace(
+            (spotDetails.Posting.Image?.Segments ?? []).Select(s => s.Truncate(Spot.SmallMaxLength))
+        );
+        spot.Description = spotDetails.Posting.Description;
+        spot.Tag = spotDetails.Posting.Tag.Truncate(Spot.SmallMaxLength);
+        spot.Url = Uri.TryCreate(
+            spotDetails.Posting.Website.Truncate(Spot.LargeMaxLength),
+            UriKind.Absolute,
+            out var uri
+        )
+            ? uri
+            : null;
+        spot.Filename = spotDetails.Posting.Filename.Truncate(Spot.SmallMaxLength);
+        spot.Newsgroup = spotDetails.Posting.Newsgroup.Truncate(Spot.SmallMaxLength);
+
+        SpotEnricher.Enrich(spot, DateTimeOffset.Now.UtcDateTime);
     }
 
     private async Task SetDescriptionFromBody(
