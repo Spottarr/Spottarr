@@ -11,7 +11,7 @@ namespace Spottarr.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(
-                "UPDATE Spots SET IndexedAt = NULL WHERE ReleaseTitle LIKE 'www.%'"
+                "UPDATE Spots SET IndexedAt = NULL WHERE ReleaseTitle LIKE 'www.%';"
             );
         }
 

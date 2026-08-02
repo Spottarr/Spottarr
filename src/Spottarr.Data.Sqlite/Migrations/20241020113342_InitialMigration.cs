@@ -79,7 +79,7 @@ namespace Spottarr.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
             */
-            migrationBuilder.Sql("CREATE VIRTUAL TABLE FtsSpots USING fts5(Title, Description)");
+            migrationBuilder.Sql("CREATE VIRTUAL TABLE FtsSpots USING fts5(Title, Description);");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Spots_MessageId",
