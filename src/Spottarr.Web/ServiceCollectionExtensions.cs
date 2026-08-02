@@ -17,7 +17,7 @@ internal static class ServiceCollectionExtensions
         });
 
         // Remove MVC and Razor registrations for Native AOT
-        // Only register OpenAPI, CORS, health checks, static files, etc.
+        // Only register OpenAPI, health checks, static files, etc.
         services.AddOpenApi(options =>
             options.AddDocumentTransformer<NewznabOperationTransformer>()
         );
@@ -64,9 +64,6 @@ internal static class ServiceCollectionExtensions
         });
 
         services.AddAntiforgery();
-        services.AddCors(c =>
-            c.AddDefaultPolicy(p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader())
-        );
         services.AddHealthChecks();
 
         return services;
