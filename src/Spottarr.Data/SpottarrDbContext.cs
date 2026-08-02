@@ -55,8 +55,10 @@ public sealed class SpottarrDbContext : DbContext, IDataProtectionKeyContext
             x.Property(s => s.ReleaseTitle).HasMaxLength(Spot.MediumMaxLength);
             x.Property(s => s.Spotter).HasMaxLength(Spot.SmallMaxLength);
             x.Property(s => s.MessageId).HasMaxLength(Spot.SmallMaxLength);
-            x.Property(s => s.NzbMessageId).HasMaxLength(Spot.SmallMaxLength);
-            x.Property(s => s.ImageMessageId).HasMaxLength(Spot.SmallMaxLength);
+            x.PrimitiveCollection(s => s.NzbMessageIds)
+                .ElementType(e => e.HasMaxLength(Spot.SmallMaxLength));
+            x.PrimitiveCollection(s => s.ImageMessageIds)
+                .ElementType(e => e.HasMaxLength(Spot.SmallMaxLength));
             x.Property(s => s.Tag).HasMaxLength(Spot.SmallMaxLength);
             x.Property(s => s.Url).HasMaxLength(Spot.LargeMaxLength);
             x.Property(s => s.Filename).HasMaxLength(Spot.SmallMaxLength);

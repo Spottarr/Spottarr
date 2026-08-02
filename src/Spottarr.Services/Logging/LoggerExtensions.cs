@@ -101,6 +101,16 @@ public static partial class LoggerExtensions
         string message
     );
 
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Could not decode the attachment of spot [{MessageId}]."
+    )]
+    public static partial void CouldNotDecodeAttachment(
+        this ILogger logger,
+        Exception exception,
+        string messageId
+    );
+
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to save spots.")]
     public static partial void FailedToSaveSpots(this ILogger logger, Exception exception);
 

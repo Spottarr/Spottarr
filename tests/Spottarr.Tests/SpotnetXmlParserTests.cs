@@ -39,7 +39,7 @@ internal sealed class SpotnetXmlParserTests
             .IsEqualTo("Echoes of Tomorrow - S04E01: A New Dawn");
         await Assert.That(result.Posting.Category.Text).IsEqualTo("01");
         await Assert.That(result.Posting.Category.Sub).IsEquivalentTo(["01a09", "01b04"]);
-        await Assert.That(result.Posting.Nzb.Segment).IsEqualTo("someid2@spot.net");
+        await Assert.That(result.Posting.Nzb.Segments).IsEquivalentTo(["someid2@spot.net"]);
     }
 
     [Test]
@@ -82,7 +82,7 @@ internal sealed class SpotnetXmlParserTests
         await Assert.That(result.Posting.Filename).IsEqualTo("filename.mp4");
         await Assert.That(result.Posting.Newsgroup).IsEqualTo("some.group");
         await Assert.That(result.Posting.Category.Sub).IsEquivalentTo(["01a09", "01b04"]);
-        await Assert.That(result.Posting.Nzb.Segment).IsEqualTo("someid4@spot.net");
+        await Assert.That(result.Posting.Nzb.Segments).IsEquivalentTo(["someid4@spot.net"]);
     }
 
     [Test]
@@ -125,7 +125,7 @@ internal sealed class SpotnetXmlParserTests
             .IsEqualTo("Echoes of Tomorrow - S04E01: A New Dawn");
         await Assert.That(result.Posting.Category.Text).IsEqualTo("01");
         await Assert.That(result.Posting.Category.Sub).IsEquivalentTo(["01a09", "01b04"]);
-        await Assert.That(result.Posting.Nzb.Segment).IsEqualTo("someid2@spot.net");
+        await Assert.That(result.Posting.Nzb.Segments).IsEquivalentTo(["someid2@spot.net"]);
     }
 
     [Test]
@@ -164,7 +164,7 @@ internal sealed class SpotnetXmlParserTests
         await Assert.That(result.Posting.Description).IsEqualTo("Test \ud83d\ude0d");
         await Assert.That(result.Posting.Category.Text).IsEqualTo("01");
         await Assert.That(result.Posting.Category.Sub).IsEquivalentTo(["01a09", "01b04"]);
-        await Assert.That(result.Posting.Nzb.Segment).IsEqualTo("someid4@spot.net");
+        await Assert.That(result.Posting.Nzb.Segments).IsEquivalentTo(["someid4@spot.net"]);
     }
 
     [Test]
@@ -204,7 +204,7 @@ internal sealed class SpotnetXmlParserTests
             .IsEqualTo("Echoes of Tomorrow - S04E01: A New Dawn");
         await Assert.That(result.Posting.Category.Text).IsEqualTo("01");
         await Assert.That(result.Posting.Category.Sub).IsEquivalentTo(["01a09", "01b04"]);
-        await Assert.That(result.Posting.Nzb.Segment).IsEqualTo("someid2@spot.net");
+        await Assert.That(result.Posting.Nzb.Segments).IsEquivalentTo(["someid2@spot.net"]);
     }
 
     [Test]
@@ -244,7 +244,7 @@ internal sealed class SpotnetXmlParserTests
             .IsEqualTo("Echoes of Tomorrow - S04E01: A New Dawn");
         await Assert.That(result.Posting.Category.Text).IsEqualTo("01");
         await Assert.That(result.Posting.Category.Sub).IsEquivalentTo(["01a09", "01b04"]);
-        await Assert.That(result.Posting.Nzb.Segment).IsEqualTo("someid2@spot.net");
+        await Assert.That(result.Posting.Nzb.Segments).IsEquivalentTo(["someid2@spot.net"]);
     }
 
     [Test]
@@ -283,6 +283,45 @@ internal sealed class SpotnetXmlParserTests
             .IsEqualTo("Echoes of Tomorrow - S04E01: A New Dawn");
         await Assert.That(result.Posting.Category.Text).IsEqualTo("01");
         await Assert.That(result.Posting.Category.Sub).IsEquivalentTo(["01a09", "01b04"]);
-        await Assert.That(result.Posting.Nzb.Segment).IsEqualTo("someid2@spot.net");
+        await Assert.That(result.Posting.Nzb.Segments).IsEquivalentTo(["someid2@spot.net"]);
+    }
+
+    [Test]
+    public async Task ParsesXmlWithMultipleNzbSegments(CancellationToken cancellationToken)
+    {
+        const string xml = """
+            <Spotnet>
+                <Posting>
+                    <Key>7</Key>
+                    <Created>1728935794</Created>
+                    <Poster>SomePoster</Poster>
+                    <Title>Echoes of Tomorrow - S04 COMPLETE</Title>
+                    <Description>The complete fourth season.</Description>
+                    <Image Height="1000" Width="680">
+                        <Segment>image1@spot.net</Segment>
+                        <Segment>image2@spot.net</Segment>
+                    </Image>
+                    <Size>64501308000</Size>
+                    <Category>01<Sub>01a09</Sub>
+                    </Category>
+                    <NZB>
+                        <Segment>nzb1@spot.net</Segment>
+                        <Segment>nzb2@spot.net</Segment>
+                        <Segment>nzb3@spot.net</Segment>
+                    </NZB>
+                </Posting>
+            </Spotnet>
+            """;
+
+        var parsed = await SpotnetXmlParser.Parse(xml, cancellationToken);
+        await Assert.That(parsed.HasError).IsFalse();
+        var result = parsed.Result;
+
+        await Assert
+            .That(result.Posting.Nzb.Segments)
+            .IsEquivalentTo(["nzb1@spot.net", "nzb2@spot.net", "nzb3@spot.net"]);
+        await Assert
+            .That(result.Posting.Image!.Segments)
+            .IsEquivalentTo(["image1@spot.net", "image2@spot.net"]);
     }
 }
