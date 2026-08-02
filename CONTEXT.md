@@ -51,15 +51,19 @@ entities, stores them in a database, and serves them through a **Newznab**-compa
 - **Article** — a single Usenet message. Spots, their NZBs, and their images are all stored as
   separate articles referenced by **message ID**.
 - **Message ID** — the unique identifier of a Usenet article. A `Spot` holds its own `MessageId`,
-  plus `NzbMessageId` and `ImageMessageId` for its attachments.
+  plus `NzbMessageIds` and `ImageMessageIds` for its attachments.
+- **Attachment** — the NZB or preview image belonging to a spot, posted as separate articles.
+- **Segment** — one article carrying part of an attachment. An attachment is split over one or more
+  segments, each identified by its own message ID. A segment is never independently useful: the
+  payload only decodes once every segment's body is concatenated in order.
 - **Article number** — the sequential per-group number of an article. Because NNTP can't look up an
   article by date, Spottarr **binary-searches** article numbers to find where a given
   `RetrieveAfter` date falls (`SpotnetArticleNumberService`).
 - **Newsgroup / SpotGroup** — the Usenet group(s) spots are read from. Related groups exist for
   comments, reports, and NZBs (`Spotnet.SpotGroup`, `CommentGroup`, `ReportGroup`, `NzbGroup`).
 - **NZB** — an XML file describing the Usenet articles that make up the actual downloadable content.
-  Spottarr serves NZBs to *Arr clients; the NZB itself lives in a separate article
-  (`NzbMessageId`).
+  Spottarr serves NZBs to *Arr clients; the NZB itself lives in one or more separate articles
+  (`NzbMessageIds`).
 - **NntpClientPool** — a pool of reusable, leased NNTP connections, bounded by
   `Usenet.MaxConnections`.
 
