@@ -13,7 +13,7 @@ internal sealed class AdminAuthenticationHandler
     : AuthenticationHandler<AuthenticationSchemeOptions>
 {
     public const string SchemeName = "admin";
-    private const string ApiKeyHeaderName = "X-Api-Key";
+    public const string ApiKeyHeaderName = "X-Api-Key";
 
     private readonly IOptions<AdminOptions> _adminOptions;
 

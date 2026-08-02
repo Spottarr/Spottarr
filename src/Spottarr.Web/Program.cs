@@ -30,6 +30,20 @@ app.MapScalarApiReference();
 
 // Middleware pipeline, order matters here
 app.UseForwardedHeaders();
+
+// Standardized error bodies for the Spottarr API only, the newznab API has its own error format.
+app.UseWhen(
+    context =>
+        context.Request.Path.StartsWithSegments(
+            ApiEndpoints.PathPrefix,
+            StringComparison.OrdinalIgnoreCase
+        ),
+    api =>
+    {
+        api.UseExceptionHandler();
+        api.UseStatusCodePages();
+    }
+);
 app.UseDefaultFiles();
 app.UseMiddleware<NewznabQueryActionMiddleware>();
 app.UseRouting();

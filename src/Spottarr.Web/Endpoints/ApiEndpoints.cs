@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.OpenApi;
 using Quartz;
 using Spottarr.Services.Contracts;
 using Spottarr.Services.Jobs;
@@ -6,6 +7,7 @@ using Spottarr.Services.Models;
 using Spottarr.Web.Api;
 using Spottarr.Web.Api.Models;
 using Spottarr.Web.Auth;
+using Spottarr.Web.Helpers;
 
 namespace Spottarr.Web.Endpoints;
 
@@ -17,10 +19,31 @@ internal static class ApiEndpoints
     {
         var group = app.MapGroup(PathPrefix)
             .WithTags("Spottarr")
-            .RequireAuthorization(AdminAuthenticationHandler.SchemeName);
+            .RequireAuthorization(AdminAuthenticationHandler.SchemeName)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .AddOpenApiOperationTransformer(
+                (operation, context, cancellationToken) =>
+                {
+                    operation.Security =
+                    [
+                        new OpenApiSecurityRequirement
+                        {
+                            [
+                                new OpenApiSecuritySchemeReference(
+                                    AdminSecuritySchemeTransformer.SchemeId,
+                                    context.Document
+                                )
+                            ] = [],
+                        },
+                    ];
+
+                    return Task.CompletedTask;
+                }
+            );
 
         group
             .MapGet("/spots/{id:int}", GetSpot)
+            .ProducesProblem(StatusCodes.Status404NotFound)
             .WithDescription(
                 "Get a single spot, including whether it is waiting to be reprocessed."
             );

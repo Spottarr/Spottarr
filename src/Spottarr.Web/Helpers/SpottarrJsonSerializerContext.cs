@@ -13,6 +13,7 @@ namespace Spottarr.Web.Helpers;
 [JsonSerializable(typeof(MarkedSpotsStatusResponse))]
 [JsonSerializable(typeof(MarkedSpotsResponse))]
 [JsonSerializable(typeof(UnmarkedSpotsResponse))]
+[JsonSerializable(typeof(ProblemDetails))]
 [JsonSerializable(typeof(HttpValidationProblemDetails))]
 [JsonSerializable(typeof(string[]))]
 [JsonSerializable(typeof(int?))]
