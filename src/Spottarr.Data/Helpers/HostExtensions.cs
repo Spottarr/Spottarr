@@ -16,7 +16,10 @@ public static class HostExtensions
 
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<IHost>>();
         logger.DatabaseMigrationStarted();
+
         var dbContext = scope.ServiceProvider.GetRequiredService<SpottarrDbContext>();
+        dbContext.Database.SetCommandTimeout(TimeSpan.FromMinutes(15));
+
         await dbContext.Database.MigrateAsync(cancellationToken);
         logger.DatabaseMigrationFinished();
     }
