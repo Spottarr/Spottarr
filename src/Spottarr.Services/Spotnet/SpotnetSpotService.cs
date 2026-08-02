@@ -152,13 +152,14 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
 
             var spotDetails = result.Result;
 
-            spot.NzbMessageIds.Clear();
-            foreach (var segment in spotDetails.Posting.Nzb.Segments)
-                spot.NzbMessageIds.Add(segment.Truncate(Spot.SmallMaxLength));
-
-            spot.ImageMessageIds.Clear();
-            foreach (var segment in spotDetails.Posting.Image?.Segments ?? [])
-                spot.ImageMessageIds.Add(segment.Truncate(Spot.SmallMaxLength));
+            spot.NzbMessageIds.Replace(
+                spotDetails.Posting.Nzb.Segments.Select(s => s.Truncate(Spot.SmallMaxLength))
+            );
+            spot.ImageMessageIds.Replace(
+                (spotDetails.Posting.Image?.Segments ?? []).Select(s =>
+                    s.Truncate(Spot.SmallMaxLength)
+                )
+            );
             spot.Description = spotDetails.Posting.Description;
             spot.Tag = spotDetails.Posting.Tag.Truncate(Spot.SmallMaxLength);
             spot.Url = Uri.TryCreate(
