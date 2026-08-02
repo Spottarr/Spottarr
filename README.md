@@ -70,6 +70,45 @@ After starting Spottarr, it can easily be connected to the *Arr of your choice:
 > To enable API key authorization, set the `NEWZNAB__APIKEY` environment variable to a secure value and update your *Arr
 > indexer configuration accordingly.
 
+## Maintenance API
+
+Besides the Newznab API, Spottarr exposes a small REST API for maintenance, documented at `/scalar` and
+`/openapi/v1.json`. It is disabled until an API key is configured through the `ADMIN__APIKEY` environment
+variable, and every request must pass that key in the `X-Api-Key` header.
+
+```
+GET    /api/v1/spots/{id}      # inspect a single spot
+GET    /api/v1/spots/reimport  # how many spots are waiting to be reread from usenet
+POST   /api/v1/spots/reimport  # flag spots to be reread from usenet
+DELETE /api/v1/spots/reimport  # clear the flags again
+GET    /api/v1/spots/reindex   # how many spots are waiting to be reindexed
+POST   /api/v1/spots/reindex   # flag spots to have their attributes derived again
+DELETE /api/v1/spots/reindex   # clear the flags again
+```
+
+Use a **reindex** when Spottarr parses stored spots differently, for example after a change to release title
+parsing. Use a **reimport** when the stored spot itself is incomplete and the article has to be read from
+usenet again. Rereading costs one usenet request per spot, so flagging every spot takes a while.
+
+Flagged spots are processed by the regular import job, which is triggered immediately when spots are flagged.
+A reimport pauses the import of new spots until it is done.
+
+Select the spots to flag by id, by the date they were spotted, or all of them:
+
+```bash
+curl -X POST http://localhost:8383/api/v1/spots/reimport \
+  -H "X-Api-Key: $ADMIN_API_KEY" -H "Content-Type: application/json" \
+  -d '{"spotIds": [1234]}'
+
+curl -X POST http://localhost:8383/api/v1/spots/reimport \
+  -H "X-Api-Key: $ADMIN_API_KEY" -H "Content-Type: application/json" \
+  -d '{"spottedAfter": "2026-01-01T00:00:00Z", "spottedBefore": "2026-02-01T00:00:00Z"}'
+
+curl -X POST http://localhost:8383/api/v1/spots/reimport \
+  -H "X-Api-Key: $ADMIN_API_KEY" -H "Content-Type: application/json" \
+  -d '{"all": true}'
+```
+
 ## Postgres support
 
 > [!WARNING]
