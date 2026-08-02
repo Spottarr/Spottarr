@@ -6,21 +6,39 @@ namespace Spottarr.Services.Spotnet;
 
 internal static class SpotHeaderExtensions
 {
-    public static Spot ToSpot(this SpotHeader header)
+    public static Spot ToSpot(this SpotHeader header, long messageNumber, string messageId)
+    {
+        var now = DateTimeOffset.Now.UtcDateTime;
+        var spot = new Spot
+        {
+            MessageNumber = messageNumber,
+            MessageId = messageId.Truncate(Spot.SmallMaxLength),
+            CreatedAt = now,
+            UpdatedAt = now,
+        };
+
+        header.ApplyTo(spot);
+
+        return spot;
+    }
+
+    /// <summary>
+    /// Overwrites the header derived attributes of a spot, leaving its identity and attachments alone.
+    /// </summary>
+    public static void ApplyTo(this SpotHeader header, Spot spot)
     {
         try
         {
-            return MapSpotHeader(header);
+            MapSpotHeader(header, spot);
         }
         catch (InvalidOperationException ex)
         {
-            throw new InvalidOperationException(header.NntpHeader.Subject, ex);
+            throw new InvalidOperationException(header.Subject, ex);
         }
     }
 
-    private static Spot MapSpotHeader(SpotHeader header)
+    private static void MapSpotHeader(SpotHeader header, Spot spot)
     {
-        var now = DateTimeOffset.Now;
         var spotType = (SpotType)header.Category;
 
         var (imageFormats, imageSources, imageLanguages, imageGenres, imageTypes) =
@@ -34,38 +52,28 @@ internal static class SpotHeaderExtensions
         var (applicationPlatforms, applicationGenres, applicationTypes) =
             MapApplicationSubCategories(spotType, header.SubCategories);
 
-        return new Spot
-        {
-            Type = spotType,
-            Title = header.Subject.Truncate(Spot.MediumMaxLength),
-            Description = null,
-            Spotter = header.Nickname.Truncate(Spot.SmallMaxLength),
-            Bytes = header.Size,
-            MessageNumber = header.NntpHeader.Number,
-            MessageId = header.NntpHeader.MessageId.Value.Truncate(Spot.SmallMaxLength),
-            NzbMessageIds = [],
-            ImageMessageIds = [],
-            ImageFormats = imageFormats,
-            ImageSources = imageSources,
-            ImageLanguages = imageLanguages,
-            ImageGenres = imageGenres,
-            ImageTypes = imageTypes,
-            AudioFormats = audioFormats,
-            AudioSources = audioSources,
-            AudioBitrates = audioBitrates,
-            AudioGenres = audioGenres,
-            AudioTypes = audioTypes,
-            GamePlatforms = gamePlatforms,
-            GameFormats = gameFormats,
-            GameGenres = gameGenres,
-            GameTypes = gameTypes,
-            ApplicationPlatforms = applicationPlatforms,
-            ApplicationGenres = applicationGenres,
-            ApplicationTypes = applicationTypes,
-            SpottedAt = header.Date.UtcDateTime,
-            CreatedAt = now.UtcDateTime,
-            UpdatedAt = now.UtcDateTime,
-        };
+        spot.Type = spotType;
+        spot.Title = header.Subject.Truncate(Spot.MediumMaxLength);
+        spot.Spotter = header.Nickname.Truncate(Spot.SmallMaxLength);
+        spot.Bytes = header.Size;
+        spot.SpottedAt = header.Date.UtcDateTime;
+        spot.ImageFormats.Replace(imageFormats);
+        spot.ImageSources.Replace(imageSources);
+        spot.ImageLanguages.Replace(imageLanguages);
+        spot.ImageGenres.Replace(imageGenres);
+        spot.ImageTypes.Replace(imageTypes);
+        spot.AudioFormats.Replace(audioFormats);
+        spot.AudioSources.Replace(audioSources);
+        spot.AudioBitrates.Replace(audioBitrates);
+        spot.AudioGenres.Replace(audioGenres);
+        spot.AudioTypes.Replace(audioTypes);
+        spot.GamePlatforms.Replace(gamePlatforms);
+        spot.GameFormats.Replace(gameFormats);
+        spot.GameGenres.Replace(gameGenres);
+        spot.GameTypes.Replace(gameTypes);
+        spot.ApplicationPlatforms.Replace(applicationPlatforms);
+        spot.ApplicationGenres.Replace(applicationGenres);
+        spot.ApplicationTypes.Replace(applicationTypes);
     }
 
     private static (

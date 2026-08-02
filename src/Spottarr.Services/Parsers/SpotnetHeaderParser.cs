@@ -9,9 +9,12 @@ internal static partial class SpotnetHeaderParser
 {
     private static readonly string[] DeleteModerationCommands = ["delete", "dispose", "remove"];
 
-    public static ParserResult<SpotHeader> Parse(NntpArticleOverview header)
+    public static ParserResult<SpotHeader> Parse(NntpArticleOverview header) =>
+        Parse(header.Subject, header.From);
+
+    public static ParserResult<SpotHeader> Parse(string subjectHeader, string fromHeader)
     {
-        var subjectAndTags = header.Subject.Split(
+        var subjectAndTags = subjectHeader.Split(
             '|',
             2,
             StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
@@ -26,10 +29,10 @@ internal static partial class SpotnetHeaderParser
             : ModerationCommand.None;
 
         var regex = SpotnetHeaderRegex();
-        var match = regex.Match(header.From);
+        var match = regex.Match(fromHeader);
 
         if (!match.Success)
-            return new ParserResult<SpotHeader>($"Invalid Spotnet Author header '{header.From}'");
+            return new ParserResult<SpotHeader>($"Invalid Spotnet Author header '{fromHeader}'");
 
         var g = match.Groups;
 
@@ -68,7 +71,6 @@ internal static partial class SpotnetHeaderParser
                 CustomId = g["cid"].Value,
                 CustomValue = g["cv"].Value,
                 ServerSignature = g["ssig"].Value,
-                NntpHeader = header,
             }
         );
     }
