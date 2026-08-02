@@ -54,7 +54,10 @@ internal sealed class AdminAuthenticationHandler
         // Compare in constant time so the response timing does not leak how much of the key matched.
         var providedKeyBytes = Encoding.UTF8.GetBytes(providedKey.ToString());
         var expectedKeyBytes = Encoding.UTF8.GetBytes(expectedKey);
-        if (!CryptographicOperations.FixedTimeEquals(providedKeyBytes, expectedKeyBytes))
+        if (
+            providedKeyBytes.Length != expectedKeyBytes.Length
+            || !CryptographicOperations.FixedTimeEquals(providedKeyBytes, expectedKeyBytes)
+        )
             return Task.FromResult(AuthenticateResult.Fail("Invalid API key"));
 
         var identity = new ClaimsIdentity(
