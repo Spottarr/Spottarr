@@ -117,6 +117,25 @@ internal sealed class SpotnetHeaderParserTests
         await Assert.That(parsingResult.HasError).IsTrue();
     }
 
+    [Test]
+    public async Task ParsesHeaderFromRawSubjectAndAuthorValues()
+    {
+        const string spotnetHeader =
+            "solem <pizlw58KFSC94SUdwAIMBzRNxmCZrhEnZb4ihCLAX9p6ViN9s2vf-pwFFZqPKwzFF.dpeyw-ssEYgAUebInWNwvjKu6irDwuJCTpgDL7Y1k6lBQj1j4YE-sl99LqQ-sjg7fUf@17a09b04d11b11c00c11z01.3366259428.20.1727723059.1.NL.OmepU20o1i7VxNRhQkAxC1MU8UH4fuOy-pmcHCSgOyCv71Qi-pKuuyPFADcZSY2JqI>";
+
+        var fromOverview = SpotnetHeaderParser.Parse(
+            PrepareNntpHeader(spotnetHeader, "Test subject|tag")
+        );
+        var fromValues = SpotnetHeaderParser.Parse("Test subject|tag", spotnetHeader);
+
+        await Assert.That(fromValues.HasError).IsFalse();
+        await Assert.That(fromValues.Result.Subject).IsEqualTo(fromOverview.Result.Subject);
+        await Assert.That(fromValues.Result.Tag).IsEqualTo(fromOverview.Result.Tag);
+        await Assert.That(fromValues.Result.Nickname).IsEqualTo(fromOverview.Result.Nickname);
+        await Assert.That(fromValues.Result.Size).IsEqualTo(fromOverview.Result.Size);
+        await Assert.That(fromValues.Result.Date).IsEqualTo(fromOverview.Result.Date);
+    }
+
     private static NntpArticleOverview PrepareNntpHeader(
         string spotnetHeader,
         string subjectAndTags = "Test subject"
