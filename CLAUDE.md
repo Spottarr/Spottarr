@@ -8,6 +8,11 @@ If you are adding documentation, prefer extending the files under `docs/` and up
 
 - **Use idiomatic C# with the latest language features.**
 
+## Comments
+- No prose in comments
+- No historical information in comments
+- Only comments when the comment explains something not directly obvious from code
+
 ## CI
 
 `.github/workflows/build-and-test.yml` (on push/PR to `main`, .NET 10): `dotnet tool restore` → `dotnet restore` → CSharpier check (`dotnet csharpier check .`) → `dotnet build` → CodeQL analyze (public repos only) → `dotnet test` with cobertura coverage. Test results and coverage are posted as sticky PR comments. A separate scheduled `codeql.yml` re-runs CodeQL weekly (Wednesdays, public repos only).
