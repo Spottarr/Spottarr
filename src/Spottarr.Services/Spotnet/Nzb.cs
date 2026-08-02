@@ -4,16 +4,16 @@ using Spottarr.Services.Helpers;
 
 namespace Spottarr.Services.Spotnet;
 
-internal sealed class NzbSegment : IXmlReadable<NzbSegment>
+internal sealed class Nzb : IXmlReadable<Nzb>
 {
     [XmlElement(ElementName = "Segment")]
-    public string Segment { get; set; } = string.Empty;
+    public List<string> Segments { get; } = [];
 
-    public static async Task<NzbSegment> ReadXml(XmlReader reader)
+    public static async Task<Nzb> ReadXml(XmlReader reader)
     {
         ArgumentNullException.ThrowIfNull(reader);
 
-        var result = new NzbSegment();
+        var result = new Nzb();
         var depth = reader.Depth;
 
         while (reader.Depth >= depth)
@@ -27,7 +27,7 @@ internal sealed class NzbSegment : IXmlReadable<NzbSegment>
             switch (reader.Name)
             {
                 case "Segment":
-                    result.Segment = await reader.ReadElementContentAsStringAsync();
+                    result.Segments.Add(await reader.ReadElementContentAsStringAsync());
                     break;
                 default:
                     await reader.SkipAsync(); // Skip unknown elements

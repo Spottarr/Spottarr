@@ -22,8 +22,8 @@ public sealed class Spot : BaseEntity, IPostgreSqlFtsEntity
     public string Spotter { get; set; } = string.Empty;
     public long Bytes { get; set; }
     public string MessageId { get; set; } = string.Empty;
-    public string? NzbMessageId { get; set; }
-    public string? ImageMessageId { get; set; }
+    public ICollection<string> NzbMessageIds { get; init; } = [];
+    public ICollection<string> ImageMessageIds { get; init; } = [];
     public long MessageNumber { get; set; }
     public SpotType Type { get; set; }
     public ICollection<ImageType> ImageTypes { get; init; } = [];

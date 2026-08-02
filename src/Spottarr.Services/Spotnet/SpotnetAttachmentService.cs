@@ -38,38 +38,55 @@ internal sealed class SpotnetAttachmentService : ISpotnetAttachmentService
             s => s.Id == spotId,
             cancellationToken
         );
-        if (spot == null || string.IsNullOrEmpty(spot.NzbMessageId))
+        if (spot == null || spot.NzbMessageIds.Count == 0)
             return null;
 
         try
         {
             using var lease = await _nntpClientPool.GetLease(cancellationToken);
-            var nzbMessageId = spot.NzbMessageId;
 
-            // Only the body carries the NZB payload, so a BODY request avoids transferring and
-            // parsing the article headers.
-            await using var nzbBodyResponse = await lease.Client.BodyAsync(
-                new NntpMessageId(nzbMessageId),
-                cancellationToken
-            );
+            // The attachment is split over one or more articles and only inflates as a whole, so the
+            // bodies are concatenated in order before being decoded. Each body is copied out before its
+            // response is disposed, because the response owns the pooled buffer backing it.
+            using var payload = new MemoryStream();
 
-            if (!nzbBodyResponse.Success)
+            foreach (var nzbMessageId in spot.NzbMessageIds)
             {
-                _logger.CouldNotRetrieveArticle(
-                    spot.MessageId,
-                    nzbBodyResponse.Code,
-                    nzbBodyResponse.Message
+                // Only the body carries the NZB payload, so a BODY request avoids transferring and
+                // parsing the article headers.
+                await using var nzbBodyResponse = await lease.Client.BodyAsync(
+                    new NntpMessageId(nzbMessageId),
+                    cancellationToken
                 );
-                return null;
+
+                if (!nzbBodyResponse.Success)
+                {
+                    _logger.CouldNotRetrieveArticle(
+                        spot.MessageId,
+                        nzbBodyResponse.Code,
+                        nzbBodyResponse.Message
+                    );
+                    return null;
+                }
+
+                payload.Write(nzbBodyResponse.Body.Span);
             }
 
-            var stream = await NzbArticleParser.Parse(nzbBodyResponse.Body, cancellationToken);
+            var stream = await NzbArticleParser.Parse(
+                payload.GetBuffer().AsMemory(0, (int)payload.Length),
+                cancellationToken
+            );
 
             return new SpotAttachmentResponse { FileName = spot.Title, Stream = stream };
         }
         catch (NntpException ex)
         {
             _logger.CouldNotRetrieveArticle(ex, spot.MessageId);
+            return null;
+        }
+        catch (InvalidDataException ex)
+        {
+            _logger.CouldNotDecodeAttachment(ex, spot.MessageId);
             return null;
         }
     }

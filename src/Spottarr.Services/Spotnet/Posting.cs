@@ -28,7 +28,7 @@ internal sealed class Posting : IXmlReadable<Posting>
     public string Website { get; set; } = string.Empty;
 
     [XmlElement(ElementName = "Image")]
-    public ImageSegment? Image { get; set; }
+    public Image? Image { get; set; }
 
     [XmlElement(ElementName = "Size")]
     public long Size { get; set; }
@@ -37,7 +37,7 @@ internal sealed class Posting : IXmlReadable<Posting>
     public Category Category { get; set; } = null!;
 
     [XmlElement(ElementName = "NZB")]
-    public NzbSegment Nzb { get; set; } = null!;
+    public Nzb Nzb { get; set; } = null!;
 
     /* Optional fields
      not listed on https://github.com/spotnet/spotnet/wiki/Spot-Xml-format
@@ -90,7 +90,7 @@ internal sealed class Posting : IXmlReadable<Posting>
                     break;
                 case "Image":
                     reader.ReadStartElement("Image");
-                    result.Image = await ImageSegment.ReadXml(reader);
+                    result.Image = await Image.ReadXml(reader);
                     reader.ReadEndElement();
                     break;
                 case "Size":
@@ -103,7 +103,7 @@ internal sealed class Posting : IXmlReadable<Posting>
                     break;
                 case "NZB":
                     reader.ReadStartElement("NZB");
-                    result.Nzb = await NzbSegment.ReadXml(reader);
+                    result.Nzb = await Nzb.ReadXml(reader);
                     reader.ReadEndElement();
                     break;
                 default:
