@@ -53,7 +53,7 @@ public static class ServiceCollectionExtensions
             })
             .AddSingleton<IApplicationVersionService, ApplicationVersionService>()
             .AddScoped<ISpotImportService, SpotImportService>()
-            .AddScoped<ISpotReIndexingService, SpotReIndexingService>()
+            .AddScoped<ISpotReindexService, SpotReindexService>()
             .AddScoped<ISpotSearchService, SpotSearchService>()
             .AddScoped<ISpotCleanUpService, SpotCleanUpService>()
             .AddScoped<ISpotnetAttachmentService, SpotnetAttachmentService>()

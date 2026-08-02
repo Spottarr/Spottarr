@@ -169,18 +169,33 @@ public static partial class LoggerExtensions
     [LoggerMessage(Level = LogLevel.Information, Message = "Spot import finished at {DateTime}.")]
     public static partial void SpotImportFinished(this ILogger logger, DateTimeOffset dateTime);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "Spot indexing started at {DateTime}.")]
-    public static partial void SpotIndexingStarted(this ILogger logger, DateTimeOffset dateTime);
-
-    [LoggerMessage(Level = LogLevel.Information, Message = "Spot indexing finished at {DateTime}.")]
-    public static partial void SpotIndexingFinished(this ILogger logger, DateTimeOffset dateTime);
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Spot {Operation} started at {DateTime}."
+    )]
+    public static partial void SpotDrainStarted(
+        this ILogger logger,
+        string operation,
+        DateTimeOffset dateTime
+    );
 
     [LoggerMessage(
         Level = LogLevel.Information,
-        Message = "Spot indexing batch ({Current}/{Total}) started at {DateTime}."
+        Message = "Spot {Operation} finished at {DateTime}."
     )]
-    public static partial void SpotIndexingBatchStarted(
+    public static partial void SpotDrainFinished(
         this ILogger logger,
+        string operation,
+        DateTimeOffset dateTime
+    );
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Spot {Operation} batch ({Current}/{Total}) started at {DateTime}."
+    )]
+    public static partial void SpotDrainBatchStarted(
+        this ILogger logger,
+        string operation,
         int current,
         int total,
         DateTimeOffset dateTime
@@ -188,10 +203,11 @@ public static partial class LoggerExtensions
 
     [LoggerMessage(
         Level = LogLevel.Information,
-        Message = "Spot indexing batch ({Current}/{Total}) finished at {DateTime}. Indexed {SpotCount} spots."
+        Message = "Spot {Operation} batch ({Current}/{Total}) finished at {DateTime}. Processed {SpotCount} spots."
     )]
-    public static partial void SpotIndexingBatchFinished(
+    public static partial void SpotDrainBatchFinished(
         this ILogger logger,
+        string operation,
         int current,
         int total,
         DateTimeOffset dateTime,

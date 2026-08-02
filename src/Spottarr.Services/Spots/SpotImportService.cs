@@ -1,4 +1,3 @@
-using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -129,31 +128,20 @@ internal sealed class SpotImportService : ISpotImportService
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-        // Save the fetched articles in bulk.
-        try
-        {
-            await using var transaction = await dbContext.Database.BeginTransactionAsync(
-                cancellationToken
-            );
+        await dbContext.SaveSpotsAsync(
+            _logger,
+            async (db, ct) =>
+            {
+                var insertedSpots = await db.ExecuteBulkInsertReturnEntitiesAsync(
+                    spots,
+                    new OnConflictOptions<Spot> { Match = spot => spot.MessageId },
+                    ct
+                );
 
-            var insertedSpots = await dbContext.ExecuteBulkInsertReturnEntitiesAsync(
-                spots,
-                new OnConflictOptions<Spot> { Match = spot => spot.MessageId },
-                cancellationToken
-            );
-
-            await dbContext.UpsertFtsSpotsAsync(
-                insertedSpots,
-                replaceExisting: false,
-                cancellationToken
-            );
-
-            await transaction.CommitAsync(cancellationToken);
-        }
-        catch (DbException ex)
-        {
-            _logger.FailedToSaveSpots(ex);
-        }
+                await db.UpsertFtsSpotsAsync(insertedSpots, replaceExisting: false, ct);
+            },
+            cancellationToken
+        );
     }
 
     /// <summary>
