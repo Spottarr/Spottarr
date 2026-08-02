@@ -139,7 +139,7 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
 
             await ApplySpotDetails(lease.Client, spot, messageId, headResponse, cancellationToken);
 
-            // Spots whose article could not be read stay flagged so they are reimported later.
+            // Spots whose article could not be read stay marked, so they are reimported later.
             spot.ImportedAt = DateTimeOffset.Now.UtcDateTime;
         }
         catch (InvalidOperationException ex)
@@ -183,14 +183,14 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
             var from = headResponse.Headers.GetValues(NntpHeaders.From).FirstOrDefault();
             if (subject == null || from == null)
             {
-                _logger.FailedToParseSpotHeader(spot.MessageId, from ?? string.Empty);
+                _logger.FailedToParseSpotHeader(spot.MessageId, subject ?? string.Empty);
                 return SpotReadOutcome.Unavailable;
             }
 
             var headerResult = SpotnetHeaderParser.Parse(subject, from);
             if (headerResult.HasError)
             {
-                _logger.FailedToParseSpotHeader(spot.MessageId, from);
+                _logger.FailedToParseSpotHeader(spot.MessageId, subject);
                 return SpotReadOutcome.Unavailable;
             }
 
@@ -202,7 +202,18 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
 
             header.ApplyTo(spot);
 
-            await ApplySpotDetails(lease.Client, spot, messageId, headResponse, cancellationToken);
+            var applied = await ApplySpotDetails(
+                lease.Client,
+                spot,
+                messageId,
+                headResponse,
+                cancellationToken
+            );
+
+            // The title comes from the header we just reparsed. Without usable spot XML the
+            // attributes derived from it are never refreshed, so leave the spot to be reindexed.
+            if (!applied)
+                spot.IndexedAt = null;
 
             return SpotReadOutcome.Read;
         }
@@ -218,7 +229,7 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
         }
     }
 
-    private async Task ApplySpotDetails(
+    private async Task<bool> ApplySpotDetails(
         IPooledNntpClient client,
         Spot spot,
         NntpMessageId messageId,
@@ -232,14 +243,14 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
         {
             // No spot XML header, fall back to the plaintext body.
             await SetDescriptionFromBody(client, spot, messageId, cancellationToken);
-            return;
+            return false;
         }
 
         var result = await SpotnetXmlParser.Parse(spotnetXmlValues, cancellationToken);
         if (result.HasError)
         {
             _logger.ArticleContainsInvalidSpotXmlHeader(spot.MessageId, result.Error);
-            return;
+            return false;
         }
 
         var spotDetails = result.Result;
@@ -263,6 +274,8 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
         spot.Newsgroup = spotDetails.Posting.Newsgroup.Truncate(Spot.SmallMaxLength);
 
         SpotEnricher.Enrich(spot, DateTimeOffset.Now.UtcDateTime);
+
+        return true;
     }
 
     private async Task SetDescriptionFromBody(

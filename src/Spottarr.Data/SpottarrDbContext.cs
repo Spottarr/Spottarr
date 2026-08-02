@@ -81,7 +81,7 @@ public sealed class SpottarrDbContext : DbContext, IDataProtectionKeyContext
             x.HasIndex(s => new { s.ImdbId, s.SpottedAt }).IsDescending(false, true);
             x.HasIndex(s => new { s.TvdbId, s.SpottedAt }).IsDescending(false, true);
 
-            // Spots flagged for a reimport or reindex are the exception, so only index those.
+            // Only spots waiting to be reprocessed are indexed here, the steady state is zero rows.
             x.HasIndex(s => s.IndexedAt).HasFilter("\"IndexedAt\" IS NULL");
             x.HasIndex(s => s.ImportedAt).HasFilter("\"ImportedAt\" IS NULL");
 

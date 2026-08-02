@@ -8,30 +8,33 @@ internal static class SpotSelectionMapper
     public static bool TryCreateSelection(
         this SpotSelectionRequest request,
         out SpotSelection selection,
-        out string error
+        out Dictionary<string, string[]> errors
     )
     {
         selection = new SpotSelection();
-        error = string.Empty;
+        errors = [];
 
         var hasSpotIds = request.SpotIds is { Count: > 0 };
         var hasDates = request.SpottedAfter.HasValue || request.SpottedBefore.HasValue;
 
-        // Selecting every spot is expensive enough to require saying so.
         if (request.All)
         {
             if (hasSpotIds || hasDates)
-            {
-                error = "'all' can not be combined with another selection.";
-                return false;
-            }
+                errors[nameof(SpotSelectionRequest.All)] =
+                [
+                    "'all' can not be combined with another selection.",
+                ];
 
-            return true;
+            return errors.Count == 0;
         }
 
+        // Selecting every spot is expensive enough to require saying so.
         if (!hasSpotIds && !hasDates)
         {
-            error = "Provide 'spotIds', 'spottedAfter' / 'spottedBefore' or 'all'.";
+            errors[nameof(SpotSelectionRequest.SpotIds)] =
+            [
+                "Provide 'spotIds', 'spottedAfter' / 'spottedBefore' or 'all'.",
+            ];
             return false;
         }
 
@@ -41,7 +44,10 @@ internal static class SpotSelectionMapper
             && request.SpottedAfter > request.SpottedBefore
         )
         {
-            error = "'spottedAfter' must not be later than 'spottedBefore'.";
+            errors[nameof(SpotSelectionRequest.SpottedAfter)] =
+            [
+                "'spottedAfter' must not be later than 'spottedBefore'.",
+            ];
             return false;
         }
 

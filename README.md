@@ -79,21 +79,21 @@ variable, and every request must pass that key in the `X-Api-Key` header.
 ```
 GET    /api/v1/spots/{id}      # inspect a single spot
 GET    /api/v1/spots/reimport  # how many spots are waiting to be reread from usenet
-POST   /api/v1/spots/reimport  # flag spots to be reread from usenet
-DELETE /api/v1/spots/reimport  # clear the flags again
+POST   /api/v1/spots/reimport  # mark spots to be reread from usenet
+DELETE /api/v1/spots/reimport  # unmark them again
 GET    /api/v1/spots/reindex   # how many spots are waiting to be reindexed
-POST   /api/v1/spots/reindex   # flag spots to have their attributes derived again
-DELETE /api/v1/spots/reindex   # clear the flags again
+POST   /api/v1/spots/reindex   # mark spots to have their attributes derived again
+DELETE /api/v1/spots/reindex   # unmark them again
 ```
 
 Use a **reindex** when Spottarr parses stored spots differently, for example after a change to release title
 parsing. Use a **reimport** when the stored spot itself is incomplete and the article has to be read from
-usenet again. Rereading costs one usenet request per spot, so flagging every spot takes a while.
+usenet again. Rereading costs one usenet request per spot, so marking every spot takes a while.
 
-Flagged spots are processed by the regular import job, which is triggered immediately when spots are flagged.
+Marked spots are processed by the regular import job, which is triggered immediately when spots are marked.
 A reimport pauses the import of new spots until it is done.
 
-Select the spots to flag by id, by the date they were spotted, or all of them:
+Select the spots to mark by id, by the date they were spotted, or all of them:
 
 ```bash
 curl -X POST http://localhost:8383/api/v1/spots/reimport \

@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc;
 using Spottarr.Web.Api.Models;
 
 namespace Spottarr.Web.Helpers;
@@ -9,9 +10,10 @@ namespace Spottarr.Web.Helpers;
 /// </summary>
 [JsonSerializable(typeof(SpotResponse))]
 [JsonSerializable(typeof(SpotSelectionRequest))]
-[JsonSerializable(typeof(SpotFlagStatusResponse))]
-[JsonSerializable(typeof(SpotFlaggedResponse))]
-[JsonSerializable(typeof(SpotFlagsClearedResponse))]
+[JsonSerializable(typeof(MarkedSpotsStatusResponse))]
+[JsonSerializable(typeof(MarkedSpotsResponse))]
+[JsonSerializable(typeof(UnmarkedSpotsResponse))]
+[JsonSerializable(typeof(HttpValidationProblemDetails))]
 [JsonSerializable(typeof(string[]))]
 [JsonSerializable(typeof(int?))]
 internal partial class SpottarrJsonSerializerContext : JsonSerializerContext;

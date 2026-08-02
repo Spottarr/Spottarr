@@ -9,17 +9,20 @@ using Spottarr.Configuration.Options;
 using Spottarr.Data;
 using Spottarr.Data.Entities;
 using Spottarr.Services.Contracts;
+using Spottarr.Services.Logging;
+using Spottarr.Services.Models;
 using Spottarr.Services.Spotnet;
 
 namespace Spottarr.Services.Spots;
 
 /// <summary>
-/// Rereads the articles of spots that are flagged for a reimport and overwrites them in place.
+/// Rereads the articles of spots that are marked for a reimport and overwrites them in place.
 /// </summary>
-internal sealed class SpotReimportService : SpotFlagDrainService, ISpotReimportService
+internal sealed class SpotReimportService : MarkedSpotProcessor, ISpotReimportService
 {
     /// <summary>
-    /// Rereading costs one request per spot, so batches are kept small enough to abort quickly.
+    /// Rereading costs one usenet request per spot, so batches are kept small enough to stop quickly
+    /// when the spots are unmarked halfway through.
     /// </summary>
     private const int ReimportBatchSize = 500;
 
@@ -33,18 +36,40 @@ internal sealed class SpotReimportService : SpotFlagDrainService, ISpotReimportS
         IOptions<UsenetOptions> usenetOptions,
         ISpotnetSpotService spotnetSpotService
     )
-        : base(logger, dbContextFactory)
+        : base(dbContextFactory)
     {
         _logger = logger;
         _usenetOptions = usenetOptions;
         _spotnetSpotService = spotnetSpotService;
     }
 
-    protected override string Operation => "reimport";
     protected override int BatchSize => ReimportBatchSize;
-    protected override Expression<Func<Spot, bool>> IsFlagged => s => s.ImportedAt == null;
+    protected override Expression<Func<Spot, bool>> IsMarked => s => s.ImportedAt == null;
+    protected override Expression<Func<Spot, DateTime?>> ProcessedAt => s => s.ImportedAt;
 
-    public Task Reimport(CancellationToken cancellationToken) => Drain(cancellationToken);
+    public Task Reimport(CancellationToken cancellationToken) =>
+        ProcessMarkedSpots(cancellationToken);
+
+    public Task<int> MarkForReimport(
+        SpotSelection selection,
+        CancellationToken cancellationToken
+    ) => Mark(selection, cancellationToken);
+
+    public Task<int> UnmarkForReimport(CancellationToken cancellationToken) =>
+        Unmark(cancellationToken);
+
+    public Task<int> CountMarkedForReimport(CancellationToken cancellationToken) =>
+        CountMarked(cancellationToken);
+
+    protected override void LogStarted() => _logger.SpotReimportStarted(DateTimeOffset.Now);
+
+    protected override void LogFinished() => _logger.SpotReimportFinished(DateTimeOffset.Now);
+
+    protected override void LogBatchStarted(int current, int total) =>
+        _logger.SpotReimportBatchStarted(current, total, DateTimeOffset.Now);
+
+    protected override void LogBatchFinished(int current, int total, int spotCount) =>
+        _logger.SpotReimportBatchFinished(current, total, DateTimeOffset.Now, spotCount);
 
     protected override async Task ProcessBatch(
         SpottarrDbContext dbContext,
@@ -99,10 +124,10 @@ internal sealed class SpotReimportService : SpotFlagDrainService, ISpotReimportS
                     await db.ExecuteBulkInsertAsync(rereadSpots, ReimportedSpot, ct);
                 }
 
-                // Articles that can not be read are stamped without touching their stored attributes,
-                // so they are not reread on every run.
                 if (!unavailable.IsEmpty)
                 {
+                    // Their stored attributes are left alone, only the timestamp is stamped so they
+                    // are not reread on every run.
                     var unavailableIds = unavailable.ToList();
                     await db
                         .Spots.Where(s => unavailableIds.Contains(s.Id))

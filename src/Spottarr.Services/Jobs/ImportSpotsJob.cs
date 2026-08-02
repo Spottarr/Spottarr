@@ -22,9 +22,7 @@ internal class ImportSpotsJob : IJob
 
     public async Task Execute(IJobExecutionContext context)
     {
-        ArgumentNullException.ThrowIfNull(context);
-
-        // Reimported spots are flagged for a reindex, so reindexing comes last.
+        // A reimport marks the spot for a reindex, so reindexing comes last.
         await _spotImportService.Import(context.CancellationToken);
         await _spotReimportService.Reimport(context.CancellationToken);
         await _spotReindexService.Reindex(context.CancellationToken);
