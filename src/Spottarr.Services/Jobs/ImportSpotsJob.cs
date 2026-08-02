@@ -6,10 +6,27 @@ namespace Spottarr.Services.Jobs;
 internal class ImportSpotsJob : IJob
 {
     private readonly ISpotImportService _spotImportService;
+    private readonly ISpotReimportService _spotReimportService;
+    private readonly ISpotReindexService _spotReindexService;
 
-    public ImportSpotsJob(ISpotImportService spotImportService) =>
+    public ImportSpotsJob(
+        ISpotImportService spotImportService,
+        ISpotReimportService spotReimportService,
+        ISpotReindexService spotReindexService
+    )
+    {
         _spotImportService = spotImportService;
+        _spotReimportService = spotReimportService;
+        _spotReindexService = spotReindexService;
+    }
 
-    public async Task Execute(IJobExecutionContext context) =>
+    public async Task Execute(IJobExecutionContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        // Reimported spots are flagged for a reindex, so reindexing comes last.
         await _spotImportService.Import(context.CancellationToken);
+        await _spotReimportService.Reimport(context.CancellationToken);
+        await _spotReindexService.Reindex(context.CancellationToken);
+    }
 }
