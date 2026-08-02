@@ -7,7 +7,7 @@ If you are adding documentation, prefer extending the files under `docs/` and up
 ## Key conventions
 
 - **Use idiomatic C# with the latest language features.**
-- Try to reuse exisitng patterns before inventing new ones, ask for explicit approval when inventing new patterns
+- Try to reuse existing patterns before inventing new ones, ask for explicit approval when inventing new patterns
 - Apply SOLID, YAGNI and DRY principles
 
 ## Comments
