@@ -222,7 +222,7 @@ internal sealed class SpotnetSpotService : ISpotnetSpotService
         if (spotnetHeader is { KeyId: KeyId.Moderator, Command: ModerationCommand.Delete })
             return;
 
-        var spot = spotnetHeader.ToSpot();
+        var spot = spotnetHeader.ToSpot(overview.Number, overview.MessageId.Value);
 
         var options = _options.Value;
 

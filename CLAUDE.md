@@ -10,6 +10,11 @@ If you are adding documentation, prefer extending the files under `docs/` and up
 - Try to reuse existing patterns before inventing new ones, ask for explicit approval when inventing new patterns
 - Apply SOLID, YAGNI and DRY principles
 
+## Commits
+- Use one simple sentence describing the change
+- No conventional commit message format and prefixes
+- Make small logical commits
+
 ## Comments
 
 - No prose in comments
