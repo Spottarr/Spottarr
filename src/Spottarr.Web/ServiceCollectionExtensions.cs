@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.HttpOverrides;
+using Spottarr.Web.Auth;
 using Spottarr.Web.Helpers;
 
 namespace Spottarr.Web;
@@ -39,9 +40,11 @@ internal static class ServiceCollectionExtensions
         services
             .AddAuthentication()
             .AddCookie() // Default scheme for browser access
-            .AddNewznab();
+            .AddNewznab()
+            .AddAdmin();
 
         services.AddAuthorization(options =>
+        {
             options.AddPolicy(
                 "newznab",
                 policy =>
@@ -49,8 +52,16 @@ internal static class ServiceCollectionExtensions
                     policy.AddAuthenticationSchemes("newznab");
                     policy.RequireAuthenticatedUser();
                 }
-            )
-        );
+            );
+            options.AddPolicy(
+                AdminAuthenticationHandler.SchemeName,
+                policy =>
+                {
+                    policy.AddAuthenticationSchemes(AdminAuthenticationHandler.SchemeName);
+                    policy.RequireAuthenticatedUser();
+                }
+            );
+        });
 
         services.AddAntiforgery();
         services.AddCors(c =>

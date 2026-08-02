@@ -10,4 +10,10 @@ internal static class AuthenticationBuilderExtensions
             "newznab",
             null
         );
+
+    public static AuthenticationBuilder AddAdmin(this AuthenticationBuilder builder) =>
+        builder.AddScheme<AuthenticationSchemeOptions, AdminAuthenticationHandler>(
+            AdminAuthenticationHandler.SchemeName,
+            null
+        );
 }

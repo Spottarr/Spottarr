@@ -15,7 +15,8 @@ public static class ServiceCollectionExtensions
             .AddSettings<UsenetOptions>(configuration)
             .AddSettings<SpotnetOptions>(configuration)
             .AddSettings<DatabaseOptions>(configuration)
-            .AddSettings<NewznabOptions>(configuration);
+            .AddSettings<NewznabOptions>(configuration)
+            .AddSettings<AdminOptions>(configuration);
 
     private static IServiceCollection AddSettings<T>(
         this IServiceCollection services,
