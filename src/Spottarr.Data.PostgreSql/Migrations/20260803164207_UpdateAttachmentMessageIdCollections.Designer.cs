@@ -13,8 +13,8 @@ using Spottarr.Data;
 namespace Spottarr.Data.PostgreSql.Migrations
 {
     [DbContext(typeof(SpottarrDbContext))]
-    [Migration("20260802132544_AddAttachmentMessageIdCollections")]
-    partial class AddAttachmentMessageIdCollections
+    [Migration("20260803164207_UpdateAttachmentMessageIdCollections")]
+    partial class UpdateAttachmentMessageIdCollections
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -151,6 +151,9 @@ namespace Spottarr.Data.PostgreSql.Migrations
                         .HasMaxLength(16)
                         .HasColumnType("character varying(16)");
 
+                    b.Property<DateTime?>("ImportedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime?>("IndexedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -229,6 +232,12 @@ namespace Spottarr.Data.PostgreSql.Migrations
                         .HasColumnType("integer[]");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ImportedAt")
+                        .HasFilter("\"ImportedAt\" IS NULL");
+
+                    b.HasIndex("IndexedAt")
+                        .HasFilter("\"IndexedAt\" IS NULL");
 
                     b.HasIndex("MessageId")
                         .IsUnique();

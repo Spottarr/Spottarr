@@ -13,8 +13,8 @@ using Spottarr.Data;
 namespace Spottarr.Data.PostgreSql.Migrations
 {
     [DbContext(typeof(SpottarrDbContext))]
-    [Migration("20260802132544_AddAttachmentMessageIdCollections")]
-    partial class AddAttachmentMessageIdCollections
+    [Migration("20260803164348_DropAttachmentMessageIdSingle")]
+    partial class DropAttachmentMessageIdSingle
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -130,10 +130,6 @@ namespace Spottarr.Data.PostgreSql.Migrations
                     b.PrimitiveCollection<int[]>("ImageLanguages")
                         .IsRequired()
                         .HasColumnType("integer[]");
-
-                    b.Property<string>("ImageMessageId")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
                     
                     b.PrimitiveCollection<string[]>("ImageMessageIds")
                         .IsRequired()
@@ -150,6 +146,9 @@ namespace Spottarr.Data.PostgreSql.Migrations
                     b.Property<string>("ImdbId")
                         .HasMaxLength(16)
                         .HasColumnType("character varying(16)");
+
+                    b.Property<DateTime?>("ImportedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("IndexedAt")
                         .HasColumnType("timestamp with time zone");
@@ -169,10 +168,6 @@ namespace Spottarr.Data.PostgreSql.Migrations
                     b.PrimitiveCollection<int[]>("NewznabCategories")
                         .IsRequired()
                         .HasColumnType("integer[]");
-                    
-                    b.Property<string>("NzbMessageId")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
 
                     b.PrimitiveCollection<string[]>("NzbMessageIds")
                         .IsRequired()
@@ -229,6 +224,12 @@ namespace Spottarr.Data.PostgreSql.Migrations
                         .HasColumnType("integer[]");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ImportedAt")
+                        .HasFilter("\"ImportedAt\" IS NULL");
+
+                    b.HasIndex("IndexedAt")
+                        .HasFilter("\"IndexedAt\" IS NULL");
 
                     b.HasIndex("MessageId")
                         .IsUnique();
