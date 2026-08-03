@@ -131,6 +131,10 @@ namespace Spottarr.Data.PostgreSql.Migrations
                         .IsRequired()
                         .HasColumnType("integer[]");
 
+                    b.Property<string>("ImageMessageId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+                    
                     b.PrimitiveCollection<string[]>("ImageMessageIds")
                         .IsRequired()
                         .HasColumnType("character varying(128)[]");
@@ -168,6 +172,10 @@ namespace Spottarr.Data.PostgreSql.Migrations
                     b.PrimitiveCollection<int[]>("NewznabCategories")
                         .IsRequired()
                         .HasColumnType("integer[]");
+                    
+                    b.Property<string>("NzbMessageId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
 
                     b.PrimitiveCollection<string[]>("NzbMessageIds")
                         .IsRequired()
