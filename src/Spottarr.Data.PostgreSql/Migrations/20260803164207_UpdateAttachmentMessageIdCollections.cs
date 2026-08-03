@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -7,24 +7,28 @@ namespace Spottarr.Data.PostgreSql.Migrations
     /// <inheritdoc />
     public partial class UpdateAttachmentMessageIdCollections : Migration
     {
+        private const int BatchSize = 50000;
+
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             // Spots imported before this migration only retained the last <Segment>, so multi-segment
             // attachments remain undecodable until those spots are imported again.
-            migrationBuilder.Sql(
+            Backfill(
+                migrationBuilder,
                 """
                 UPDATE "Spots"
-                SET "NzbMessageIds" = ARRAY["NzbMessageId"]
-                WHERE "NzbMessageId" IS NOT NULL AND "NzbMessageId" <> '';
-                """
-            );
-
-            migrationBuilder.Sql(
-                """
-                UPDATE "Spots"
-                SET "ImageMessageIds" = ARRAY["ImageMessageId"]
-                WHERE "ImageMessageId" IS NOT NULL AND "ImageMessageId" <> '';
+                SET "NzbMessageIds" = CASE
+                        WHEN "NzbMessageId" > '' THEN ARRAY["NzbMessageId"]
+                        ELSE "NzbMessageIds"
+                    END,
+                    "ImageMessageIds" = CASE
+                        WHEN "ImageMessageId" > '' THEN ARRAY["ImageMessageId"]
+                        ELSE "ImageMessageIds"
+                    END
+                WHERE "Id" >= lo AND "Id" < lo + batch_size
+                  AND (("NzbMessageId" > '' AND "NzbMessageIds" = '{}')
+                    OR ("ImageMessageId" > '' AND "ImageMessageIds" = '{}'));
                 """
             );
         }
@@ -32,20 +36,60 @@ namespace Spottarr.Data.PostgreSql.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(
+            Backfill(
+                migrationBuilder,
                 """
                 UPDATE "Spots"
-                SET "NzbMessageId" = "NzbMessageIds"[1]
-                WHERE array_length("NzbMessageIds", 1) > 0;
+                SET "NzbMessageId" = "NzbMessageIds"[1],
+                    "ImageMessageId" = "ImageMessageIds"[1]
+                WHERE "Id" >= lo AND "Id" < lo + batch_size
+                  AND (cardinality("NzbMessageIds") > 0 OR cardinality("ImageMessageIds") > 0);
                 """
+            );
+        }
+
+        /// <summary>
+        /// Runs <paramref name="statement"/> in committed batches outside the migration transaction.
+        /// A full table scan rewrites every row, which recomputes the stored tsvector column and its
+        /// GIN index entries, so a single statement is too slow to complete within a command timeout.
+        /// Each statement needs its own command because Npgsql wraps multi-statement batches in an
+        /// implicit transaction, which forbids the COMMIT inside the procedure.
+        /// </summary>
+        private static void Backfill(MigrationBuilder migrationBuilder, string statement)
+        {
+            migrationBuilder.Sql(
+                "SET statement_timeout = 0; SET lock_timeout = '30s'; SET synchronous_commit = off;",
+                suppressTransaction: true
             );
 
             migrationBuilder.Sql(
-                """
-                UPDATE "Spots"
-                SET "ImageMessageId" = "ImageMessageIds"[1]
-                WHERE array_length("ImageMessageIds", 1) > 0;
-                """
+                $"""
+                CREATE PROCEDURE pg_temp.spottarr_backfill_message_ids() LANGUAGE plpgsql AS $proc$
+                DECLARE
+                    batch_size constant int := {BatchSize};
+                    lo int := 0;
+                    hi int;
+                BEGIN
+                    SELECT COALESCE(MAX("Id"), -1) INTO hi FROM "Spots";
+
+                    WHILE lo <= hi LOOP
+                        {statement}
+                        COMMIT;
+                        lo := lo + batch_size;
+                    END LOOP;
+                END $proc$;
+                """,
+                suppressTransaction: true
+            );
+
+            migrationBuilder.Sql(
+                "CALL pg_temp.spottarr_backfill_message_ids();",
+                suppressTransaction: true
+            );
+
+            migrationBuilder.Sql(
+                "DROP PROCEDURE pg_temp.spottarr_backfill_message_ids();",
+                suppressTransaction: true
             );
         }
     }
