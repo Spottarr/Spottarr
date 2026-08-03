@@ -18,7 +18,7 @@ public static class HostExtensions
         logger.DatabaseMigrationStarted();
 
         var dbContext = scope.ServiceProvider.GetRequiredService<SpottarrDbContext>();
-        dbContext.Database.SetCommandTimeout(TimeSpan.FromMinutes(15));
+        dbContext.Database.SetCommandTimeout(TimeSpan.FromMinutes(30));
 
         await dbContext.Database.MigrateAsync(cancellationToken);
         logger.DatabaseMigrationFinished();
