@@ -19,11 +19,11 @@ namespace Spottarr.Data.PostgreSql.Migrations
                 """
                 UPDATE "Spots"
                 SET "NzbMessageIds" = CASE
-                        WHEN "NzbMessageId" > '' THEN ARRAY["NzbMessageId"]
+                        WHEN "NzbMessageId" > '' AND "NzbMessageIds" = '{}' THEN ARRAY["NzbMessageId"]
                         ELSE "NzbMessageIds"
                     END,
                     "ImageMessageIds" = CASE
-                        WHEN "ImageMessageId" > '' THEN ARRAY["ImageMessageId"]
+                        WHEN "ImageMessageId" > '' AND "ImageMessageIds" = '{}' THEN ARRAY["ImageMessageId"]
                         ELSE "ImageMessageIds"
                     END
                 WHERE "Id" >= lo AND "Id" < lo + batch_size
@@ -41,7 +41,9 @@ namespace Spottarr.Data.PostgreSql.Migrations
                 """
                 UPDATE "Spots"
                 SET "NzbMessageId" = "NzbMessageIds"[1],
-                    "ImageMessageId" = "ImageMessageIds"[1]
+                    "ImageMessageId" = "ImageMessageIds"[1],
+                    "NzbMessageIds" = '{}',
+                    "ImageMessageIds" = '{}'
                 WHERE "Id" >= lo AND "Id" < lo + batch_size
                   AND (cardinality("NzbMessageIds") > 0 OR cardinality("ImageMessageIds") > 0);
                 """
@@ -89,6 +91,11 @@ namespace Spottarr.Data.PostgreSql.Migrations
 
             migrationBuilder.Sql(
                 "DROP PROCEDURE pg_temp.spottarr_backfill_message_ids();",
+                suppressTransaction: true
+            );
+
+            migrationBuilder.Sql(
+                "RESET statement_timeout; RESET lock_timeout; RESET synchronous_commit;",
                 suppressTransaction: true
             );
         }
