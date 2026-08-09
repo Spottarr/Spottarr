@@ -159,32 +159,41 @@ internal sealed class SpotSearchService : ISpotSearchService
         return (spots, count);
     }
 
-    private static async Task<(IList<Spot> Spots, int Count)> ExecuteFullTextSearchPostgres(
+    private async Task<(IList<Spot> Spots, int Count)> ExecuteFullTextSearchPostgres(
         IQueryable<Spot> query,
         SpotSearchFilter filter,
         string keywords,
         CancellationToken cancellationToken
     )
     {
-        var ftsQuery = query.Where(s =>
-            s.SearchVector.Matches(
-                EF.Functions.ToTsQuery(SpottarrDataConstants.FullTextSearchLanguage, keywords)
+        // Force inner join on FTS table
+        var ftsQuery = query
+            .Join(
+                _dbContext.FtsSpots,
+                spot => spot.Id,
+                fts => fts.SpotId,
+                (spot, fts) => new SpotWithFts { Spot = spot, Fts = fts }
             )
-        );
+            .Where(x =>
+                x.Fts.SearchVector.Matches(
+                    EF.Functions.ToTsQuery(SpottarrDataConstants.FullTextSearchLanguage, keywords)
+                )
+            );
 
         var count = await ftsQuery.CountAsync(cancellationToken);
         if (count == 0)
             return ([], count);
 
         var spots = await ftsQuery
-            .OrderByDescending(s =>
-                s.SearchVector.Rank(
+            .OrderByDescending(x =>
+                x.Fts.SearchVector.Rank(
                     EF.Functions.ToTsQuery(SpottarrDataConstants.FullTextSearchLanguage, keywords)
                 )
             )
-            .ThenByDescending(s => s.SpottedAt)
+            .ThenByDescending(x => x.Spot.SpottedAt)
             .Skip(filter.Offset)
             .Take(filter.Limit)
+            .Select(x => x.Spot)
             .ToListAsync(cancellationToken);
 
         return (spots, count);

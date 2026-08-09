@@ -37,8 +37,8 @@ internal sealed class SpotCleanUpService : ISpotCleanUpService
 
         var ftsRowCount = 0;
 
-        // SQLite stores the full text index in a separate virtual table
-        // so we need to clean that one up as well
+        // Postgres cascades the delete from the spot, the SQLite virtual table has no foreign key
+        // so it has to be cleaned up separately.
         if (_dbContext.Provider == DatabaseProvider.Sqlite)
         {
             ftsRowCount = await _dbContext

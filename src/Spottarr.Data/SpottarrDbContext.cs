@@ -55,10 +55,10 @@ public sealed class SpottarrDbContext : DbContext, IDataProtectionKeyContext
             x.Property(s => s.ReleaseTitle).HasMaxLength(Spot.MediumMaxLength);
             x.Property(s => s.Spotter).HasMaxLength(Spot.SmallMaxLength);
             x.Property(s => s.MessageId).HasMaxLength(Spot.SmallMaxLength);
-            x.PrimitiveCollection(s => s.NzbMessageIds)
-                .ElementType(e => e.HasMaxLength(Spot.SmallMaxLength));
-            x.PrimitiveCollection(s => s.ImageMessageIds)
-                .ElementType(e => e.HasMaxLength(Spot.SmallMaxLength));
+            // No element max length: Npgsql binds collection parameters as text[] whatever the column
+            // type says, so a character varying(128)[] column cannot be written.
+            x.PrimitiveCollection(s => s.NzbMessageIds);
+            x.PrimitiveCollection(s => s.ImageMessageIds);
             x.Property(s => s.Tag).HasMaxLength(Spot.SmallMaxLength);
             x.Property(s => s.Url).HasMaxLength(Spot.LargeMaxLength);
             x.Property(s => s.Filename).HasMaxLength(Spot.SmallMaxLength);
@@ -84,34 +84,32 @@ public sealed class SpottarrDbContext : DbContext, IDataProtectionKeyContext
             // Only spots waiting to be reprocessed are indexed here, the steady state is zero rows.
             x.HasIndex(s => s.IndexedAt).HasFilter("\"IndexedAt\" IS NULL");
             x.HasIndex(s => s.ImportedAt).HasFilter("\"ImportedAt\" IS NULL");
-
-            // Postgres FTS just needs an index on the spots table
-            switch (Provider)
-            {
-                case DatabaseProvider.Postgres:
-                    // Add the full text index for Postgres
-                    // Using Dutch text search configuration because most spotnet descriptions are in Dutch.
-                    // You can list available configurations with: SELECT cfgname FROM pg_catalog.pg_ts_config;
-                    x.HasGeneratedTsVectorColumn(
-                            p => p.SearchVector,
-                            SpottarrDataConstants.FullTextSearchLanguage,
-                            p => new { p.Title, p.Description }
-                        )
-                        .HasIndex(p => p.SearchVector)
-                        .HasMethod("GIN");
-                    break;
-                case DatabaseProvider.Sqlite:
-                    x.Ignore(fts => fts.SearchVector);
-                    break;
-            }
         });
 
-        // Sqlite FTS uses a virtual table that we need to map separately
+        // Both providers keep the full text index in its own table so that updating a spot never
+        // touches it. Sqlite uses a virtual table that we need to map separately.
         // See: https://www.bricelam.net/2020/08/08/sqlite-fts-and-efcore.html
         switch (Provider)
         {
             case DatabaseProvider.Postgres:
-                modelBuilder.Ignore<FtsSpot>();
+                modelBuilder.Entity<FtsSpot>(x =>
+                {
+                    x.HasKey(fts => fts.SpotId);
+                    x.Property(fts => fts.SpotId).ValueGeneratedNever();
+                    x.HasOne(fts => fts.Spot)
+                        .WithOne(p => p.FtsSpot)
+                        .HasForeignKey<FtsSpot>(fts => fts.SpotId)
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    // The vector is written by the application, not derived by the database, so that
+                    // the migration can copy the existing vectors instead of recomputing them.
+                    x.HasIndex(fts => fts.SearchVector).HasMethod("GIN");
+
+                    x.Ignore(fts => fts.Title);
+                    x.Ignore(fts => fts.Description);
+                    x.Ignore(fts => fts.Match);
+                    x.Ignore(fts => fts.Rank);
+                });
                 break;
             case DatabaseProvider.Sqlite:
                 modelBuilder.Entity<FtsSpot>(x =>
@@ -122,6 +120,7 @@ public sealed class SpottarrDbContext : DbContext, IDataProtectionKeyContext
                         .HasForeignKey<FtsSpot>(fts => fts.SpotId);
                     x.Property(fts => fts.SpotId).HasColumnName("RowId");
                     x.Property(fts => fts.Match).HasColumnName(x.Metadata.GetTableName());
+                    x.Ignore(fts => fts.SearchVector);
                 });
                 break;
         }

@@ -1,10 +1,8 @@
-using NpgsqlTypes;
 using Spottarr.Data.Entities.Enums;
-using Spottarr.Data.Entities.Fts;
 
 namespace Spottarr.Data.Entities;
 
-public sealed class Spot : BaseEntity, IPostgreSqlFtsEntity
+public sealed class Spot : BaseEntity
 {
     public const int TinyMaxLength = 16;
     public const int SmallMaxLength = 128;
@@ -55,5 +53,4 @@ public sealed class Spot : BaseEntity, IPostgreSqlFtsEntity
     public DateTime SpottedAt { get; set; }
     public DateTime? IndexedAt { get; set; }
     public DateTime? ImportedAt { get; set; }
-    public NpgsqlTsVector SearchVector { get; set; } = null!;
 }
