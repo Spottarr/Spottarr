@@ -137,7 +137,7 @@ namespace Spottarr.Data.PostgreSql.Migrations
                     
                     b.PrimitiveCollection<string[]>("ImageMessageIds")
                         .IsRequired()
-                        .HasColumnType("character varying(128)[]");
+                        .HasColumnType("text[]");
 
                     b.PrimitiveCollection<int[]>("ImageSources")
                         .IsRequired()
@@ -176,7 +176,7 @@ namespace Spottarr.Data.PostgreSql.Migrations
 
                     b.PrimitiveCollection<string[]>("NzbMessageIds")
                         .IsRequired()
-                        .HasColumnType("character varying(128)[]");
+                        .HasColumnType("text[]");
 
                     b.Property<string>("ReleaseTitle")
                         .HasMaxLength(256)

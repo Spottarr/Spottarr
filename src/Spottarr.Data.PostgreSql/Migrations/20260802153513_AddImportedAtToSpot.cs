@@ -5,7 +5,15 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Spottarr.Data.PostgreSql.Migrations
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Adds the reimport timestamp. Existing spots are stamped by
+    /// <see cref="ConvergePostgresSchema"/> so that the value is written by the table rewrite that
+    /// migration has to perform anyway, instead of by an update of every row.
+    /// </summary>
+    /// <remarks>
+    /// The released 1.20.0-beta.1 body of this migration stamped the spots itself. Databases that
+    /// applied it keep those values; the convergence migration only fills the ones still unset.
+    /// </remarks>
     public partial class AddImportedAtToSpot : Migration
     {
         /// <inheritdoc />
@@ -17,9 +25,6 @@ namespace Spottarr.Data.PostgreSql.Migrations
                 type: "timestamp with time zone",
                 nullable: true
             );
-
-            // An unset ImportedAt marks a spot for a reimport, so existing spots are stamped as read.
-            migrationBuilder.Sql("UPDATE \"Spots\" SET \"ImportedAt\" = \"CreatedAt\";");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Spots_ImportedAt",
