@@ -39,5 +39,6 @@ ENV DOTNET_RUNNING_IN_CONTAINER_FAST_MODE=false
 WORKDIR /app
 COPY --from=publish /app/publish .
 COPY --from=publish /src/appsettings*.json .
-HEALTHCHECK CMD curl --fail http://localhost:8383/healthz || exit 1
+# The start period covers database migrations, which do not serve requests and must not be killed.
+HEALTHCHECK --start-period=2h CMD curl --fail http://localhost:8383/healthz || exit 1
 ENTRYPOINT ["dotnet", "Spottarr.Web.dll"]
