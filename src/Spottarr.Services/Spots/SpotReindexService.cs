@@ -77,8 +77,6 @@ internal sealed class SpotReindexService : MarkedSpotProcessor, ISpotReindexServ
             _logger,
             async (db, ct) =>
             {
-                await db.UpsertFtsSpotsAsync(spots, replaceExisting: true, ct);
-
                 await db.ExecuteBulkInsertAsync(
                     spots,
                     new OnConflictOptions<Spot>
@@ -99,6 +97,9 @@ internal sealed class SpotReindexService : MarkedSpotProcessor, ISpotReindexServ
                     },
                     ct
                 );
+
+                // After the spots are stored: the search vector is derived from their stored text.
+                await db.UpsertFtsSpotsAsync(spots, replaceExisting: true, ct);
             },
             cancellationToken
         );

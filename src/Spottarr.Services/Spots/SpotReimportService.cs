@@ -120,8 +120,10 @@ internal sealed class SpotReimportService : MarkedSpotProcessor, ISpotReimportSe
             {
                 if (rereadSpots.Count > 0)
                 {
-                    await db.UpsertFtsSpotsAsync(rereadSpots, replaceExisting: true, ct);
                     await db.ExecuteBulkInsertAsync(rereadSpots, ReimportedSpot, ct);
+
+                    // After the spots are stored: the search vector is derived from their stored text.
+                    await db.UpsertFtsSpotsAsync(rereadSpots, replaceExisting: true, ct);
                 }
 
                 if (!unavailable.IsEmpty)
