@@ -93,7 +93,9 @@ namespace Spottarr.Data.PostgreSql.Migrations
 
                     -- An unset ImportedAt marks a spot for a reimport, so existing spots are stamped
                     -- as imported. Spots stamped by 1.20.0-beta.1 keep their value.
-                    changes := changes || 'ALTER COLUMN "ImportedAt" TYPE timestamp with time zone USING COALESCE("ImportedAt", "CreatedAt")';
+                    changes := changes || ARRAY[
+                        'ALTER COLUMN "ImportedAt" TYPE timestamp with time zone USING COALESCE("ImportedAt", "CreatedAt")'
+                    ];
 
                     EXECUTE 'ALTER TABLE "Spots" ' || array_to_string(changes, ', ');
                 END $$;
