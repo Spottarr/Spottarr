@@ -143,6 +143,9 @@ internal sealed class SpotReimportService : MarkedSpotProcessor, ISpotReimportSe
     private static OnConflictOptions<Spot> ReimportedSpot =>
         new()
         {
+            // Without a match the spots are inserted as new rows, because the bulk insert does not
+            // carry their generated ids, and they collide on the unique message id.
+            Match = spot => spot.MessageId,
             Update = (existing, inserted) =>
                 new Spot
                 {
