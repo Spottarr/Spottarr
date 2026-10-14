@@ -20,7 +20,9 @@ internal static class JobsServiceCollectionExtensions
                 if (config == null)
                     return;
 
-                c.SchedulerName = "Spottarr Scheduler";
+                c.ConfigureOptions<QuartzSchedulerOptions>(o =>
+                    o.InstanceName = "Spottarr Scheduler"
+                );
                 c.ScheduleJob<ImportSpotsJob>(
                     JobKeys.ImportSpots,
                     config.ImportSpotsSchedule,

@@ -2,16 +2,16 @@ using Quartz;
 
 namespace Spottarr.Services.Jobs;
 
-internal static class ServiceCollectionQuartzConfiguratorExtensions
+internal static class QuartzBuilderExtensions
 {
-    public static IServiceCollectionQuartzConfigurator ScheduleJob<TJob>(
-        this IServiceCollectionQuartzConfigurator configurator,
+    public static IQuartzBuilder ScheduleJob<TJob>(
+        this IQuartzBuilder builder,
         JobKey key,
         string schedule,
         bool start
     )
         where TJob : IJob =>
-        configurator.ScheduleJob<TJob>(
+        builder.ScheduleJob<TJob>(
             t => t.StartNow(start).WithCronSchedule(schedule),
             j => j.WithIdentity(key).DisallowConcurrentExecution()
         );
