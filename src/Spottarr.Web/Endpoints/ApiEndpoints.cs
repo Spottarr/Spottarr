@@ -191,7 +191,7 @@ internal static class ApiEndpoints
             return;
 
         var scheduler = await schedulerFactory.GetScheduler(cancellationToken);
-        await scheduler.TriggerJob(JobKeys.ImportSpots, cancellationToken);
+        await scheduler.TriggerJob(JobKeys.ImportSpots, cancellationToken: cancellationToken);
     }
 
     private static async Task<bool> IsImportRunning(
@@ -200,8 +200,11 @@ internal static class ApiEndpoints
     )
     {
         var scheduler = await schedulerFactory.GetScheduler(cancellationToken);
-        var running = await scheduler.GetCurrentlyExecutingJobs(cancellationToken);
+        var running = await scheduler.QueryFireInstances(
+            new FireInstanceQuery { Job = JobKeys.ImportSpots, Take = 1 },
+            cancellationToken
+        );
 
-        return running.Any(j => j.JobDetail.Key.Equals(JobKeys.ImportSpots));
+        return running.Items.Count > 0;
     }
 }

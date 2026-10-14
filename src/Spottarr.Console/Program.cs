@@ -18,6 +18,6 @@ await app.MigrateDatabase(lifetime.ApplicationStopping);
 
 var schedulerFactory = app.Services.GetRequiredService<ISchedulerFactory>();
 var scheduler = await schedulerFactory.GetScheduler();
-await scheduler.TriggerJob(JobKeys.ImportSpots, lifetime.ApplicationStopping);
+await scheduler.TriggerJob(JobKeys.ImportSpots, cancellationToken: lifetime.ApplicationStopping);
 
 await app.RunAsync(lifetime.ApplicationStopping);
