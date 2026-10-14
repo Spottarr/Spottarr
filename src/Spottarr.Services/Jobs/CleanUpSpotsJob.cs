@@ -17,9 +17,9 @@ internal class CleanUpSpotsJob : IJob
         _databaseMaintenanceService = databaseMaintenanceService;
     }
 
-    public async Task Execute(IJobExecutionContext context)
+    public async ValueTask Execute(IJobExecutionContext context, CancellationToken ct)
     {
-        await _spotCleanUpService.CleanUp(context.CancellationToken);
-        await _databaseMaintenanceService.Optimize(context.CancellationToken);
+        await _spotCleanUpService.CleanUp(ct);
+        await _databaseMaintenanceService.Optimize(ct);
     }
 }

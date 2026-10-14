@@ -20,11 +20,11 @@ internal class ImportSpotsJob : IJob
         _spotReindexService = spotReindexService;
     }
 
-    public async Task Execute(IJobExecutionContext context)
+    public async ValueTask Execute(IJobExecutionContext context, CancellationToken ct)
     {
         // A reimport marks the spot for a reindex, so reindexing comes last.
-        await _spotImportService.Import(context.CancellationToken);
-        await _spotReimportService.Reimport(context.CancellationToken);
-        await _spotReindexService.Reindex(context.CancellationToken);
+        await _spotImportService.Import(ct);
+        await _spotReimportService.Reimport(ct);
+        await _spotReindexService.Reindex(ct);
     }
 }
