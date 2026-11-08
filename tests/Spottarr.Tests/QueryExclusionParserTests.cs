@@ -30,4 +30,28 @@ internal sealed class QueryExclusionParserTests
                 "include & these & keywords & another & keyword & !exclude1 & !exclude2 & !exclude3"
             );
     }
+
+    [Test]
+    public async Task SplitsWordsOnPunctuationSqlite()
+    {
+        const string query = "Gooische.Vrouwen h264-TRIPEL";
+        var result = QueryExclusionParser.Parse(query, DatabaseProvider.Sqlite);
+        await Assert.That(result).IsEqualTo("Gooische Vrouwen h264 TRIPEL");
+    }
+
+    [Test]
+    public async Task SplitsWordsOnPunctuationPostgreSql()
+    {
+        const string query = "Gooische.Vrouwen h264-TRIPEL";
+        var result = QueryExclusionParser.Parse(query, DatabaseProvider.Postgres);
+        await Assert.That(result).IsEqualTo("Gooische & Vrouwen & h264 & TRIPEL");
+    }
+
+    [Test]
+    public async Task OnlyTreatsLeadingDashesAsExclusion()
+    {
+        const string query = "keyword --excluded other--word";
+        var result = QueryExclusionParser.Parse(query, DatabaseProvider.Postgres);
+        await Assert.That(result).IsEqualTo("keyword & other & word & !excluded");
+    }
 }
