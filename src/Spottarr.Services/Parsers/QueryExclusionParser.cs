@@ -58,8 +58,13 @@ internal partial class QueryExclusionParser
             ),
         };
 
+    /// <remarks>
+    /// Every run of word characters is a term, so <c>Show.Name</c> searches for both words instead
+    /// of dropping everything after the dot. An exclusion is only recognised where the <c>--</c>
+    /// starts a word.
+    /// </remarks>
     [GeneratedRegex(
-        @"(?:^|\s+)(?:\-\-(?<exclusion>\w+)|(?<inclusion>\w+))",
+        @"(?:(?<=^|\s)\-\-(?<exclusion>\w+)|(?<inclusion>\w+))",
         RegexOptions.IgnoreCase
     )]
     private static partial Regex QueryExclusionRegex();
