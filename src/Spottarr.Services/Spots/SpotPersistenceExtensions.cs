@@ -62,6 +62,12 @@ internal static class SpotPersistenceExtensions
     /// Derives the search vectors in the database, because the text search configuration only exists
     /// there. Spots are already stored at this point, so the vectors are read back off their rows.
     /// </summary>
+    /// <remarks>
+    /// Runs of non-alphanumeric characters are replaced by spaces first, because the default text
+    /// search parser folds a dotted release title into a single host token
+    /// (<c>Show.Name.S01E01.1080p.WEB</c>), which no keyword can match. This is the rule the SQLite
+    /// tokenizer and the query parser already apply.
+    /// </remarks>
     private static async Task UpsertPostgreSqlFtsSpotsAsync(
         this SpottarrDbContext dbContext,
         IReadOnlyList<Spot> spots,
@@ -76,7 +82,10 @@ internal static class SpotPersistenceExtensions
             SELECT s."Id",
                    to_tsvector(
                        {SpottarrDataConstants.FullTextSearchLanguage}::regconfig,
-                       COALESCE(s."Title", '') || ' ' || COALESCE(s."Description", '')
+                       regexp_replace(
+                           COALESCE(s."Title", '') || ' ' || COALESCE(s."Description", ''),
+                           '[^[:alnum:]]+', ' ', 'g'
+                       )
                    )
             FROM "Spots" s
             WHERE s."Id" = ANY({spotIds})
