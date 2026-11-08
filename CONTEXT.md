@@ -103,8 +103,7 @@ entities, stores them in a database, and serves them through a **Newznab**-compa
   GIN index on PostgreSQL. `SpotSearchService` joins a spot to its FTS entry.
 - **Search vector** — the PostgreSQL `tsvector` derived from a spot's title and description. Written
   by the application on import, reimport and reindex; it is not derived by the database, so it can
-  drift and a reindex is the repair. Non-alphanumeric runs are replaced by spaces before the vector
-  is built, so dotted release titles tokenize the same way they do on SQLite.
+  drift and a reindex is the repair.
 - **Clean-up** — scheduled deletion of spots older than `Spotnet.RetentionDays`
   (`CleanUpSpotsJob`, `SpotCleanUpService`); `0` means unlimited retention.
 - **Spotted at vs. indexed at** — `SpottedAt` is when the spot was originally posted to Usenet;
