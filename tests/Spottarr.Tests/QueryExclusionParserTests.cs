@@ -14,7 +14,7 @@ internal sealed class QueryExclusionParserTests
         await Assert
             .That(result)
             .IsEqualTo(
-                "include these keywords another keyword NOT exclude1 NOT exclude2 NOT exclude3"
+                "\"include\" \"these\" \"keywords\" \"another\" \"keyword\" NOT \"exclude1\" NOT \"exclude2\" NOT \"exclude3\""
             );
     }
 
@@ -36,7 +36,7 @@ internal sealed class QueryExclusionParserTests
     {
         const string query = "Gooische.Vrouwen h264-TRIPEL";
         var result = QueryExclusionParser.Parse(query, DatabaseProvider.Sqlite);
-        await Assert.That(result).IsEqualTo("Gooische Vrouwen h264 TRIPEL");
+        await Assert.That(result).IsEqualTo("\"Gooische\" \"Vrouwen\" \"h264\" \"TRIPEL\"");
     }
 
     [Test]
@@ -45,6 +45,30 @@ internal sealed class QueryExclusionParserTests
         const string query = "Gooische.Vrouwen h264-TRIPEL";
         var result = QueryExclusionParser.Parse(query, DatabaseProvider.Postgres);
         await Assert.That(result).IsEqualTo("Gooische & Vrouwen & h264 & TRIPEL");
+    }
+
+    [Test]
+    public async Task ExcludesEveryTermOfAnExcludedWordSqlite()
+    {
+        const string query = "show --h264-TRIPEL";
+        var result = QueryExclusionParser.Parse(query, DatabaseProvider.Sqlite);
+        await Assert.That(result).IsEqualTo("\"show\" NOT \"h264\" NOT \"TRIPEL\"");
+    }
+
+    [Test]
+    public async Task ExcludesEveryTermOfAnExcludedWordPostgreSql()
+    {
+        const string query = "show --h264-TRIPEL";
+        var result = QueryExclusionParser.Parse(query, DatabaseProvider.Postgres);
+        await Assert.That(result).IsEqualTo("show & !h264 & !TRIPEL");
+    }
+
+    [Test]
+    public async Task QuotesSqliteSearchOperators()
+    {
+        const string query = "Ready.Or.Not.2019";
+        var result = QueryExclusionParser.Parse(query, DatabaseProvider.Sqlite);
+        await Assert.That(result).IsEqualTo("\"Ready\" \"Or\" \"Not\" \"2019\"");
     }
 
     [Test]
