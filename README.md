@@ -27,6 +27,7 @@ services:
       - "SPOTNET__IMPORTBATCHSIZE=10000" # Adjust based on available memory
       - "SPOTNET__RETENTIONDAYS=365" # Use 0 for unlimited
       - "SPOTNET__IMPORTADULTCONTENT=false"
+      - "NEWZNAB__USEIDFORNZBURLS=false" # Use id instead of guid in generated NZB URLs
       - "TZ=Etc/GMT" # Set your timezone, e.g. Europe/Amsterdam
     volumes:
       - spottarr-data:/data
@@ -69,6 +70,10 @@ After starting Spottarr, it can easily be connected to the *Arr of your choice:
 > Anyone with access to your Spottarr instance can perform searches on it.
 > To enable API key authorization, set the `NEWZNAB__APIKEY` environment variable to a secure value and update your *Arr
 > indexer configuration accordingly.
+
+To generate NZB download URLs with the `id` query parameter instead of `guid`, set
+`NEWZNAB__USEIDFORNZBURLS=true`. The default is `false`, which preserves `guid` URLs. Downloads accept both
+parameters regardless of this setting.
 
 ## Maintenance API
 
