@@ -1,6 +1,8 @@
 using System.Net.Mime;
 using System.ServiceModel.Syndication;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Spottarr.Configuration.Options;
 using Spottarr.Data.Entities.Enums;
 using Spottarr.Services.Contracts;
 using Spottarr.Services.Models;
@@ -74,26 +76,10 @@ internal static class NewznabEndpoints
             .WithDescription("Get the Newznab capabilities that Spottarr supports.");
 
         group
-            .MapGet(
-                "/get",
-                async (
-                    [FromQuery(Name = "guid")] int id,
-                    ISpotnetAttachmentService spotnetAttachmentService,
-                    CancellationToken cancellationToken
-                ) =>
-                {
-                    var result = await spotnetAttachmentService.FetchNzb(id, cancellationToken);
-                    return result == null
-                        ? Results.NotFound()
-                        : Results.File(
-                            result.Stream,
-                            "application/x-nzb",
-                            $"{result.FileName}.nzb"
-                        );
-                }
-            )
+            .MapGet("/get", GetNzbHandler)
             .Produces(StatusCodes.Status200OK, contentType: "application/x-nzb")
             .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status400BadRequest)
             .WithDescription("Get the NZB file for a spot.");
     }
 
@@ -101,6 +87,7 @@ internal static class NewznabEndpoints
         ISpotSearchService spotSearchService,
         IHostEnvironment env,
         IApplicationVersionService versionService,
+        IOptions<NewznabOptions> newznabOptions,
         HttpRequest request,
         CancellationToken cancellationToken,
         [FromQuery(Name = "guid")] int id = 0,
@@ -139,20 +126,49 @@ internal static class NewznabEndpoints
                     : $"tt{imdbId}",
         };
 
-        return ExecuteSearch(filter, spotSearchService, request, cancellationToken);
+        return ExecuteSearch(
+            filter,
+            spotSearchService,
+            request,
+            newznabOptions.Value.UseIdForNzbUrls,
+            cancellationToken
+        );
+    }
+
+    internal static async Task<IResult> GetNzbHandler(
+        [FromQuery(Name = "guid")] int? guid,
+        [FromQuery(Name = "id")] string? id,
+        ISpotnetAttachmentService spotnetAttachmentService,
+        CancellationToken cancellationToken
+    )
+    {
+        int spotId;
+        if (guid.HasValue)
+            spotId = guid.Value;
+        else if (!int.TryParse(id, out spotId))
+            return Results.BadRequest();
+
+        var result = await spotnetAttachmentService.FetchNzb(spotId, cancellationToken);
+        return result == null
+            ? Results.NotFound()
+            : Results.File(result.Stream, "application/x-nzb", $"{result.FileName}.nzb");
     }
 
     private static async Task<IResult> ExecuteSearch(
         SpotSearchFilter filter,
         ISpotSearchService spotSearchService,
         HttpRequest request,
+        bool useIdForNzbUrls,
         CancellationToken cancellationToken
     )
     {
         var results = await spotSearchService.Search(filter, cancellationToken);
         var items = results
             .Spots.Select(s =>
-                s.ToSyndicationItem(request.GetDetailsUri(s.Id).Uri, request.GetNzbUri(s.Id).Uri)
+                s.ToSyndicationItem(
+                    request.GetDetailsUri(s.Id).Uri,
+                    request.GetNzbUri(s.Id, useIdForNzbUrls).Uri
+                )
             )
             .ToList();
 

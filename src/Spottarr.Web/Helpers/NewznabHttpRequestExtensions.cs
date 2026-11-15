@@ -18,10 +18,11 @@ internal static class NewznabHttpRequestExtensions
         return b;
     }
 
-    public static UriBuilder GetNzbUri(this HttpRequest request, int id)
+    public static UriBuilder GetNzbUri(this HttpRequest request, int id, bool useIdForNzbUrls)
     {
         var b = request.GetApiUri();
-        b.Query = $"?t=get&guid={id}";
+        var idParameter = useIdForNzbUrls ? "id" : "guid";
+        b.Query = $"?t=get&{idParameter}={id}";
         return b;
     }
 
