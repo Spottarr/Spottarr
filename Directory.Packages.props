@@ -44,7 +44,7 @@
     <PackageVersion Include="PhenX.EntityFrameworkCore.BulkInsert.PostgreSql" Version="0.5.0" />
     <PackageVersion Include="PhenX.EntityFrameworkCore.BulkInsert.Sqlite" Version="0.5.0" />
     <PackageVersion Include="Quartz" Version="4.7.3" />
-    <PackageVersion Include="Scalar.AspNetCore" Version="2.21.0" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="3.1.1" />
     <PackageVersion Include="Spottarr.Usenet" Version="6.1.0" />
     <PackageVersion Include="System.ServiceModel.Syndication" Version="11.0.0" />
     <PackageVersion Include="TUnit" Version="1.85.0" />
