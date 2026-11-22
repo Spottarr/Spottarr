@@ -15,18 +15,12 @@
       Include="Microsoft.EntityFrameworkCore.Abstractions"
       Version="11.0.0-rc.3.26522.148"
     />
-    <PackageVersion
-      Include="Microsoft.EntityFrameworkCore.Design"
-      Version="11.0.0"
-    />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="11.0.0" />
     <PackageVersion
       Include="Microsoft.EntityFrameworkCore.Relational"
       Version="11.0.0-rc.3.26522.148"
     />
-    <PackageVersion
-      Include="Microsoft.EntityFrameworkCore.Sqlite"
-      Version="11.0.0"
-    />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="11.0.0" />
     <PackageVersion
       Include="Microsoft.Extensions.Configuration.EnvironmentVariables"
       Version="11.0.0"
